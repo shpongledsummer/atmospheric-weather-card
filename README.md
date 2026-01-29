@@ -15,9 +15,8 @@
 ## Technical Features
 * **Triple-Layer Canvas Engine:** Uses dedicated background, middle, and foreground layers to create a sense of depth between weather effects and your home image.
 * **Organic Cloud Generation:** Uses a custom generator to create unique, non-repeating cloud shapes including cumulus, stratus, and cirrus varieties.
-* **Procedural Lightning:** Generates randomized lightning bolts with realistic branching and screen-flash effects during storms.
 * **Real-Time Moon Rendering:** Calculates and draws the exact moon illumination and terminator line based on your sensor data.
-* **Ambient Environment:** Includes wind-blown leaves, drifting fog banks, blinking airplanes, shooting stars, and rare aurora borealis effects.
+* **Ambient Environment:** Includes wind-blown leaves, drifting fog banks, randomized lightning bolts, airplanes, shooting stars and rare aurora borealis effects.
 * **Dynamic Weather Physics:** Individual particles for rain, snow, and hail with custom physics for speed, turbulence, and wobbling.
 * **Smart Battery Management:** Automatically pauses animations when the card is hidden from view and uses debounced resizing to prevent dashboard lag.
 
@@ -29,7 +28,7 @@ If you have a powerful device (PC, iPad Pro, high-end tablet) and want smoother 
 1.  Open `atmospheric-weather-card.js`.
 2.  Look for the `PERFORMANCE_CONFIG` section near the top.
 3.  Change `TARGET_FPS: 30` to 60.
-4.  Change `MAX_DPR: 1.5` to 2.0 (for sharper Retina displays).
+4.  Change `MAX_DPR: 2.0` to a higher number (for sharper displays).
 
 ## Installation (Manual)
 
@@ -58,7 +57,7 @@ To get the full effect with your own home image and moon phases:
 type: custom:atmospheric-weather-card
 weather_entity: weather.forecast_home
 # Optional: Full width mode
-full_width: true
+full_width: false
 # Optional: Shows accurate moon phases on clear nights
 moon_phase_entity: sensor.moon_phase 
 # Optional: Change house image based on a door sensor
