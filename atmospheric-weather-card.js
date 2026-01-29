@@ -3005,7 +3005,7 @@ class AtmosphericWeatherCard extends HTMLElement {
     static getStubConfig() {
         return {
             weather_entity: 'weather.forecast_home',
-            full_width: false
+            full_width: false,
             // Optional parameters:
             // moon_phase_entity: 'sensor.moon_phase',
             // day: '/local/community/atmospheric-weather-card/day.png',
@@ -3018,3 +3018,4 @@ class AtmosphericWeatherCard extends HTMLElement {
 }
 
 customElements.define('atmospheric-weather-card', AtmosphericWeatherCard);
+
