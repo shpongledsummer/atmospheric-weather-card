@@ -9,7 +9,7 @@
 | <img src="https://github.com/user-attachments/assets/1570d86a-8d31-449e-85a1-0f0d081f28ac" width="400"> | <img width="408" height="284" alt="image" src="https://github.com/user-attachments/assets/b149b219-525a-452e-85b0-bc24cf89e2d3" />
 
 > **About the screenshots:** These images display a complete dashboard layout. This component provides the **animated weather background and house visualization only**. The overlay buttons shown are separate elements; to replicate them, please refer to the included `paper-buttons-row-example.yml`.
-> 
+
 ## Technical Features
 * **Triple-Layer Canvas Engine:** Uses dedicated background, middle, and foreground layers to create a sense of depth between weather effects and your home image.
 * **Organic Cloud Generation:** Uses a custom generator to create unique, non-repeating cloud shapes including cumulus, stratus, and cirrus varieties.
@@ -22,20 +22,20 @@
 ## Installation
 
 ### Method 1: HACS (Recommended)
-1.  Open **HACS** in Home Assistant.
-2.  Go to **Frontend** > **Custom repositories** (via the top-right menu).
-3.  Add this repository URL and select the category **Dashboard**.
-4.  Click **Install**.
-5.  When prompted, accept the option to reload the dashboard.
+1. Open **HACS** in Home Assistant.
+2. Go to **Frontend** > **Custom repositories** (via the top-right menu).
+3. Add this repository URL and select the category **Dashboard**.
+4. Click **Install**.
+5. When prompted, accept the option to reload the dashboard.
 
 ### Method 2: Manual Installation
-1.  Download the `atmospheric-weather-card.js` file from the latest release.
-2.  Upload the file to your Home Assistant `config/www/` folder.
-3.  Go to **Settings** > **Dashboards** > **Three Dots Icon** > **Resources**.
-4.  Click **Add Resource**:
+1. Download the `atmospheric-weather-card.js` file from the latest release.
+2. Upload the file to your Home Assistant `config/www/` folder.
+3. Go to **Settings** > **Dashboards** > **Three Dots Icon** > **Resources**.
+4. Click **Add Resource**:
     * **URL:** `/local/atmospheric-weather-card.js`
     * **Resource Type:** JavaScript Module
-5.  Refresh your browser (clear cache) to load the card.
+5. Refresh your browser (clear cache) to load the card.
 
 ## Configuration
 
@@ -83,23 +83,31 @@ status_image_night: /local/images/house-open-night.png
 ## Feature Documentation
 
 ### Smart Day/Night Logic
-The card uses a 3-layer priority system to decide if it should render Night (stars) or Day (blue sky) effects:
-1.  **Priority 1 (Manual):** `theme_entity`. If this is set to "Dark" or "Night", it overrides everything else.
-2.  **Priority 2 (Automation):** `sun_entity`. If defined (e.g., `sun.sun`), the card checks if the sun is `below_horizon`.
-3.  **Priority 3 (System):** If neither is defined, it checks if your Home Assistant / Browser is in Dark Mode.
+The card uses a 3-layer priority system to decide if it should render Night (stars) or Day (blue sky) effects.
+
+| Priority | Name | Config Entity | Logic |
+| :--- | :--- | :--- | :--- |
+| **1** | **Manual** | `theme_entity` | If set to "Dark" or "Night", it overrides everything else. |
+| **2** | **Automation** | `sun_entity` | If defined (e.g. `sun.sun`), checks if sun is `below_horizon`. |
+| **3** | **System** | *(None)* | If neither is defined, checks if Home Assistant/Browser is in Dark Mode. |
 
 ### Generic Status Entity
-You can override the default house image based on **any** entity's state using `status_entity`.
-* **Replaces the old "Door" config:** This is a more flexible version of the previous door sensor logic.
-* **Triggers:** The image changes if the entity is in any active state: `on`, `open`, `unlocked`, `true`, `home`, `active`.
-* **Use Cases:**
-    * **Door/Window:** `binary_sensor.front_door` (State: open)
-    * **Locks:** `lock.front_door` (State: unlocked)
-    * **Modes:** `input_boolean.party_mode` (State: on)
-    * **Presence:** `zone.home` (State: active)
+You can override the default house image based on **any** entity's state using `status_entity`. This is a flexible version of the previous "door sensor" logic.
+
+* **Trigger:** The image changes if the entity is in any active state: `on`, `open`, `unlocked`, `true`, `home`, `active`.
+
+**Use Case Examples:**
+
+| Category | Example Entity | Active State |
+| :--- | :--- | :--- |
+| **Door/Window** | `binary_sensor.front_door` | `open` |
+| **Locks** | `lock.front_door` | `unlocked` |
+| **Modes** | `input_boolean.party_mode` | `on` |
+| **Presence** | `zone.home` | `active` |
 
 ### Layout Offset
 You can control the exact positioning of the card using the `offset` option. This applies standard CSS margins to the card container.
+
 * **Syntax:** `"Top Right Bottom Left"` (e.g., `"-50px 0px 0px 0px"`).
 * **Purpose:** Use negative values to pull the weather card *behind* other dashboard cards, allowing for seamless layering effects.
 
@@ -112,11 +120,10 @@ You can create a personalized 3D-style image for this card using AI image genera
 **2. Generate the Image:** Use a prompt that focuses on a "clean model" aesthetic. You can use the template below, adjusting the description to match your specific home layout.
 
 **Prompt Template:**
-Isometric view of a modern minimalist architectural model section from the outside. [Describe your specific floors or rooms here]. Materials are matte white and light wood only. No complex textures, studio lighting, very clean, simplified shapes.
+> Isometric view of a modern minimalist architectural model section from the outside. [Describe your specific floors or rooms here]. Materials are matte white and light wood only. No complex textures, studio lighting, very clean, simplified shapes.
 
-
-### Adding Buttons
-To achieve the exact look in the screenshots (where buttons and weather data "float" over the weather visuals), you can add a `custom:paper-buttons-row` card **before** this weather card. 
+## Adding Buttons
+To achieve the exact look in the screenshots (where buttons and weather data "float" over the weather visuals), you can add a `custom:paper-buttons-row` card **before** this weather card.
 
 I have added a simplified card example to the repository which mimics the style in the screenshots. You can use the `offset` feature to achieve the overlay effect.
 
