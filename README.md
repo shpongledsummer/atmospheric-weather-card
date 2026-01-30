@@ -43,7 +43,7 @@
 The only strict requirement is a weather entity.
 
 ```yaml
-type: custom:atmospheric-weather-card-opt
+type: custom:atmospheric-weather-card
 weather_entity: weather.forecast_home
 ```
 
@@ -51,7 +51,7 @@ weather_entity: weather.forecast_home
 To get the full effect with your own home image, smart status, and moon phases:
 
 ```yaml
-type: custom:atmospheric-weather-card-opt
+type: custom:atmospheric-weather-card-
 weather_entity: weather.forecast_home
 
 # --- Layout ---
