@@ -1,11 +1,26 @@
 /**
  * ATMOSPHERIC WEATHER CARD
- * Version: 1.0
+ * Version: 1.1
  * * A custom Home Assistant card that renders animated weather effects.
  * * https://github.com/shpongledsummer/atmospheric-weather-card
  */
  
- console.info("%c ATMOSPHERIC-WEATHER-CARD %c V1.0", "color: white; background: #2980b9; font-weight: bold;", "color: #2980b9; background: white; font-weight: bold;");
+ console.info("%c ATMOSPHERIC-WEATHER-CARD %c V1.1", "color: white; background: #2980b9; font-weight: bold;", "color: #2980b9; background: white; font-weight: bold;");
+
+// ============================================================================
+// CONSTANTS & CONFIGURATION
+// ============================================================================
+
+// Robust list of states that indicate "Night Mode"
+const NIGHT_MODES = Object.freeze([
+    'dark', 'night', 'evening', 'on', 'true', 'below_horizon'
+]);
+
+// States that trigger the "Status" image (e.g., Status Image Day/Night)
+const ACTIVE_STATES = Object.freeze([
+    'on', 'true', 'open', 'unlocked', 'home', 'active'
+]);
+
 
 // ============================================================================
 // WEATHER CONFIGURATION
@@ -475,6 +490,11 @@ class AtmosphericWeatherCard extends HTMLElement {
         if (this._initialized) return;
         this._initialized = true;
 
+		// --- OFFSET FEATURE ---
+		if (this._config.offset) {
+			this.style.margin = this._config.offset;
+		}
+
         const style = document.createElement('style');
         style.textContent = `
             :host { 
@@ -688,13 +708,86 @@ class AtmosphericWeatherCard extends HTMLElement {
     }
 
     // ========================================================================
+    // DAY / NIGHT DETECTION (Priority: Theme -> Sun -> System)
+    // ========================================================================
+    _calculateIsNight(hass) {
+        // 1. PRIORITY: THEME ENTITY (Manual Override)
+        // If the user defined a theme entity and it has a valid state, we obey it strictly.
+        if (this._config.theme_entity) {
+            const themeEntity = this._getEntityState(hass, this._config.theme_entity);
+            if (themeEntity && themeEntity.state && themeEntity.state !== 'unavailable' && themeEntity.state !== 'unknown') {
+                const state = themeEntity.state.toLowerCase();
+                // Check if the state matches any of our "Night" keywords
+                return NIGHT_MODES.includes(state);
+            }
+        }
+
+        // 2. PRIORITY: SUN ENTITY (Automation)
+        // If no theme entity (or it's unavailable), we check the Sun.
+        if (this._config.sun_entity) {
+            const sunEntity = this._getEntityState(hass, this._config.sun_entity);
+            if (sunEntity && sunEntity.state) {
+                // 'below_horizon' is the standard HA state for night
+                // We also check NIGHT_MODES just in case they use a custom sensor
+                const state = sunEntity.state.toLowerCase();
+                return state === 'below_horizon' || NIGHT_MODES.includes(state);
+            }
+        }
+
+        // 3. PRIORITY: SYSTEM FALLBACK (Browser/OS Preference)
+        // If neither entity is defined, we check if Home Assistant is in Dark Mode.
+        try {
+            const metaScheme = document.querySelector('meta[name="color-scheme"]');
+            return metaScheme ? metaScheme.getAttribute('content') === 'dark' : false;
+        } catch (e) {
+            return false; // Default to Day if everything fails
+        }
+    }
+	
+
+    // ========================================================================
+    // LOGIC: STATUS IMAGE (Generic Override)
+    // ========================================================================
+    _calculateStatusImage(hass, isNight) {
+        if (!this._hasStatusFeature) return null;
+
+        const entityId = this._config.status_entity;
+        const stateObj = this._getEntityState(hass, entityId); // Safe getter
+
+        if (!stateObj || !stateObj.state) return null;
+
+        const state = stateObj.state.toLowerCase();
+        
+        // Check if the entity is in an "active" state (e.g. Open, On, Unlocked)
+        if (ACTIVE_STATES.includes(state)) {
+            // Return the specific status image based on time of day
+            // We implement a fallback: if night image is missing, use day image (and vice versa)
+            return isNight 
+                ? (this._config.status_image_night || this._config.status_image_day)
+                : (this._config.status_image_day || this._config.status_image_night);
+        }
+
+        return null;
+    }
+
+    // ========================================================================
     // CONFIGURATION & LIFECYCLE
     // ========================================================================
     setConfig(config) {
         if (!config.weather_entity) throw new Error("Define 'weather_entity'");
+        
         this._config = config;
+        
+        // Capture Sun Entity (Step 1)
+        this._sunEntity = config.sun_entity;
+        
+        // Dynamic Status Entity
+        // We pre-calculate if the status feature is enabled to save time in the render loop
+        this._hasStatusFeature = !!(config.status_entity && (config.status_image_day || config.status_image_night));
+        
         this._initDOM();
     }
+
 
     connectedCallback() {
         // Set up ResizeObserver with debounced handling
@@ -920,15 +1013,10 @@ class AtmosphericWeatherCard extends HTMLElement {
             // Weather entity unavailable - keep current state
             return;
         }
-        
-        // Safe entity access for optional entities
-        const dEntity = this._config.door_entity 
-            ? this._getEntityState(hass, this._config.door_entity) 
-            : null;
 
-        const themeEntity = this._config.theme_entity 
-            ? this._getEntityState(hass, this._config.theme_entity)
-            : null;
+
+
+
         
         // Moon phase entity support (Optional)
         // If not defined, defaults to null (logic below will fallback to full moon)
@@ -941,20 +1029,26 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
 
         // Safe boolean checks
-        const doorOpen = dEntity && dEntity.state === 'on';
-        const isNight = themeEntity ? /dark|night/i.test(themeEntity.state || '') : false;
+        const isNight = this._calculateIsNight(hass);
 
         // Safe attribute access with validation
         const windSpeedRaw = this._getEntityAttribute(wEntity, 'wind_speed', 0);
         const windSpeed = typeof windSpeedRaw === 'number' ? windSpeedRaw : parseFloat(windSpeedRaw) || 0;
         this._windSpeed = Math.min(Math.max(windSpeed / 10, 0), 2);
 
-        // Image selection with null checks
-        let src = doorOpen 
-            ? (isNight ? this._config.door_open_night : this._config.door_open_day)
-            : (isNight ? this._config.night : this._config.day);
+
+        // --- IMAGE SELECTION LOGIC ---
+        // 1. Determine Base Image (Standard Day vs Night)
+        const baseSrc = isNight ? this._config.night : this._config.day;
+
+        // 2. Check for Status Override (e.g. Door Open, Party Mode)
+        const statusSrc = this._calculateStatusImage(hass, isNight);
+        
+        // 3. Final Decision
+        let src = statusSrc || baseSrc || '';
         if (!src) src = this._config.day || '';
 
+        // 4. Apply to DOM
         if (this._elements?.img && src && this._elements.img.getAttribute('src') !== src) {
             this._elements.img.src = src;
         }
@@ -3005,17 +3099,18 @@ class AtmosphericWeatherCard extends HTMLElement {
     static getStubConfig() {
         return {
             weather_entity: 'weather.forecast_home',
+			sun_entity: 'sun.sun',
             full_width: false,
+			offset: '0px',
             // Optional parameters:
             // moon_phase_entity: 'sensor.moon_phase',
             // day: '/local/community/atmospheric-weather-card/day.png',
             // night: '/local/community/atmospheric-weather-card/night.png',
-            // door_entity: 'binary_sensor.front_door',
-            // door_open_day: '...',
-            // door_open_night: '...'
+            // status_entity: 'binary_sensor.front_door',
+            // status_image_day: '/local/images/home-day-open.png',
+            // status_image_night: '/local/images/home-night-open.png'
         };
     }
 }
 
 customElements.define('atmospheric-weather-card', AtmosphericWeatherCard);
-
