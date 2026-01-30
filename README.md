@@ -1,6 +1,5 @@
 # Atmospheric Weather Card
 
-
 > **AI-DISCLAIMER:**
 > This card was created with the help of AI.
 
@@ -9,16 +8,16 @@
 | <img src="https://github.com/user-attachments/assets/878c8e41-04ed-4cf4-a09d-2c079a0f427a" width="400"> | <img src="https://github.com/user-attachments/assets/2a58f714-74ba-426e-8492-afdc541053e1" width="400"> |
 | <img src="https://github.com/user-attachments/assets/1570d86a-8d31-449e-85a1-0f0d081f28ac" width="400"> | <img width="408" height="284" alt="image" src="https://github.com/user-attachments/assets/b149b219-525a-452e-85b0-bc24cf89e2d3" />
 
-
-> **Info about the screenshots:** This shows a "finished" dashboard example. This card provides the **animated weather background and house image only**. The buttons you see floating on top are *not included*—they are separate cards (e.g., `paper-buttons-row`) that I placed over the weather card.
+> **Info about the screenshots:** These images show a "finished" dashboard example. This card provides the **animated weather background and house image only**. The buttons you see floating on top are *not included*—they are separate cards (e.g., `paper-buttons-row`) that I placed over the weather card.
 
 ## Technical Features
 * **Triple-Layer Canvas Engine:** Uses dedicated background, middle, and foreground layers to create a sense of depth between weather effects and your home image.
 * **Organic Cloud Generation:** Uses a custom generator to create unique, non-repeating cloud shapes including cumulus, stratus, and cirrus varieties.
+* **Smart Logic System:** Intelligent hierarchy determines Day/Night state (Theme > Sun > System) and handles status overrides for any entity type.
 * **Dynamic Weather Physics:** Individual particles for rain, snow, and hail with custom physics for speed, turbulence, and wobbling.
 * **Ambient Environment:** Includes wind-blown leaves, drifting fog banks, randomized lightning bolts, airplanes, shooting stars and rare aurora borealis effects.
 * **Real-Time Moon Rendering:** Calculates and draws the exact moon illumination and terminator line based on your sensor data.
-* **Smart Battery Management:** Automatically pauses animations when the card is hidden from view and uses debounced resizing to prevent dashboard lag.
+* **Performance Optimized:** Automatically pauses animations when the card is hidden from view and uses debounced resizing to prevent dashboard lag.
 
 ## Performance
 This card is optimized to run smoothly on standard tablets and wall panels. Because HTML Canvas animations can be demanding on hardware, the visual effects and frame rate are intentionally toned down to prevent your Home Assistant dashboard from lagging or becoming unresponsive.
@@ -47,42 +46,65 @@ This card is optimized to run smoothly on standard tablets and wall panels. Beca
 The only strict requirement is a weather entity.
 
 ```yaml
-type: custom:atmospheric-weather-card
+type: custom:atmospheric-weather-card-opt
 weather_entity: weather.forecast_home
 ```
 
 ### Full Configuration (Recommended)
-To get the full effect with your own home image and moon phases:
+To get the full effect with your own home image, smart status, and moon phases:
 
 ```yaml
-type: custom:atmospheric-weather-card
+type: custom:atmospheric-weather-card-opt
 weather_entity: weather.forecast_home
-# Optional: Full width mode. This feature dynamically detects your dashboard's CSS variables and applies negative margins so the card uses the full display width.
-full_width: false
-# Optional: Shows accurate moon phases on clear nights
-moon_phase_entity: sensor.moon_phase
-# Optional: Manual Dark/Light Mode Toggle
+
+# --- Layout ---
+# Optional: Detects dashboard margins and expands to use full width
+full_width: true
+# Optional: Move the card via margins to overlap other elements (supports negative values)
+offset: "-50px 0px 0px 0px"
+
+# --- Logic & Automation ---
+# Optional: Manual Dark/Light Mode Toggle (Priority 1)
 theme_entity: input_select.theme
+# Optional: For automatic day/night detection (Priority 2)
+sun_entity: sun.sun
+# Optional: For accurate moon phases on clear nights
+moon_phase_entity: sensor.moon_phase
+
+# --- Images ---
 # Optional: Your custom images (transparent PNGs recommended)
 day: /local/images/my-house-day.png
 night: /local/images/my-house-night.png
-# Optional: Change house image based on a door sensor
-door_entity: binary_sensor.front_door
-# Optional: Alternate images when door is open
-door_open_day: /local/images/house-open-day.png
-door_open_night: /local/images/house-open-night.png
+
+# --- Smart Status (Optional) ---
+# Changes the house image when this entity is active (e.g. on, open, unlocked, home)
+status_entity: binary_sensor.front_door
+status_image_day: /local/images/house-open-day.png
+status_image_night: /local/images/house-open-night.png
 ```
 
-### How to use the Dark/Light Mode Toggle
-The card can automatically switch its visuals (like stars vs sun) based on an Input Select helper.
+## Feature Documentation
 
-1.  Go to Settings > Devices & Services > Helpers.
-2.  Create a new **Dropdown (Input Select)**.
-3.  Name it (e.g., "Theme").
-4.  Add two options: **dark** and **light**.
-5.  Add the entity ID (e.g., `input_select.theme`) to your card configuration as shown above.
+### Smart Day/Night Logic
+The card uses a 3-layer priority system to decide if it should render Night (stars) or Day (blue sky) effects:
+1.  **Priority 1 (Manual):** `theme_entity`. If this is set to "Dark" or "Night", it overrides everything else.
+2.  **Priority 2 (Automation):** `sun_entity`. If defined (e.g., `sun.sun`), the card checks if the sun is `below_horizon`.
+3.  **Priority 3 (System):** If neither is defined, it checks if your Home Assistant / Browser is in Dark Mode.
 
-When this helper is set to "dark", the card will render night visuals (stars, dark clouds) regardless of the actual sun position.
+### Generic Status Entity
+You can override the default house image based on **any** entity's state using `status_entity`.
+* **Replaces the old "Door" config:** This is a more flexible version of the previous door sensor logic.
+* **Triggers:** The image changes if the entity is in any active state: `on`, `open`, `unlocked`, `true`, `home`, `active`.
+* **Use Cases:**
+    * **Door/Window:** `binary_sensor.front_door` (State: open)
+    * **Locks:** `lock.front_door` (State: unlocked)
+    * **Modes:** `input_boolean.party_mode` (State: on)
+    * **Presence:** `zone.home` (State: active)
+
+### Layout Offset
+You can control the exact positioning of the card using the `offset` option. This applies standard CSS margins to the card container.
+* **Syntax:** `"Top Right Bottom Left"` (e.g., `"-50px 0px 0px 0px"`).
+* **Purpose:** Use negative values to pull the weather card *behind* other dashboard cards, allowing for seamless layering effects.
 
 ## Custom House Image Generation
 
@@ -94,7 +116,6 @@ You can create a personalized 3D-style image for this card using AI image genera
 
 **Prompt Template:**
 Isometric view of a modern minimalist architectural model section from the outside. [Describe your specific floors or rooms here]. Materials are matte white and light wood only. No complex textures, studio lighting, very clean, simplified shapes.
-
 
 ## Troubleshooting
 * **Card is blank?** Make sure you have refreshed your browser cache.
