@@ -52,19 +52,6 @@ To get the full effect with your own home image, smart status, and moon phases:
 type: custom:atmospheric-weather-card
 weather_entity: weather.forecast_home
 
-# --- Layout ---
-# Optional: Detects dashboard margins and expands to use full width
-full_width: true
-# Optional: Move the card via margins to overlap other elements (supports negative values)
-offset: "-50px 0px 0px 0px"
-
-# --- Visual Customization ---
-# Optional: Move Sun/Moon position (90 = default). 
-# Positive = Distance from Left. Negative (-90) = Distance from Right.
-sun_moon_x_position: -50
-# Optional: Vertical distance from top (90 = default)
-sun_moon_y_position: 40
-
 # --- Logic & Automation ---
 # Optional: Force "light" or "dark" mode manually (Priority 1)
 mode: auto
@@ -74,6 +61,17 @@ theme_entity: input_select.theme
 sun_entity: sun.sun
 # Optional: For accurate moon phases
 moon_phase_entity: sensor.moon_phase
+
+# --- Layout --- 
+# Optional: Detects dashboard margins and expands to use full width
+full_width: true
+# Optional: Move the card via margins to overlap other elements (supports negative values)
+offset: "-50px 0px 0px 0px"
+# Optional: Move Sun/Moon position (90 = default). 
+# Positive = Distance from Left. Negative (-90) = Distance from Right.
+sun_moon_x_position: -50
+# Optional: Vertical distance from top (90 = default)
+sun_moon_y_position: 40 
 
 # --- Images ---
 # Optional: Your custom images (transparent PNGs recommended)
