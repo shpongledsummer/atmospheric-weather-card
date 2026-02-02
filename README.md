@@ -148,4 +148,3 @@ I have added a simplified card example to the repository which mimics the style 
 ## Troubleshooting
 * **Card is blank?** Make sure you have refreshed your browser cache.
 * **Visuals look pixelated?** This is intentional for performance. I want to focus on stability first and increase the visuals gradually.
-* **Dark Mode:** This card looks best when your dashboard theme is set to **Dark Mode**, as the particle effects (stars, rain) stand out better.
