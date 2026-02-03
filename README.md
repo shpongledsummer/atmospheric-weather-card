@@ -17,7 +17,7 @@
 
 ## Technical Features
 
-* **Animated Ambient Environment:** Includes wind-blown leaves, drifting fog banks, randomized lightning bolts, sun rays with heat shimmer, airplanes, shooting stars, and rare aurora borealis effects.
+* **Animated Ambient Environment:** Includes wind-blown leaves, drifting fog banks, randomized lightning bolts, sun rays with heat shimmer, airplanes, birds in various formations, shooting stars, comets and rare aurora borealis effects.
 * **Organic Cloud Generation:** Uses a custom generator to create unique, realistic cloud shapes.
 * **Dynamic Weather Physics:** Individual particles for rain, snow, and hail with custom physics for speed, turbulence, and wobbling.
 * **Real-Time Moon Rendering:** Calculates and draws the exact moon illumination and terminator line based on your sensor data.
