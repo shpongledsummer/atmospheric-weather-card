@@ -5,8 +5,9 @@
 
 | Night View | Day View |
 | :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/878c8e41-04ed-4cf4-a09d-2c079a0f427a" width="400"> | <img src="https://github.com/user-attachments/assets/2a58f714-74ba-426e-8492-afdc541053e1" width="400"> |
-| <img src="https://github.com/user-attachments/assets/1570d86a-8d31-449e-85a1-0f0d081f28ac" width="400"> | <img width="408" height="284" alt="image" src="https://github.com/user-attachments/assets/b149b219-525a-452e-85b0-bc24cf89e2d3" />
+| <img src="https://github.com/user-attachments/assets/78327984-0097-4cea-b19e-ef20e3e6f14a" width="410"> | <img src="https://github.com/user-attachments/assets/df860538-703c-4cf0-8e61-135169ec3145" width="410"> |
+| <img src="https://github.com/user-attachments/assets/f6fa7d65-8777-4746-9878-b32a1960b470" width="410"> | <img width="410" alt="image" src="https://github.com/user-attachments/assets/6d07c654-c791-483a-9351-ce3ec33ff083" />
+
 
 <details>
   <summary>About the screenshots</summary>
