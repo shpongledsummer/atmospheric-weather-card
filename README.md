@@ -18,10 +18,10 @@
 
 ## Screenshots (The Complete Scene)
 
-| Night (Dark Mode) | Day (Light Mode)  |
+| Day (Light Mode) | Night (Dark Mode) |
 | :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/78327984-0097-4cea-b19e-ef20e3e6f14a" width="100%" alt="Dashboard Night View 1" /> | <img src="https://github.com/user-attachments/assets/df860538-703c-4cf0-8e61-135169ec3145" width="100%" alt="Dashboard Day View 1" /> |
-| <img src="https://github.com/user-attachments/assets/f6fa7d65-8777-4746-9878-b32a1960b470" width="100%" alt="Dashboard Night View 2" /> | <img src="https://github.com/user-attachments/assets/6d07c654-c791-483a-9351-ce3ec33ff083" width="100%" alt="Dashboard Day View 2" /> |
+| <img src="https://github.com/user-attachments/assets/df860538-703c-4cf0-8e61-135169ec3145" width="100%" alt="Dashboard Day View 1" /> | <img src="https://github.com/user-attachments/assets/78327984-0097-4cea-b19e-ef20e3e6f14a" width="100%" alt="Dashboard Night View 1" /> |
+| <img src="https://github.com/user-attachments/assets/6d07c654-c791-483a-9351-ce3ec33ff083" width="100%" alt="Dashboard Day View 2" /> | <img src="https://github.com/user-attachments/assets/f6fa7d65-8777-4746-9878-b32a1960b470" width="100%" alt="Dashboard Night View 2" /> |
 
 <details>
   <summary>About the screenshots</summary>
