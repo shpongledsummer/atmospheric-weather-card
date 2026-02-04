@@ -18,7 +18,7 @@
 
 ## Screenshots (The Complete Scene)
 
-| Night View | Day View |
+| Night (Dark Mode) | Day (Light Mode)  |
 | :---: | :---: |
 | <img src="https://github.com/user-attachments/assets/78327984-0097-4cea-b19e-ef20e3e6f14a" width="100%" alt="Dashboard Night View 1" /> | <img src="https://github.com/user-attachments/assets/df860538-703c-4cf0-8e61-135169ec3145" width="100%" alt="Dashboard Day View 1" /> |
 | <img src="https://github.com/user-attachments/assets/f6fa7d65-8777-4746-9878-b32a1960b470" width="100%" alt="Dashboard Night View 2" /> | <img src="https://github.com/user-attachments/assets/6d07c654-c791-483a-9351-ce3ec33ff083" width="100%" alt="Dashboard Day View 2" /> |
@@ -31,7 +31,7 @@
 
 ## Screenshots (Standalone Weather Visuals)
 
-| Day (Light Mode) | Night (Dark Mode) |
+| Day | Night |
 | :---: | :---: |
 | **Partly Cloudy** <br> <img src="https://github.com/user-attachments/assets/ff05d0f2-87d2-4dd9-9253-e1fa99d7c7b7" width="100%" alt="Day - Partly Cloudy" /> | **Stormy Weather** <br> <img src="https://github.com/user-attachments/assets/efb3ed85-16c2-494c-bc10-65c3006b2c6f" width="100%" alt="Night - Stormy" /> |
 | **Windy Weather** <br> <img src="https://github.com/user-attachments/assets/9e2606a7-5838-4d32-9031-f95dc0f03fe4" width="100%" alt="Day - Windy" /> | **Partly Cloudy (a Comet!)** <br> <img src="https://github.com/user-attachments/assets/814dc888-2601-4c3c-91c5-a9ff6bcdc578" width="100%" alt="Night - Comet" /> |
