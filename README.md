@@ -100,8 +100,10 @@ moon_phase_entity: sensor.moon_phase
 | <img src="https://github.com/user-attachments/assets/df860538-703c-4cf0-8e61-135169ec3145" width="100%" /> | <img src="https://github.com/user-attachments/assets/78327984-0097-4cea-b19e-ef20e3e6f14a" width="100%" /> |
 | <img src="https://github.com/user-attachments/assets/6d07c654-c791-483a-9351-ce3ec33ff083" width="100%" /> | <img src="https://github.com/user-attachments/assets/f6fa7d65-8777-4746-9878-b32a1960b470" width="100%" /> |
 
-These images show a full dashboard using immersive mode with a house image and overlay buttons. The card provides the animated weather and house visualization, the buttons are separate (see [Adding Buttons](#adding-buttons)).
 ---
+
+> [!NOTE]
+> These images show a full dashboard using immersive mode with a house image and overlay buttons. The card provides the animated weather and house visualization, the buttons are separate (see [Adding Buttons](#adding-buttons)).
 
 ## Installation
 
