@@ -52,6 +52,8 @@ tap_action:
 <img width="407" height="151" alt="Standalone day" src="https://github.com/user-attachments/assets/be96819b-923a-414d-8bd6-414b2a80cded" />
 <img width="386" height="126" alt="Standalone night" src="https://github.com/user-attachments/assets/4b63e40a-286e-48d6-b0e3-e2095493cfd7" />
 
+> [!TIP]
+> The text at the bottom of the card just grabs the name of your weather entity. If you want it to say something specific like "London" or "My House" you just need to rename the entity itself in Home Assistant.
 <br>
 
 ### Immersive Mode *(default)*
@@ -164,7 +166,7 @@ The sun and moon share a single position. During the day the sun is drawn there 
 | `sun_moon_y_position` | `number` | `100` | Vertical distance from the top. |
 
 > [!TIP]
-> In standalone mode, the text automatically moves to the opposite side of the sun/moon. The bottom text shows the name of your weather entity, just change it to your current location.
+> In standalone mode, the text automatically moves to the opposite side of the sun/moon.
 
 ### Custom Image
 
