@@ -72,9 +72,9 @@ weather_entity: weather.forecast_home
 # --- Layout ---
 card_height: 200px
 full_width: true
-offset: "-50px 0px 0px 0px"
-sun_moon_x_position: -50
-sun_moon_y_position: 40
+offset: 0px 0px 0px 0px
+sun_moon_x_position: 100
+sun_moon_y_position: 100
 
 # --- Custom Images ---
 image_scale: 100
@@ -158,7 +158,7 @@ A full dashboard using immersive mode with a house image and overlay buttons. Th
 
 ### Sun & Moon Position
 
-The sun and moon share a single position. During the day the sun is drawn there (only in fair weather — sunny, partly cloudy, exceptional); at night the moon takes its place.
+The sun and moon share a single position. During the day the sun is drawn there (only in fair weather like sunny, partly cloudy, exceptional); at night the moon takes its place.
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
