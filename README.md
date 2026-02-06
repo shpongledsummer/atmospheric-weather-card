@@ -68,7 +68,12 @@ Pair it with a transparent PNG of your house (or anything else) for the full eff
 type: custom:atmospheric-weather-card
 weather_entity: weather.forecast_home
 
-# Optional settings
+# Recommended
+
+sun_entity: sun.sun
+moon_phase_entity: sensor.moon_phase
+
+# Optional
 
 # --- Layout ---
 card_height: 200px
@@ -78,21 +83,19 @@ sun_moon_x_position: 100
 sun_moon_y_position: 100
 
 # --- Custom Images ---
-image_scale: 100
-image_alignment: bottom
 day: /local/images/my-house-day.png
 night: /local/images/my-house-night.png
+image_scale: 100
+image_alignment: bottom
 
 # --- Smart Status ---
 status_entity: binary_sensor.front_door
 status_image_day: /local/images/house-open-day.png
 status_image_night: /local/images/house-open-night.png
 
-# --- Logic ---
+# --- Custom Day/Night Logic ---
 mode: auto
 theme_entity: input_select.theme
-sun_entity: sun.sun
-moon_phase_entity: sensor.moon_phase
 ```
 
 <br>
