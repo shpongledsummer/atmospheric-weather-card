@@ -39,7 +39,6 @@ type: custom:atmospheric-weather-card
 weather_entity: weather.forecast
 card_style: standalone
 card_height: 110
-offset: 24px 0px 24px 0px
 sun_moon_x_position: -55
 sun_moon_y_position: 55
 mode: auto
@@ -94,15 +93,7 @@ sun_entity: sun.sun
 moon_phase_entity: sensor.moon_phase
 ```
 
-| Day | Night |
-| :---: | :---: |
-| **Partly Cloudy** <br> <img src="https://github.com/user-attachments/assets/ff05d0f2-87d2-4dd9-9253-e1fa99d7c7b7" width="100%" /> | **Stormy Weather** <br> <img src="https://github.com/user-attachments/assets/efb3ed85-16c2-494c-bc10-65c3006b2c6f" width="100%" /> |
-| **Windy Weather** <br> <img src="https://github.com/user-attachments/assets/9e2606a7-5838-4d32-9031-f95dc0f03fe4" width="100%" /> | **Partly Cloudy (a Comet!)** <br> <img src="https://github.com/user-attachments/assets/814dc888-2601-4c3c-91c5-a9ff6bcdc578" width="100%" /> |
-| **Rainy Weather** <br> <img src="https://github.com/user-attachments/assets/0fa2a2eb-d869-4d84-a6aa-b0b1999d49ea" width="100%" /> | **Aurora Borealis** <br> <img src="https://github.com/user-attachments/assets/9591e9ef-50a6-4d67-be23-a6f51b92efd6" width="100%" /> |
-
 <br>
-
-### The Complete Scene
 
 A full dashboard using immersive mode with a house image and overlay buttons. The card provides the animated weather and house visualization only — the buttons are separate (see [Adding Buttons](#adding-buttons)).
 
