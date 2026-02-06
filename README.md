@@ -6,6 +6,9 @@ https://github.com/user-attachments/assets/b7462f32-f193-4b5f-81c6-c6de321b8c42
 
 ---
 
+## AI Disclaimer
+This card was created with the help of AI tools. I would never have the patience to create those weather effects myself.
+
 ## Table of Contents
 
 - [Usage Modes](#usage-modes)
@@ -25,7 +28,7 @@ The card has two modes that affect how it renders and what kind of dashboard set
 
 <br>
 
-### ☀️ Standalone Mode
+### Standalone Mode
 
 A self-contained card with its own weather-aware background gradients. Renders the current temperature and location pulled from your weather entity. Works on any dashboard, with any theme — no extra setup.
 
@@ -51,7 +54,7 @@ tap_action:
 
 <br>
 
-### 🌙 Immersive Mode *(default)*
+### Immersive Mode *(default)*
 
 Renders with a fully transparent background and acts as a living atmosphere layer on top of your dashboard.
 
