@@ -1,6 +1,6 @@
 # Atmospheric Weather Card
 
-I started this because I wanted a weather card that looked nice, but I ended up building a physics engine. This card draws everything live on a canvas using JavaScript. There are no static images or video loops. The code generates the clouds and rain so they move naturally and never repeat. It also adds random details based on the current weather like wind-blown leaves, planes, birds and shooting stars to make the dashboard feel alive. And if you're lucky, you might even see the rare aurora borealis.
+I started this because I wanted a weather card that looked nice, but I ended up building a physics engine. The code generates the clouds and rain so they move naturally and never repeat. It also adds random details based on the current weather like wind-blown leaves, planes, birds and shooting stars to make the dashboard feel alive. And if you're lucky, you might even see the rare aurora borealis.
 
 https://github.com/user-attachments/assets/b7462f32-f193-4b5f-81c6-c6de321b8c42
 
@@ -56,10 +56,10 @@ tap_action:
 
 ### Immersive Mode *(default)*
 
-Renders with a fully transparent background and acts as a living atmosphere layer on top of your dashboard.
+Renders with a fully transparent background so it blends in with your theme.
 
 > [!IMPORTANT]
-> Because the card itself is transparent, the sky color comes from your dashboard background. For this to look right, **you need a Home Assistant theme that switches between a light and dark background** based on time of day. Without it, weather effects will float on a static background color.
+> Because the card itself is transparent, the sky color comes from your dashboard background. For this to look right, **you need a Home Assistant theme that switches between a light and dark background**. Without it, weather effects will float on a static background color.
 
 Pair it with a transparent PNG of your house (or anything else) for the full effect.
 
@@ -164,7 +164,7 @@ The sun and moon share a single position. During the day the sun is drawn there 
 | `sun_moon_y_position` | `number` | `100` | Vertical distance from the top. |
 
 > [!TIP]
-> In standalone mode, the text automatically moves to the opposite side of the sun/moon.
+> In standalone mode, the text automatically moves to the opposite side of the sun/moon. The bottom text shows the name of your weather entity, just change it to your current location.
 
 ### Custom Image
 
