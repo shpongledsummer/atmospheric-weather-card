@@ -1,7 +1,7 @@
 ![Version](https://img.shields.io/badge/version-v1.8-black?style=flat-square)
 ![Type](https://img.shields.io/badge/type-JS_module-lightgrey?style=flat-square)
-![Home Assistant](https://img.shields.io/badge/home_assistant-2024.+-black?style=flat-square)
-![Contains](https://img.shields.io/badge/contains-shooting_stars-333?style=flat-square)
+![Home Assistant](https://img.shields.io/badge/home_assistant-2025.+-black?style=flat-square)
+![Contains](https://img.shields.io/badge/contains-★_shooting_stars-333?style=flat-square)
 
 
 
