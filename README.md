@@ -60,7 +60,7 @@ tap_action:
   entity: weather.forecast_home
 ```
 
-> **Tip** — The location text is simply the `friendly_name` of your weather entity. To change it (e.g. to "London" or "My House"), simply rename the entity in Home Assistant. The temperature is formatted automatically based on your Home Assistant language setting (e.g. `4.5` in English, `4,5` in German).
+> **Tip** — The location text is simply the `friendly_name` of your weather entity. To change it (e.g. to "London" or "My House"), just rename the entity in Home Assistant. The temperature is formatted automatically based on your Home Assistant language setting (e.g. `4.5` in English, `4,5` in German).
 
 </details>
 
@@ -72,7 +72,7 @@ tap_action:
 | :---: |
 | <img width="400" src="https://github.com/user-attachments/assets/cf6121ab-b8d0-43c4-89e6-a29faaa62fdd" /> |
 
-You can use a taller aspect ratio to fit the card perfectly into a grid or horizontal stack alongside other cards. This example pairs the weather card with a graph and a tile card.
+You can use a taller card height to fit the card into a grid or horizontal stack alongside other cards. This example pairs the weather card with a graph and a tile card.
 
 ```yaml
 type: grid
@@ -111,7 +111,7 @@ cards:
 
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/df6cd241-4a9e-4690-a99d-4cc90b861910" />
 
-Renders with a fully transparent background so it blends seamlessly into your dashboard. For this to look right, you need a Home Assistant theme that switches between a light and dark background. Without it, weather effects will float on a static background color.
+Renders with a fully transparent background so it blends seamlessly into your dashboard. For this to look right, you need a Home Assistant theme that switches between a light and dark background.
 
 <details>
 <summary><b>Example 1 — Header Integration</b></summary>
@@ -121,9 +121,9 @@ Renders with a fully transparent background so it blends seamlessly into your da
 | :---: | :---: |
 | <img src="https://github.com/user-attachments/assets/d810a910-0df0-4b7d-ae0e-a6a4c739f47a" width="100%"> | <img src="https://github.com/user-attachments/assets/5196c877-21c6-4a63-b273-99538cdbe970" width="100%"> |
 
-This layout gives the weather effects space to breathe. It works perfectly at the top of a dashboard.
+This layout gives the weather effects space to breathe. Combine it with any other card and place it at the top of your dashboard, to get a nice header.
 
-**How to do it:** Place a Markdown card with any text *before* the Atmospheric Weather Card. Then, use the `offset` feature on the weather card to layer it *behind* the text.
+**How to do it:** Place your card (Markdown, tile or whatever you prefer) *before* the Atmospheric Weather Card. Then, use the `offset` feature on the weather card to layer it *behind* the other card.
 
 ```yaml
 # 1. The Content Card (Foreground)
@@ -158,7 +158,7 @@ tap_action:
 | :---: | :---: |
 | <img src="https://github.com/user-attachments/assets/6d07c654-c791-483a-9351-ce3ec33ff083" width="100%" /> | <img src="https://github.com/user-attachments/assets/f6fa7d65-8777-4746-9878-b32a1960b470" width="100%" /> |
 
-This setup shows how I use this card. It uses it as a dynamic backdrop for the entire top section of the view, combining it with custom images (like a house) and overlay buttons. The card provides the animated weather and house image; the buttons shown in the image are separate elements layered on top. [See Adding Buttons](#adding-buttons) and [Custom House Image](#custom-house-image) for details.
+This setup shows how I use this card. It uses it as a dynamic backdrop for the entire top section of the view, combining it with a custom image and overlay buttons. The card provides the animated weather and image; the buttons shown in the screenshots are separate elements layered on top. [See Adding Buttons](#adding-buttons) and [Custom House Image](#custom-house-image) for details.
 
 ```yaml
 type: custom:atmospheric-weather-card
