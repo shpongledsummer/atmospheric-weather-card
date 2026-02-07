@@ -244,7 +244,7 @@ tap_action:
 | `image_alignment` | `string` | `top-right` | Image position. Combine vertical (`top`, `center`, `bottom`) + horizontal (`left`, `right`). Examples: `bottom-right`, `center-left`, `bottom`. |
 | | | | |
 | **Smart Status** | | | |
-| `status_entity` | `string` | — | Entity to watch (e.g. `binary_sensor.front_door`). Requires at least one status image. |
+| `status_entity` | `string` | — | Entity to watch (e.g. `binary_sensor.front_door`). Requires at least one status image. Active states for the status feature are: `on`, `open`, `unlocked`, `true`, `home`, `active`. |
 | `status_image_day` | `string` | — | Override image for daytime when entity is active. |
 | `status_image_night` | `string` | — | Override image for nighttime. Falls back to `status_image_day`. |
 | | | | |
@@ -258,8 +258,6 @@ tap_action:
 | `tap_action` | `object` | — | Standard HA action config. Example: `{ action: more-info, entity: weather.forecast }` |
 
 > **Tip** — The sun and moon share a single position. During the day the sun is drawn there (only in fair weather like sunny, partly cloudy, exceptional); at night the moon takes its place. In standalone mode, the text automatically moves to the opposite side.
-
-> **Tip** — Active states for the status feature are: `on`, `open`, `unlocked`, `true`, `home`, `active`.
 
 <br>
 
