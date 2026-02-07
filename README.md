@@ -47,9 +47,11 @@ A self-contained card with its own weather-aware background gradients. The card 
 <summary><b>Example 1 — Basic Card</b></summary>
 <br>
 
+
+
 | Day | Night |
 | :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/a1518dd3-d533-4be5-a5d5-1ea6f4fd9748" width="100%"> | <img src="https://github.com/user-attachments/assets/19be9f86-8d30-4a88-808f-4f38e530aefb" width="100%"> |
+| <img src="https://github.com/user-attachments/assets/a1518dd3-d533-4be5-a5d5-1ea6f4fd9748" width="100%"> | <img src="https://github.com/user-attachments/assets/6f533325-5a08-43ec-8523-44f51d0d2aa3" width="100%"> |
 | <img src="https://github.com/user-attachments/assets/fa07c203-feae-4bb0-941d-d14edd9d2feb" width="100%"> | <img src="https://github.com/user-attachments/assets/b5660eeb-b980-434d-b17d-12612754e2f3" width="100%"> |
 
 ```yaml
@@ -122,9 +124,9 @@ Renders with a fully transparent background so it blends seamlessly into your da
 <summary><b>Example 1 — Header Integration</b></summary>
 <br>
 
-| Header |
-| :---: |
-| <img width="400" src="https://github.com/user-attachments/assets/d810a910-0df0-4b7d-ae0e-a6a4c739f47a" /> |
+| Day | Night |
+| :---: | :---: |
+| <img src="https://github.com/user-attachments/assets/d810a910-0df0-4b7d-ae0e-a6a4c739f47a" width="100%"> | <img src="https://github.com/user-attachments/assets/5196c877-21c6-4a63-b273-99538cdbe970" width="100%"> |
 
 This layout gives the weather effects space to breathe. It works perfectly at the top of a dashboard.
 
