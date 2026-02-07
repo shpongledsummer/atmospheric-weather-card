@@ -1,6 +1,6 @@
 /**
  * ATMOSPHERIC WEATHER CARD
- * Version: 1.7
+ * Version: 1.8
  * A custom Home Assistant card that renders animated weather effects.
  */
  
@@ -30,7 +30,7 @@ const ACTIVE_STATES = Object.freeze([
 // ============================================================================
 const WEATHER_MAP = Object.freeze({
     'clear-night':      Object.freeze({ type: 'stars', count: 280, cloud: 5,  wind: 0.1, rays: false, atmosphere: 'night', stars: 420 }), 
-    'cloudy':           Object.freeze({ type: 'cloud', count: 0,   cloud: 80, wind: 0.3, dark: false, rays: false, atmosphere: 'overcast', stars: 40 }), 
+    'cloudy':           Object.freeze({ type: 'cloud', count: 0,   cloud: 50, wind: 0.3, dark: false, rays: false, atmosphere: 'overcast', stars: 40 }),
     'fog':              Object.freeze({ type: 'fog',   count: 0,   cloud: 15, wind: 0.1, rays: false, atmosphere: 'mist', foggy: true, stars: 125 }), 
     'hail':             Object.freeze({ type: 'hail',  count: 150, cloud: 28, wind: 0.8, dark: true, rays: false, atmosphere: 'storm', stars: 20 }),
     'lightning':        Object.freeze({ type: 'rain',  count: 200, cloud: 32, wind: 2.0, thunder: true, dark: true, rays: false, atmosphere: 'storm', stars: 20 }), 
@@ -467,14 +467,16 @@ class AtmosphericWeatherCard extends HTMLElement {
                 display: flex;
                 flex-direction: column;
                 width: 100%;
+                position: relative;
                 background: transparent !important;
-                min-height: 200px;   
+                min-height: 200px;
             }
 
             #card-root {
                 position: relative;
                 width: 100%;
-                height: 100%;        
+                height: 100%;
+                z-index: -1; /* <--- Immersive Mode, pulls it behind other cards */		
                 overflow: hidden;
                 border-radius: var(--ha-card-border-radius, 12px);
                 background: transparent; 
@@ -484,6 +486,10 @@ class AtmosphericWeatherCard extends HTMLElement {
                 opacity: 0;
                 transition: opacity ${PERFORMANCE_CONFIG.REVEAL_TRANSITION_MS}ms ease-out;
             }
+			
+			#card-root.standalone {
+				z-index: 1;
+			}
 
             #card-root.revealed {
                 opacity: 1;
@@ -545,9 +551,9 @@ class AtmosphericWeatherCard extends HTMLElement {
             /* --- DAY MODE (SOFT & AIRY) ----------------------------- */
             /* Adjusted to be lighter and less saturated */
             
-            /* Day Default: Soft Sky Blue (Not intense) */
+            /* Day Default: Realistic Soft Sky */
             #card-root.standalone.scheme-day {
-                background: linear-gradient(160deg, #89f7fe 0%, #66a6ff 100%);
+                background: linear-gradient(160deg, #8ABCE4 0%, #E6F2FA 100%);
             }
             
             /* Day: Partly Cloudy (Very Light Blue/Grey) */
@@ -562,12 +568,12 @@ class AtmosphericWeatherCard extends HTMLElement {
             
             /* Day: Rain (Muted Blue-Grey) */
             #card-root.standalone.scheme-day.weather-rainy {
-                background: linear-gradient(160deg, #accbee 0%, #e7f0fd 100%) !important;
+                background: linear-gradient(160deg, #D9E4EA 0%, #9FB3C0 100%) !important;
             }
             
             /* Day: Storm (Light Moody Grey - Perfectly readable) */
             #card-root.standalone.scheme-day.weather-storm {
-                background: linear-gradient(160deg, #BBD2C5 0%, #536976 100%) !important;
+                background: linear-gradient(160deg, #D3E5D8 0%, #94Aab5 100%) !important;
             }
             
             /* Day: Snow (Pure White/Ice) */
@@ -1753,7 +1759,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         if (totalClouds <= 0) return;
 
         // 1. BACKGROUND FILLER
-        const fillerCount = Math.max(3, Math.floor(totalClouds * 0.25));
+        const fillerCount = Math.min(5, Math.floor(totalClouds * 0.25));
         for (let i = 0; i < fillerCount; i++) {
             const seed = Math.random() * 10000;
             const puffs = CloudShapeGenerator.generateMixedPuffs(seed, 'stratus');
@@ -3190,54 +3196,96 @@ class AtmosphericWeatherCard extends HTMLElement {
 	
 	
 	
-	// BIRDS
+	// BIRDS (Bi-Directional + Dynamic Depth/Size/Speed)
     _drawBirds(ctx, w, h) {
-        if (this._planes && this._planes.length > 0) return;
+        // 1. Clean Up Off-Screen Birds First
+        for (let i = this._birds.length - 1; i >= 0; i--) {
+            const b = this._birds[i];
+            b.x += b.vx;
+            b.y += b.vy;
+            b.flapPhase += b.flapSpeed;
 
+            // Despawn if fully off-screen (with buffer)
+            const isOffRight = b.vx > 0 && b.x > w + 100;
+            const isOffLeft = b.vx < 0 && b.x < -100;
+
+            if (isOffRight || isOffLeft) {
+                this._birds.splice(i, 1);
+            }
+        }
+
+        // 2. Spawn Logic
         const p = this._params;
         const isSevereWeather = p.thunder || p.type === 'hail' || p.type === 'pouring';
-        
-        // 1. SPAWN LOGIC
+        const maxBirds = 20; // Safety limit
+
         if (!this._isNight && !isSevereWeather && this._birds.length === 0) {
+            
+            // A. Direction (1 = Right, -1 = Left)
+            const dir = Math.random() > 0.5 ? 1 : -1;
+            const startX = dir === 1 ? -60 : w + 60;
+            
+            // B. Depth Scale (0.7x to 1.2x) - Applies to Size, Speed, AND Formation spacing
+            const depthScale = 0.7 + Math.random() * 0.5; 
+            
+            // C. Speed (Linked to depth: Closer = Faster)
+            const baseSpeed = (0.8 + Math.random() * 0.5);
+            const finalSpeed = baseSpeed * depthScale * dir;
+
+            // D. Flock Config
             const isSingle = Math.random() < 0.3;
             const flockSize = isSingle ? 1 : 5 + Math.floor(Math.random() * 8);
             const startY = h * 0.20 + Math.random() * (h * 0.30);
-            const speed = 0.8 + Math.random() * 0.5;
-            const formation = Math.floor(Math.random() * 3);
-            const yDirection = Math.random() > 0.5 ? 1 : -1;
-
-            // Leader
+            
+            // LEADER
             this._birds.push({
-                x: -50, y: startY, 
-                vx: speed, vy: (Math.random() - 0.5) * 0.1,
-                flapPhase: 0, flapSpeed: 0.15 + Math.random() * 0.05,
-                size: 2.4
+                x: startX, 
+                y: startY, 
+                vx: finalSpeed, 
+                vy: (Math.random() - 0.5) * 0.1,
+                flapPhase: 0, 
+                flapSpeed: 0.15 + Math.random() * 0.05,
+                // Base Leader Size is 2.4 -> Scaled
+                size: 2.4 * depthScale
             });
 
-            // Followers
+            // FOLLOWERS
             if (!isSingle) {
+                const formation = Math.floor(Math.random() * 3); // 0:V-Shape, 1:Line, 2:Cluster
+                const ySlope = Math.random() > 0.5 ? 1 : -1;     // Slope direction for lines
+
                 for (let i = 1; i < flockSize; i++) {
-                    let offX, offY;
+                    // Calculate raw offsets
+                    let offX = 0, offY = 0;
+
                     if (formation === 0) { // V-Shape
                         const row = Math.floor((i + 1) / 2);
                         const side = i % 2 === 0 ? 1 : -1;
-                        offX = -15 * row;
+                        offX = -15 * row; 
                         offY = 8 * row * side;
                     } else if (formation === 1) { // Line
                         offX = -18 * i;
-                        offY = 10 * i * yDirection;
+                        offY = 10 * i * ySlope;
                     } else { // Cluster
-                        offX = -15 * i + (Math.random() - 0.5) * 25;
-                        offY = (Math.random() - 0.5) * 45;
+                        offX = -15 * i + (Math.random() - 0.5) * 20;
+                        offY = (Math.random() - 0.5) * 40;
                     }
-                    
+
+                    // Apply Depth Scale to offsets too (Perspective correctness)
+                    // If bird is 50% size, it should be 50% closer to neighbor
+                    const scaledOffX = offX * depthScale;
+                    const scaledOffY = offY * depthScale;
+
                     this._birds.push({
-                        x: -50 + offX, 
-                        y: startY + offY,
-                        vx: speed, vy: (Math.random() - 0.5) * 0.05,
+                        // Flip X offset based on direction so they always trail behind
+                        x: startX + (scaledOffX * dir), 
+                        y: startY + scaledOffY,
+                        vx: finalSpeed, 
+                        vy: (Math.random() - 0.5) * 0.05,
                         flapPhase: i + Math.random(),
                         flapSpeed: 0.15 + Math.random() * 0.05,
-                        size: 1.8 + Math.random() * 0.8
+                        // Base Follower Size is 1.8 -> Scaled
+                        size: (1.8 + Math.random() * 0.6) * depthScale
                     });
                 }
             }
@@ -3245,41 +3293,37 @@ class AtmosphericWeatherCard extends HTMLElement {
 
         if (this._birds.length === 0) return;
 
-        // 2. DRAW LOOP
+        // 3. Draw Loop
         const birdColor = this._isLightBackground ? 'rgba(40, 45, 50, 0.8)' : 'rgba(200, 210, 220, 0.6)'; 
 
         ctx.save();
         ctx.strokeStyle = birdColor;
-        ctx.lineWidth = 1.2;
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
 
-        for (let i = this._birds.length - 1; i >= 0; i--) {
+        const len = this._birds.length;
+        for (let i = 0; i < len; i++) {
             const b = this._birds[i];
 
-            // Movement
-            b.x += b.vx;
-            b.y += b.vy;
-            b.flapPhase += b.flapSpeed;
-
-            if (b.x > w + 50) {
-                this._birds.splice(i, 1);
-                continue;
-            }
-
             // PHYSICS: Natural Gliding
-            const flap = Math.sin(b.flapPhase);
-            const glide = Math.sin(b.flapPhase * 0.3); // Slower cycle
-            
-            // If gliding, wing stays flat (0). If flapping, full range.
-            // PHYSICS: Smooth Gliding Envelope
             const envelope = Math.sin(b.flapPhase * 0.35); 
-            const wingOffset = Math.sin(b.flapPhase) * 2.5 * Math.max(0, envelope);
+            // Scale wing offset by size so big birds flap bigger
+            const wingOffset = Math.sin(b.flapPhase) * b.size * Math.max(0, envelope);
             
+            // Draw Direction: Tail opposite to velocity
+            // If vx > 0 (Right), Tail is Left (-size).
+            const dir = b.vx > 0 ? 1 : -1;
+
+            // Line Width relative to size (0.5 * size)
+            ctx.lineWidth = Math.max(0.8, b.size * 0.5);
+
             ctx.beginPath();
-            ctx.moveTo(b.x - b.size, b.y + wingOffset - 1); 
+            // Tail/Left Wing
+            ctx.moveTo(b.x - (b.size * dir), b.y + wingOffset - (1 * (b.size/2.4))); 
+            // Nose
             ctx.lineTo(b.x, b.y);
-            ctx.lineTo(b.x - b.size, b.y + wingOffset + 1); 
+            // Tail/Right Wing
+            ctx.lineTo(b.x - (b.size * dir), b.y + wingOffset + (1 * (b.size/2.4))); 
             ctx.stroke();
         }
         
@@ -3381,7 +3425,7 @@ class AtmosphericWeatherCard extends HTMLElement {
     }
 
 
-    // MOON WITH BLOCKER, VISIBLE CRATERS & ENHANCED GLOW
+    // MOON: Fixed Body, Dynamic Glow (50% of Height)
     _drawMoon(ctx, w, h) {
         if (!this._isNight) return;
         
@@ -3397,53 +3441,57 @@ class AtmosphericWeatherCard extends HTMLElement {
         
         this._moonAnimPhase += 0.003;
         
-        // 3. Position & Phase
+        // 3. Position & Sizes
         const celestial = this._getCelestialPosition(w);
         const moonX = celestial.x;
         const moonY = celestial.y;
-        const moonRadius = 18;
-        const phase = this._moonPhaseConfig;
         
+        // Keep Moon Body Static
+        const moonRadius = 18; 
+        
+        const glowRadius = h * 0.65;
+
         // RAW STATE
         ctx.save();
         
-        // --- A. ATMOSPHERIC GLOW (Dynamic Visibility) ---
+        // --- A. ATMOSPHERIC GLOW (Dynamic Size) ---
         // 1. Base Intensity
-        const glowIntensity = 0.23 + phase.illumination * 0.18;
+        const glowIntensity = 0.23 + this._moonPhaseConfig.illumination * 0.18;
         const effectiveGlow = glowIntensity * fadeOpacity * moonVisibility;
         
         ctx.globalCompositeOperation = 'screen'; 
         
-        const glowGrad = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonRadius * 5.5);
+        // [FIX] Use glowRadius here instead of (moonRadius * 5.5)
+        const glowGrad = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, glowRadius);
         
-        // Use 'effectiveGlow' instead of just 'fadeOpacity'
         glowGrad.addColorStop(0, `rgba(180, 200, 255, ${effectiveGlow})`);
         glowGrad.addColorStop(0.5, `rgba(165, 195, 245, ${effectiveGlow * 0.4})`);
         glowGrad.addColorStop(1, 'rgba(150, 180, 220, 0)');
         
         ctx.fillStyle = glowGrad;
         ctx.beginPath();
-        ctx.arc(moonX, moonY, moonRadius * 5.5, 0, Math.PI * 2);
+        // [FIX] Use glowRadius here
+        ctx.arc(moonX, moonY, glowRadius, 0, Math.PI * 2);
         ctx.fill();
         
         ctx.globalCompositeOperation = 'source-over';
 
         // --- B. STAR BLOCKER ---
-        if (phase.illumination > 0) {
+        if (this._moonPhaseConfig.illumination > 0) {
             ctx.fillStyle = `rgba(25, 30, 40, ${fadeOpacity})`; 
             ctx.beginPath();
             ctx.arc(moonX, moonY, moonRadius - 0.5, 0, Math.PI * 2);
             ctx.fill();
         }
         
-        // --- C. MOON BODY (Clipped) ---
+        // --- C. MOON BODY (Standard 18px Logic) ---
         ctx.save();
         ctx.beginPath();
         ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2);
         ctx.clip();
         
-        const illumination = phase.illumination;
-        const direction = phase.direction;
+        const illumination = this._moonPhaseConfig.illumination;
+        const direction = this._moonPhaseConfig.direction;
         
         if (illumination <= 0) {
             // New Moon
@@ -3454,7 +3502,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             ctx.fillStyle = `rgba(80, 90, 110, ${0.15 * fadeOpacity})`;
             ctx.beginPath(); ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2); ctx.fill();
         } else if (illumination >= 1) {
-            // Full Moon - Highlight Gradient (Inlined)
+            // Full Moon
             const moonGrad = ctx.createRadialGradient(
                 moonX - moonRadius * 0.3, moonY - moonRadius * 0.3, 0,
                 moonX, moonY, moonRadius
@@ -3467,11 +3515,9 @@ class AtmosphericWeatherCard extends HTMLElement {
             ctx.beginPath(); ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2); ctx.fill();
         } else {
             // Partial Phases
-            // 1. Dark Side
             ctx.fillStyle = `rgba(35, 40, 50, ${0.9 * fadeOpacity})`; 
             ctx.beginPath(); ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2); ctx.fill();
             
-            // 2. Lit Side shape
             const terminatorWidth = Math.abs(1 - illumination * 2) * moonRadius;
             const isGibbous = illumination > 0.5;
             
@@ -3485,7 +3531,6 @@ class AtmosphericWeatherCard extends HTMLElement {
             }
             ctx.closePath();
             
-            // 3. Lit Side Fill (Inlined Gradient)
             const moonGrad = ctx.createRadialGradient(
                 moonX - moonRadius * 0.2, moonY - moonRadius * 0.2, 0,
                 moonX, moonY, moonRadius
@@ -3500,17 +3545,17 @@ class AtmosphericWeatherCard extends HTMLElement {
         
         ctx.restore(); // End Clipping
         
-        // --- D. CRATERS ---
+        // --- D. CRATERS (Standard Logic - No Scaling) ---
         if (illumination > 0.05) {
             const op = fadeOpacity * Math.min(1, illumination * 4.0); 
             
-            // Layer 1: Large Faint Wash
+            // Layer 1
             ctx.fillStyle = `rgba(30, 35, 50, ${0.13 * op})`; 
             ctx.beginPath(); ctx.ellipse(moonX - 9, moonY + 2, 7, 9, 0.2, 0, Math.PI * 2); ctx.fill();
             ctx.beginPath(); ctx.ellipse(moonX + 8, moonY - 6, 6, 4, -0.3, 0, Math.PI * 2); ctx.fill();
             ctx.beginPath(); ctx.ellipse(moonX - 2, moonY + 10, 5, 3, 0.1, 0, Math.PI * 2); ctx.fill();
 
-            // Layer 2: Inner Core
+            // Layer 2
             ctx.fillStyle = `rgba(25, 30, 45, ${0.22 * op})`; 
             ctx.beginPath(); ctx.ellipse(moonX - 9, moonY + 2, 4, 6, 0.2, 0, Math.PI * 2); ctx.fill();
             ctx.beginPath(); ctx.ellipse(moonX + 8, moonY - 6, 3, 2, -0.3, 0, Math.PI * 2); ctx.fill();
