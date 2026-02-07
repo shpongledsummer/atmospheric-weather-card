@@ -22,93 +22,161 @@ This card was created with the help of AI tools. I would never have the patience
 
 ---
 
+
 ## Usage Modes
 
 The card has two modes that affect how it renders and what kind of dashboard setup it expects.
 
-<br>
+### 1. Standalone Mode
 
-### Standalone Mode
+A self-contained card with its own weather-aware background gradients. The card renders the current temperature pulled from your weather entity and the text automatically positions itself on the opposite side of the sun/moon to avoid overlap.
 
-A self-contained card with its own weather-aware background gradients. Renders the current temperature pulled from your weather entity. Works on any dashboard, with any theme.
+**Example 1: Basic Card**
 
-The text automatically positions itself on the opposite side of the sun/moon to avoid overlap.
+| <img src="https://github.com/user-attachments/assets/a1518dd3-d533-4be5-a5d5-1ea6f4fd9748" width="100%"> | <img src="https://github.com/user-attachments/assets/19be9f86-8d30-4a88-808f-4f38e530aefb" width="100%"> |
+| :---: | :---: |
+| <img src="https://github.com/user-attachments/assets/fa07c203-feae-4bb0-941d-d14edd9d2feb" width="100%"> | <img src="https://github.com/user-attachments/assets/b5660eeb-b980-434d-b17d-12612754e2f3" width="100%"> |
 
-```yaml
-type: custom:atmospheric-weather-card
-weather_entity: weather.forecast
-card_style: standalone
-card_height: 110
-sun_moon_x_position: -55
-sun_moon_y_position: 55
-mode: auto
-sun_entity: sun.sun
-tap_action:
-  action: more-info
-  entity: weather.forecast
-```
-
-<img width="407" height="151" alt="Standalone day" src="https://github.com/user-attachments/assets/be96819b-923a-414d-8bd6-414b2a80cded" />
-<img width="386" height="126" alt="Standalone night" src="https://github.com/user-attachments/assets/4b63e40a-286e-48d6-b0e3-e2095493cfd7" />
-
-> [!TIP]
-> The text at the bottom of the card just grabs the name of your weather entity. If you want it to say something specific like "London" or "My House" you just need to rename the entity itself in Home Assistant.
-<br>
-
-### Immersive Mode *(default)*
-
-Renders with a fully transparent background so it blends in with your theme.
-
-> [!IMPORTANT]
-> Because the card itself is transparent, the sky color comes from your dashboard background. For this to look right, **you need a Home Assistant theme that switches between a light and dark background**. Without it, weather effects will float on a static background color.
-
-Pair it with a transparent PNG of your house (or anything else) for the full effect.
+<details>
+<summary>Configuration & Details</summary>
 
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.forecast_home
-
-# Recommended
-
+card_style: standalone
+card_height: 110
+sun_moon_x_position: -55
+sun_moon_y_position: 55
 sun_entity: sun.sun
-moon_phase_entity: sensor.moon_phase
-
-# Optional
-
-# --- Layout ---
-card_height: 200px
-full_width: true
-offset: 0px 0px 0px 0px
-sun_moon_x_position: 100
-sun_moon_y_position: 100
-
-# --- Custom Images ---
-day: /local/images/my-house-day.png
-night: /local/images/my-house-night.png
-image_scale: 100
-image_alignment: bottom
-
-# --- Smart Status ---
-status_entity: binary_sensor.front_door
-status_image_day: /local/images/house-open-day.png
-status_image_night: /local/images/house-open-night.png
-
-# --- Custom Day/Night Logic ---
-mode: auto
-theme_entity: input_select.theme
+tap_action:
+  action: more-info
+  entity: weather.forecast_home
 ```
+<br>
+
+**Tip:** The location text is simply the `friendly_name` of your weather entity. To change it (e.g. to "London" or "My House"), simply rename the entity in Home Assistant.
+</details>
 
 <br>
 
-| Day (Light Theme) | Night (Dark Theme) |
-| :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/df860538-703c-4cf0-8e61-135169ec3145" width="100%" /> | <img src="https://github.com/user-attachments/assets/78327984-0097-4cea-b19e-ef20e3e6f14a" width="100%" /> |
-| <img src="https://github.com/user-attachments/assets/6d07c654-c791-483a-9351-ce3ec33ff083" width="100%" /> | <img src="https://github.com/user-attachments/assets/f6fa7d65-8777-4746-9878-b32a1960b470" width="100%" /> |
+**Example 2: Grid Layout**
+
+<img width="535" src="https://github.com/user-attachments/assets/cf6121ab-b8d0-43c4-89e6-a29faaa62fdd" />
+
+<details>
+<summary>Configuration & Details</summary>
+
+You can use a taller aspect ratio to fit the card perfectly into a grid or horizontal stack alongside other cards. This example pairs the weather card with a graph and a tile card.
+
+```yaml
+type: grid
+columns: 2
+cards:
+  - type: custom:atmospheric-weather-card
+    weather_entity: weather.forecast_home
+    card_style: standalone
+    card_height: 200
+    sun_moon_x_position: -30
+    sun_moon_y_position: 30
+    sun_entity: sun.sun
+    tap_action:
+      action: more-info
+      entity: weather.forecast_home
+  - type: vertical-stack
+    cards:
+      - type: sensor
+        graph: line
+        entity: sensor.temperature_indoor
+        detail: 1
+        name: Indoor Temp
+      - type: tile
+        entity: sensor.climate_sensor
+        name: Air Quality
+        icon: mdi:leaf
+        state_content: state
+        vertical: false
+```
+</details>
 
 ---
 
-> [!NOTE]
-> These images show a full dashboard using immersive mode with a house image and overlay buttons. The card provides the animated weather and house visualization, the buttons are separate (see [Adding Buttons](#adding-buttons)).
+### 2. Immersive Mode *(Default)*
+
+Renders with a fully transparent background so it blends seamlessly into your dashboard. For this to look right, you need a Home Assistant theme that switches between a light and dark background. Without it, weather effects will float on a static background color.
+
+**Example 1: Header Integration**
+
+<img width="406" src="https://github.com/user-attachments/assets/d810a910-0df0-4b7d-ae0e-a6a4c739f47a" />
+
+<details>
+<summary>Configuration & Details</summary>
+
+This layout gives the weather effects space to breathe. It works perfectly at the top of a dashboard.
+
+**How to do it:** Place a Markdown card with any text *before* the Atmospheric Weather Card. Then, use the `offset` feature on the weather card to layer it *behind* the text.
+
+```yaml
+# 1. The Content Card (Foreground)
+type: markdown
+content: |
+  <br>
+  ⛅ Enjoy the weather!
+  # {{states('sensor.time') }}
+
+# 2. The Weather Card (Background Layer)
+type: custom:atmospheric-weather-card
+weather_entity: weather.forecast_home
+full_width: true
+card_height: 240
+# Pulls the card up 120px to sit behind the Markdown card
+offset: "-120px 0px 0px 0px"
+sun_moon_x_position: -100
+sun_moon_y_position: 100
+sun_entity: sun.sun
+moon_phase_entity: sensor.moon_phase
+tap_action:
+  action: none
+```
+</details>
+
+<br>
+
+**Example 2: Full Dashboard Example**
+
+| <img src="https://github.com/user-attachments/assets/6d07c654-c791-483a-9351-ce3ec33ff083" width="100%" /> | <img src="https://github.com/user-attachments/assets/f6fa7d65-8777-4746-9878-b32a1960b470" width="100%" /> |
+| :---: | :---: |
+
+<details>
+<summary>Configuration & Details</summary>
+
+This setup shows how I use the card. It uses the card as a dynamic backdrop for the entire top section of the view, combining it with custom images (like a house) and overlay buttons. The card provides the animated weather and house image; the buttons shown in the image are separate elements layered on top. [See Adding Buttons](#adding-buttons) and [Custom House Image](#custom-house-image) for details.
+
+```yaml
+type: custom:atmospheric-weather-card
+weather_entity: weather.forecast_home
+full_width: true
+card_height: 200
+image_scale: 100
+image_alignment: bottom
+offset: "-50px 0px 0px 0px"
+sun_moon_x_position: 100
+sun_moon_y_position: 100
+sun_entity: sun.sun
+moon_phase_entity: sensor.moon_phase
+# Custom Images
+day: /local/images/dashboard/home-day.png
+night: /local/images/dashboard/home-night.png
+# Status Features (e.g., Door Open)
+status_entity: binary_sensor.front_door
+status_image_day: /local/images/dashboard/home-day-door-open.png
+status_image_night: /local/images/dashboard/home-night-door-open.png
+tap_action:
+  action: navigate
+  navigation_path: "#popup_climate"
+```
+</details>
+
+<br>
 
 ## Installation
 
