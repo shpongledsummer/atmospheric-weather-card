@@ -32,7 +32,7 @@ The card has two modes that affect how it renders and what kind of dashboard set
 
 ### Standalone Mode
 
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/3d6d662b-72c8-4383-850a-2ab64bb3b690" />
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/a84957d1-b824-4dd3-8b6c-b9d8963c568a" />
 
 A self-contained card with its own weather-aware background gradients. The card renders the current temperature pulled from your weather entity and the text automatically positions itself on the opposite side of the sun/moon to avoid overlap.
 
