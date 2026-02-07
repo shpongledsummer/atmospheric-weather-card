@@ -1,4 +1,3 @@
-![Version](https://img.shields.io/badge/version-v1.8-black?style=flat-square)
 ![Contains](https://img.shields.io/badge/contains-★_shooting_stars-333?style=flat-square)
 
 
