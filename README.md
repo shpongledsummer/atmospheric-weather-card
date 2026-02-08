@@ -341,6 +341,16 @@ Each state sets a unique combination of particle type, count, cloud density, win
 
 ---
 
-### PERFORMANCE
+### Performance
 
-The card targets 30fps with a max device pixel ratio of 2x. Animations pause automatically when the card scrolls out of view and reinitialize on resize with debouncing. The card is resizable in Section-based dashboards out of the box.
+This card is egineered for efficiency on low-power and wall-mounted devices.
+
+* **Smart Rendering**
+    Animation loop is capped at 30 FPS and internal resolution is limited to 2x DPR.
+* **Zero-Idle State**
+    Animations pause immediately when the card is scrolled out of view or the tab is hidden.
+* **Responsive**
+    Native support for Section-based dashboards with debounced resizing.
+
+**Hardware Requirement**
+This card relies on **GPU Hardware Acceleration** via HTML5 Canvas. If high CPU usage is observed, verify that hardware acceleration is enabled in the browser or kiosk settings. Software-only rendering will significantly degrade performance.
