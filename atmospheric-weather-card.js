@@ -1,6 +1,6 @@
 /**
  * ATMOSPHERIC WEATHER CARD
- * Version: 1.8
+ * Version: 1.9
  * A custom Home Assistant card that renders animated weather effects.
  */
  
@@ -354,7 +354,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         this._planes = [];
         this._birds = [];
         this._comets = [];
-        this._satellites = [];
         this._dustMotes = [];
         this._sunClouds = [];
         this._moonClouds = [];
@@ -535,7 +534,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             #card-root.standalone {
                 box-shadow: var(--ha-card-box-shadow, 0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12));
                 border: none;
-                background-color: var(--ha-card-background, var(--card-background-color, white));
+                background-color: transparent;
                 overflow: hidden;
                 transition: background 0.5s ease;
             }
@@ -571,9 +570,9 @@ class AtmosphericWeatherCard extends HTMLElement {
                 background: linear-gradient(160deg, #D9E4EA 0%, #9FB3C0 100%) !important;
             }
             
-            /* Day: Storm (Light Moody Grey - Perfectly readable) */
+            /* Day: Storm (Rainy -15% Darker) */
             #card-root.standalone.scheme-day.weather-storm {
-                background: linear-gradient(160deg, #D3E5D8 0%, #94Aab5 100%) !important;
+                background: linear-gradient(160deg, #B9C2C8 0%, #8798A3 100%) !important;
             }
             
             /* Day: Snow (Pure White/Ice) */
@@ -618,7 +617,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             /* TEXT OVERLAY STYLES                            */
             /* ============================================== */
 
-            #temp-text, #loc-text {
+            #temp-text, #bottom-text {
                 position: absolute; z-index: 10;
                 pointer-events: none;
                 font-family: var(--ha-font-family, var(--paper-font-body1_-_font-family, sans-serif));
@@ -626,8 +625,10 @@ class AtmosphericWeatherCard extends HTMLElement {
                 display: none; 
             }
 
+            
+			/* --- Show Top Text (in Standalone Mode) --- */
             #card-root.standalone #temp-text,
-            #card-root.standalone #loc-text { 
+            #card-root.standalone #bottom-text { 
 			display: flex;
 			}
 
@@ -647,35 +648,27 @@ class AtmosphericWeatherCard extends HTMLElement {
                 font-size: 0.5em;
                 font-weight: 500;
                 padding-top: 6px;
-                opacity: 0.8;
+                opacity: 0.7;
             }
 
-            /* --- LOCATION --- */
-            #loc-text {
-                bottom: var(--ha-space-4, 16px);
-                font-size: 15px;
-                font-weight: 500;
-                opacity: 0.7;
-                letter-spacing: 0.5px;
-                white-space: nowrap;
-                text-overflow: ellipsis;
-                overflow: hidden;
-                max-width: 160px;
-				align-items: center;
+			/* --- BOTTOM TEXT --- */
+			#bottom-text {
+				bottom: var(--ha-space-4, 16px);
+				font-size: 15px;
+				font-weight: 500;
+				opacity: 0.7;
+				letter-spacing: 0.5px;
+				white-space: nowrap;
 				gap: 6px;
-            }
+			}
+
+			/* BOTTOM TEXT - Icon */
+			#bottom-text ha-icon,
+            #bottom-text ha-state-icon {
+				--mdc-icon-size: 15px;
+				opacity: 0.9;
+			}
             
-            /* Map Marker Icon (SVG Mask) */
-            #loc-text::before {
-                content: '';
-                display: inline-block;
-                width: 12px; 
-                height: 12px;
-                background-color: currentColor;
-                opacity: 0.8;
-                -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,2C8.13,2 5,5.13 5,9c0,5.25 7,13 7,13s7,-7.75 7,-13c0,-3.87 -3.13,-7 -7,-7zM12,11.5c-1.38,0 -2.5,-1.12 -2.5,-2.5s1.12,-2.5 2.5,-2.5 2.5,1.12 2.5,2.5 -1.12,2.5 -2.5,2.5z"/></svg>') no-repeat center;
-                mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,2C8.13,2 5,5.13 5,9c0,5.25 7,13 7,13s7,-7.75 7,-13c0,-3.87 -3.13,-7 -7,-7zM12,11.5c-1.38,0 -2.5,-1.12 -2.5,-2.5s1.12,-2.5 2.5,-2.5 2.5,1.12 2.5,2.5 -1.12,2.5 -2.5,2.5z"/></svg>') no-repeat center;
-            }
 
             /* --- ALIGNMENT --- */
             /* Offset slightly to account for padding */
@@ -684,14 +677,14 @@ class AtmosphericWeatherCard extends HTMLElement {
 
             /* --- COLORS --- */
             #card-root.standalone.scheme-day #temp-text,
-            #card-root.standalone.scheme-day #loc-text {
-                color: var(--primary-text-color, #2c3e50); 
+            #card-root.standalone.scheme-day #bottom-text {
+                color: var(--awc-text-day, #333333); 
                 text-shadow: 0 1px 2px rgba(255,255,255,0.6);
             }
 
             #card-root.standalone.scheme-night #temp-text,
-            #card-root.standalone.scheme-night #loc-text {
-                color: #ffffff;
+            #card-root.standalone.scheme-night #bottom-text {
+                color: var(--awc-text-night, #ffffff);
                 text-shadow: 0 1px 3px rgba(0,0,0,0.6);
             }
         `;
@@ -711,16 +704,16 @@ class AtmosphericWeatherCard extends HTMLElement {
         const tempText = document.createElement('div');
         tempText.id = 'temp-text';
         
-        const locText = document.createElement('div');
-        locText.id = 'loc-text';
+        const bottomText = document.createElement('div');
+        bottomText.id = 'bottom-text';
 
         // 1. Append everything to root (Text added last to sit on top)
-        root.append(bg, mid, img, fg, tempText, locText);
+        root.append(bg, mid, img, fg, tempText, bottomText);
         this.shadowRoot.append(style, root);
 
         // 2. DEFINE CACHE ONCE (The Fix)
         // We do this AFTER creating all variables, and we include everything here.
-        this._elements = { root, bg, mid, img, fg, tempText, locText };
+        this._elements = { root, bg, mid, img, fg, tempText, bottomText };
         
         // Get canvas contexts with optimization hints
         const ctxOptions = { 
@@ -1064,15 +1057,26 @@ class AtmosphericWeatherCard extends HTMLElement {
 		
 	    // --- TEXT DATA & POSITIONING ---
         // Safety check: ensure elements exist before accessing
-        if (this._config.card_style && wEntity && this._elements?.tempText && this._elements?.locText) {
+        if (this._config.card_style && wEntity && this._elements?.tempText && this._elements?.bottomText) {
             
             // 1. Gather Data
             const temp = wEntity.attributes.temperature;
             const unit = wEntity.attributes.temperature_unit || '';
-            const location = wEntity.attributes.friendly_name || '';
-            
-            // 2. Update Text (Only if changed)
-            // Signature check prevents re-formatting numbers unnecessarily
+            // 1a. CHECK VISIBILITY CONFIG
+            // We default to showing text unless explicitly disabled
+            const showText = this._config.disable_text !== true;
+            const showIcon = this._config.disable_bottom_icon !== true;
+
+            // Apply visibility immediately
+            // Note: In standalone mode, CSS sets these to 'flex'. JS inline style overrides CSS.
+            if (this._elements.tempText) {
+                this._elements.tempText.style.display = showText ? '' : 'none';
+            }
+            if (this._elements.bottomText) {
+                this._elements.bottomText.style.display = showText ? '' : 'none';
+            }
+			
+			// --- TEMPERATURE RENDERING ---
             const currentTempSig = `${temp}_${unit}_${lang}`;
             
             if (this._lastTempStr !== currentTempSig) {
@@ -1080,20 +1084,98 @@ class AtmosphericWeatherCard extends HTMLElement {
                 
                 let formattedTemp = temp;
                 if (temp !== null && !isNaN(parseFloat(temp))) {
-                      // Locale-aware formatting (e.g. 4.5 vs 4,5)
-                      formattedTemp = new Intl.NumberFormat(lang, { 
+                    formattedTemp = new Intl.NumberFormat(lang, { 
                         maximumFractionDigits: 1, 
                         minimumFractionDigits: 0 
                     }).format(temp);
                 }
                 
-                // HTML update for styling
                 this._elements.tempText.innerHTML = `<span class="temp-val">${formattedTemp}</span><span class="temp-unit">${unit}</span>`;
             }
 
-            if (this._lastLocStr !== location) {
-                this._lastLocStr = location;
-                this._elements.locText.textContent = location;
+            // 1b. RESOLVE BOTTOM TEXT & ICON STRATEGY
+            let bottomValue, bottomUnit;
+            let iconStrategy = 'static'; // 'static' (ha-icon) or 'native' (ha-state-icon)
+            let iconValue = 'mdi:alert-circle'; // Default for static
+            let sensorObj = null; // Store the object for native rendering
+
+            if (this._config.bottom_text_sensor) {
+                // --- CASE A: USER DEFINED SENSOR ---
+                const sensor = hass.states[this._config.bottom_text_sensor];
+                if (sensor) {
+                    bottomValue = sensor.state;
+                    bottomUnit = sensor.attributes.unit_of_measurement || '';
+                    sensorObj = sensor;
+
+                    // Decision: Use native HA component OR forced static icon?
+                    if (this._config.bottom_text_icon) {
+                        iconStrategy = 'static';
+                        iconValue = this._config.bottom_text_icon;
+                    } else {
+                        iconStrategy = 'native'; // Let HA decide the icon!
+                    }
+                } else {
+                    bottomValue = 'N/A';
+                    bottomUnit = '';
+                    iconStrategy = 'static';
+                }
+            } else {
+                // --- CASE B: DEFAULT WIND (Weather Attributes) ---
+                // Wind is an attribute, not an entity, so we MUST use static icons
+                bottomValue = wEntity.attributes.wind_speed;
+                bottomUnit = wEntity.attributes.wind_speed_unit || 'km/h';
+                iconStrategy = 'static';
+                iconValue = this._config.bottom_text_icon || 'mdi:weather-windy';
+            }
+
+            // 2. FORMAT TEXT
+            let formattedBottom = bottomValue;
+            if (bottomValue !== null && !isNaN(parseFloat(bottomValue))) {
+                formattedBottom = new Intl.NumberFormat(lang, { 
+                    maximumFractionDigits: 1, 
+                    minimumFractionDigits: 0 
+                }).format(bottomValue);
+            }
+            
+            // Create signature. Note we include strategy to force redraw if type changes.
+            const currentLocSig = `${formattedBottom}_${bottomUnit}_${iconValue}_${iconStrategy}_${showIcon}`;
+
+            // 3. RENDER HTML
+            if (this._lastLocStr !== currentLocSig) {
+                this._lastLocStr = currentLocSig;
+                
+                let iconHtml = '';
+                if (showIcon) {
+                    if (iconStrategy === 'native') {
+                        // "PRO" WAY: Render the native component
+                        iconHtml = `<ha-state-icon></ha-state-icon>`;
+                    } else {
+                        // CLASSIC WAY: Render specific icon string
+                        iconHtml = `<ha-icon icon="${iconValue}"></ha-icon>`;
+                    }
+                }
+                
+                this._elements.bottomText.innerHTML = `
+                    ${iconHtml}
+                    <span>${formattedBottom} ${bottomUnit}</span>
+                `;
+
+                // CRITICAL: Inject the state object into the native component immediately after creation
+                if (showIcon && iconStrategy === 'native') {
+                    const iconEl = this._elements.bottomText.querySelector('ha-state-icon');
+                    if (iconEl) {
+                        iconEl.hass = hass;
+                        iconEl.stateObj = sensorObj;
+                    }
+                }
+            }
+            // Update the state object on every frame if it exists (handles dynamic icon changes like battery levels)
+            else if (showIcon && iconStrategy === 'native') {
+                 const iconEl = this._elements.bottomText.querySelector('ha-state-icon');
+                 if (iconEl && iconEl.stateObj !== sensorObj) {
+                     iconEl.hass = hass;
+                     iconEl.stateObj = sensorObj;
+                 }
             }
 
             // 3. Update Positioning (Cached)
@@ -1110,8 +1192,8 @@ class AtmosphericWeatherCard extends HTMLElement {
                 this._elements.tempText.classList.remove(removeClass);
                 this._elements.tempText.classList.add(targetClass);
                 
-                this._elements.locText.classList.remove(removeClass);
-                this._elements.locText.classList.add(targetClass);
+                this._elements.bottomText.classList.remove(removeClass);
+                this._elements.bottomText.classList.add(targetClass);
             }
         }
 
@@ -1555,25 +1637,14 @@ class AtmosphericWeatherCard extends HTMLElement {
         // Clear existing particles
         this._clearAllParticles();
 
-        // Aurora (much more rare - only on very clear nights)
-        if (this._isNight && (p.type === 'stars' || p.type === 'cloud') && (p.cloud || 0) <= 15 && Math.random() < 0.01) {
+        // Aurora (Adjusted: Increased probability to 5% and allow partly cloudy)
+        if (this._isNight && (p.type === 'stars' || p.type === 'cloud') && (p.cloud || 0) <= 30 && Math.random() < 0.05) {
             this._initAurora(w, h);
         }
         
         // Comet (very rare)
         if (this._isNight && p.type === 'stars' && Math.random() < 0.001) {
             this._comets.push(this._createComet(w, h));
-        }
-
-        // Satellites (Night Only, Rare)
-        if (this._isNight && !p.dark && Math.random() < 0.4) {
-             this._satellites.push({
-                 x: Math.random() * w,
-                 y: Math.random() * (h * 0.4),
-                 vx: (Math.random() < 0.5 ? 1 : -1) * (0.05 + Math.random() * 0.05), // Very slow
-                 size: 0.8 + Math.random() * 0.4,
-                 opacity: 0.6 + Math.random() * 0.4
-             });
         }
 		
         // Airplane (common at night)
@@ -2870,23 +2941,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         ctx.restore();
     }
 
-    
-	// Satellites
-    _drawSatellites(ctx, w, h) {
-        if (this._satellites.length === 0) return;
-        
-        ctx.fillStyle = "white";
-        for (let i = 0; i < this._satellites.length; i++) {
-            const s = this._satellites[i];
-            s.x += s.vx;
-            
-            ctx.globalAlpha = s.opacity * this._layerFadeProgress.stars;
-            ctx.beginPath();
-            ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        ctx.globalAlpha = 1.0;
-    }
 
     // FOG
     _drawFog(ctx, w, h) {
@@ -3794,9 +3848,6 @@ class AtmosphericWeatherCard extends HTMLElement {
                 }
             }
         }
-
-        // Satellites
-        this._drawSatellites(bg, w, h);
 
         // Moon (needs to cover the stars!)
         this._drawMoon(bg, w, h);
