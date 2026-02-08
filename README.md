@@ -352,5 +352,5 @@ This card is egineered for efficiency on low-power and wall-mounted devices.
 * **Responsive**
     Native support for Section-based dashboards with debounced resizing.
 
-**Hardware Requirement**
-This card relies on **GPU Hardware Acceleration** via HTML5 Canvas. If high CPU usage is observed, verify that hardware acceleration is enabled in the browser or kiosk settings. Software-only rendering will significantly degrade performance.
+> **Hardware Requirement**
+> This card relies on GPU Hardware Acceleration via HTML5 Canvas. If high CPU usage is observed, verify that hardware acceleration is enabled in the browser or kiosk settings. Software-only rendering will significantly degrade performance.
