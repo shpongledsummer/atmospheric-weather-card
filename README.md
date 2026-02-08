@@ -341,16 +341,18 @@ Each state sets a unique combination of particle type, count, cloud density, win
 
 ---
 
-### PERFORMANCE
+### Performance
 
-This card is egineered for efficiency on low-power and wall-mounted devices.
+**Client-Side Rendering**
+Rendering of the weather animations is handled entirely by the client browser using HTML5 Canvas. Server impact is limited to standard state updates.
 
-* **Smart Rendering**
-    Animation loop is capped at 30 FPS and internal resolution is limited to 2x DPR.
-* **Zero-Idle State**
-    Animations pause immediately when the card is scrolled out of view or the tab is hidden.
+* **Resource Management**
+  Target framerate is capped at 30 FPS and resolution at 2x DPR to limit GPU usage on the client device.
+* **Visibility Control**
+  The animation loop stops completely when the card is not visible or the tab is backgrounded.
 * **Responsive**
-    Native support for Section-based dashboards with debounced resizing.
+  Native support for Section-based dashboards with debounced resizing.
 
+> [!NOTE]
 > **Hardware Requirement**
-> This card relies on GPU Hardware Acceleration via HTML5 Canvas. If high CPU usage is observed, verify that hardware acceleration is enabled in the browser or kiosk settings. Software-only rendering will significantly degrade performance.
+> This card relies on **GPU Hardware Acceleration**. If high CPU usage is observed, verify that hardware acceleration is enabled in the browser or kiosk settings. Software-only rendering will significantly degrade performance.
