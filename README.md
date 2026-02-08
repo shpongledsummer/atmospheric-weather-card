@@ -114,8 +114,7 @@ cards:
 Renders with a fully transparent background so it blends seamlessly into your dashboard.
 
 > [!IMPORTANT]
-> **Immersive mode requires the card's day/night mode to match your dashboard theme.**
-> Using a fixed theme (e.g., dark mode 24/7) can clash with the card's "Day Mode" when the sun is up, causing weather effects to look broken. To ensure a match, use `theme_entity` or manually force the style using `mode: dark` or `mode: light`.
+> **Immersive mode needs to match your dashboard theme to work correctly.** If you use a fixed theme (like dark mode all day), the card will still switch between light and dark based on the sun. This mismatch makes weather effects look broken. To fix this: use `theme_entity` if your theme automatically switches between light and dark, or use `mode: dark` or `mode: light` to force the card to match your fixed theme.
 
 <details>
 <summary><b>Example 1 — Header Integration</b></summary>
