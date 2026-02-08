@@ -341,7 +341,7 @@ Each state sets a unique combination of particle type, count, cloud density, win
 
 ---
 
-### Performance
+### PERFORMANCE
 
 This card is egineered for efficiency on low-power and wall-mounted devices.
 
