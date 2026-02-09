@@ -149,7 +149,7 @@ tap_action:
 <details>
 <summary><b>💡 Tip: Faster Initial Load Times</b></summary>
 
-If your dashboard loads slowly, try using the `paper-buttons-row` custom card from HACS instead of standard Home Assistant cards. For some reason it loads significantly faster than the default HA cards.
+If your dashboard loads slowly, try using the `paper-buttons-row` custom card from HACS instead of standard Home Assistant cards. For some reason it loads significantly faster.
 
 **Example configuration for a simple header:**
 ```yaml
