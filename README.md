@@ -121,9 +121,7 @@ Renders with a fully transparent background so it blends seamlessly into your da
 | :---: | :---: |
 | <img src="https://github.com/user-attachments/assets/d810a910-0df0-4b7d-ae0e-a6a4c739f47a" width="100%"> | <img src="https://github.com/user-attachments/assets/5196c877-21c6-4a63-b273-99538cdbe970" width="100%"> |
 
-This layout gives the weather effects space to breathe. Combine it with any other card and place it at the top of your dashboard, to get a nice header.
-
-**How to do it:** Place your card (Markdown, tile or whatever you prefer) *before* the Atmospheric Weather Card. Then, use the `offset` feature on the weather card to layer it *behind* the other card.
+This layout gives the weather effects space to breathe. You can combine it with any other card and layer both cards with the `offset` feature.
 
 ```yaml
 # 1. The Content Card (Foreground)
@@ -147,6 +145,34 @@ moon_phase_entity: sensor.moon_phase
 tap_action:
   action: none
 ```
+
+<details>
+<summary><b>💡 Tip: Faster Initial Load Times</b></summary>
+
+If your dashboard loads slowly, try using the `paper-buttons-row` custom card from HACS instead of standard Home Assistant cards. For some reason it loads significantly faster than the default HA cards.
+
+**Example configuration for a simple header:**
+```yaml
+type: custom:paper-buttons-row
+styles:
+  margin: 0px 0px -80px 0px  # Use negative margin here instead of on weather card (faster)
+  justify-content: flex-start
+base_config:
+  layout: name
+  styles:
+    button:
+      padding: 0px
+    name:
+      font-size: 26px
+      padding: 0px
+      font-weight: 700
+buttons:
+  - name: Sternschnuppe ✨
+```
+
+</details>
+
+<br>
 
 </details>
 
