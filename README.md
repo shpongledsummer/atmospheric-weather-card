@@ -14,15 +14,15 @@ https://github.com/user-attachments/assets/b7462f32-f193-4b5f-81c6-c6de321b8c42
 
 #### CONTENTS
 
-* **[Usage Modes](#usage-modes)**
-* **[Installation](#installation)**
-* **[Configuration](#configuration-reference)**
-* **[Day / Night Logic](#day--night-logic)**
-* **[Custom House Image](#custom-house-image)**
-* **[Smart Status Entity](#smart-status-entity)**
-* **[Adding Buttons](#adding-buttons)**
-* **[Weather States](#supported-weather-states)**
-* **[Performance](#performance)**
+[Usage Modes](#usage-modes)
+[Installation](#installation)
+[Configuration](#configuration)
+[Day / Night Logic](#day--night-logic)
+[Custom House Image](#custom-house-image)
+[Smart Status Entity](#smart-status-entity)
+[Adding Buttons](#adding-buttons)
+[Weather States](#supported-weather-states)
+[Performance](#performance)
 
 <br>
 
@@ -263,7 +263,7 @@ tap_action:
 
 ---
 
-### CONFIGURATION REFERENCE
+### CONFIGURATION
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
