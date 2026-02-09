@@ -260,7 +260,7 @@ tap_action:
 > [!IMPORTANT]
 > In addition to the `weather_entity`, the card needs to know if it is day or night to render the correct lighting. You should configure a method for this so it looks right (e.g., `sun_entity`).
 >
-> [See how to configure Day / Night Logic here](#day--night-logic)
+> [Day / Night Logic](#day--night-logic)
 
 
 <details>
