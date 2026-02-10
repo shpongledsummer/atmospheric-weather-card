@@ -225,12 +225,6 @@ tap_action:
 
 <br>
 
-<details>
-  <summary><b>⚠️ Note for Linux/Nvidia users</b></summary>
-
-  Please verify that <b>Hardware Acceleration</b> is enabled in your browser. Linux browsers often default to software rendering which forces the CPU to handle animations intended for the GPU.
-</details>
-
 ---
 
 ### INSTALLATION
@@ -427,6 +421,12 @@ Each state sets a unique combination of particle type, count, cloud density, win
 ---
 
 ### PERFORMANCE
+
+<details>
+  <summary><b>⚠️ Note for Linux/Nvidia users</b></summary>
+
+  Please verify that <b>Hardware Acceleration</b> is enabled in your browser. Some Linux browsers default to software rendering which forces the CPU to handle animations intended for the GPU.
+</details>
 
 Rendering of the weather animations is handled entirely by the client browser using HTML5 Canvas. Server impact is limited to standard state updates.
 
