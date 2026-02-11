@@ -343,7 +343,7 @@ tap_action:
 
 ### STYLING THE CARD
 
-You can use these CSS variables within your theme or via `card-mod` to fine-tune the appearance. These are primarily used when `card_style: standalone` is active.
+In addition to the **[Layout & Appearance](#configuration)** settings detailed above, you can use these CSS variables within your theme or via `card-mod` to fine-tune the appearance. These are primarily used when `card_style: standalone` is active.
 
 | Variable | Default | Description |
 | :--- | :--- | :--- |
