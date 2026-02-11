@@ -114,7 +114,7 @@ cards:
 
 <br>
 
-### Immersive Mode *(Default)*
+### Immersive Mode
 
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/df6cd241-4a9e-4690-a99d-4cc90b861910" />
 
