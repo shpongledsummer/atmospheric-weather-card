@@ -351,6 +351,8 @@ You can use these CSS variables within your theme or via `card-mod` to fine-tune
 | `--awc-top-font-size` | `60px` | Font size of the temperature text. |
 | `--awc-bottom-font-size` | `28px` | Font size of the status/sensor text. |
 | `--awc-icon-size` | `1.2em` | Scaling factor for the bottom status icon. |
+| `--awc-text-day` | `#333333` | Text color for light backgrounds. |
+| `--awc-text-night` | `#ffffff` | Text color for dark backgrounds. |
 
 <br>
 
