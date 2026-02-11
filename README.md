@@ -346,10 +346,12 @@ You can use these CSS variables within your theme or via `card-mod` to fine-tune
 
 | Variable | Default | Description |
 | :--- | :--- | :--- |
+| `--awc-text-day` | `#FFFFFF` | Color of the main temperature text. |
+| `--awc-text-night` | `#FFFFFF` | Color of the bottom text and icon. |
 | `--awc-card-border-radius` | `12px` | Corner radius of the card container. |
 | `--awc-card-padding` | `16px` | Padding around the internal text elements. |
 | `--awc-top-font-size` | `60px` | Font size of the temperature text. |
-| `--awc-bottom-font-size` | `28px` | Font size of the status/sensor text. |
+| `--awc-bottom-font-size` | `28px` | Font size of the bottom text. |
 | `--awc-icon-size` | `1.2em` | Scaling factor for the bottom status icon. |
 
 <br>
