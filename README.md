@@ -17,6 +17,7 @@ https://github.com/user-attachments/assets/b7462f32-f193-4b5f-81c6-c6de321b8c42
 [Usage Modes](#usage-modes)<br>
 [Installation](#installation)<br>
 [Configuration](#configuration)<br>
+[Styling the Card](#styling-the-card)<br>
 [Day / Night Logic](#day--night-logic)<br>
 [Custom House Image](#custom-house-image)<br>
 [Smart Status Entity](#smart-status-entity)<br>
