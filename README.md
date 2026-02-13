@@ -384,7 +384,7 @@ To get the immersive look with your own home:
 
 1. **Take a reference photo** from a corner angle to capture depth.
 2. **Generate a 3D model image** using an AI image tool with a prompt like:
-   > Isometric view of a modern minimalist architectural model section from the outside on solid white background. [Describe your floors/rooms]. Materials are matte white and light wood only. No complex textures, studio lighting, very clean, simplified shapes.
+   > Isometric view of a modern minimalist architectural model section from the outside on solid white background. [Describe your floors/rooms]. Materials are matte white and light only. No complex textures, studio lighting, very clean, simplified shapes.
 3. **Remove the background** and save as a transparent PNG.
 4. **Create day and night variants** with adjusted lighting/colors.
 5. **Upload** to `config/www/images/` and reference as `/local/images/my-house-day.png`.
@@ -403,8 +403,6 @@ The status feature swaps the displayed image when an entity becomes active. Some
 | Lock | `lock.front_door` | `unlocked` |
 | Toggle | `input_boolean.party_mode` | `on` |
 | Presence | `zone.home` | `active` |
-
-When the entity returns to an inactive state, the card switches back to the default image.
 
 <br>
 
