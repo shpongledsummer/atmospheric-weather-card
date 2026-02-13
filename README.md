@@ -206,6 +206,7 @@ sun_moon_x_position: 100
 sun_moon_y_position: 100
 sun_entity: sun.sun
 moon_phase_entity: sensor.moon_phase
+css_mask_horizontal: false
 # Custom Images
 day: /local/images/dashboard/home-day.png
 night: /local/images/dashboard/home-night.png
