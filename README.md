@@ -309,6 +309,7 @@ tap_action:
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
+| `top_text_sensor` | `string` | — | Entity ID of a sensor to display at the top (defaults to Temperature). |
 | `bottom_text_sensor` | `string` | — | Entity ID of a sensor to display at the bottom (defaults to Wind Speed). |
 | `bottom_text_icon` | `string` | *Auto* | Force a specific icon (e.g. `mdi:home`). |
 | `disable_text` | `boolean` | `false` | If `true`, hides both the temperature and bottom text completely. |
