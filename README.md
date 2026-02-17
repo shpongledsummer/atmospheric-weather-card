@@ -122,7 +122,7 @@ cards:
 Renders with a fully transparent background so it blends seamlessly into your dashboard.
 
 > [!IMPORTANT]
-> Immersive mode is designed for themes that **automatically switch between light and dark.** You can sync the card to your system using the `theme_entity` option. [Day / Night Logic](#day--night-logic)
+> Immersive mode is designed for themes that **automatically switch between light and dark.** See [Day / Night Logic](#day--night-logic)
 
 <details>
 <summary><b>Example 1 — Header Integration</b></summary>
