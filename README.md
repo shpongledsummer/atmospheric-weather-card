@@ -121,6 +121,9 @@ cards:
 
 Renders with a fully transparent background so it blends seamlessly into your dashboard.
 
+> [!IMPORTANT]
+> **Immersive mode is designed for themes that automatically switch between light and dark. You can sync the card to your system using the `theme_entity` option. See [Day / Night Logic](#day--night-logic)
+
 <details>
 <summary><b>Example 1 — Header Integration</b></summary>
 <br>
@@ -220,10 +223,6 @@ tap_action:
 ```
 
 </details>
-
-
-> [!IMPORTANT]
-> **Immersive mode needs to match your dashboard theme to work correctly.** If you use a fixed theme (like dark mode all day), the card will still switch between light and dark based on the sun. This mismatch makes weather effects look broken. To fix this: use `theme_entity` if your theme automatically switches between light and dark, or use `mode: dark` or `mode: light` to force the card to match your fixed theme. See [Day / Night Logic](#day--night-logic)
 
 <br>
 
