@@ -366,10 +366,10 @@ The card determines whether to render a day or night scene using a 4-level prior
 
 | Priority | Source | Config Option | Logic |
 | :---: | :--- | :--- | :--- |
-| **1** | Manual override | `mode` | `dark`/`night` forces night. `light`/`day` forces day. |
-| **2** | Theme entity | `theme_entity` | Matches the entity state against night keywords (`dark`, `night`, `evening`, `on`, `true`, `below_horizon`). |
-| **3** | Sun entity | `sun_entity` | Checks if `sun.sun` is `below_horizon`. |
-| **4** | System dark mode | — | Falls back to the Home Assistant dark mode toggle in the sidebar. |
+| **1** | **Manual Override** | `mode` | Directly forces the look. Set to `dark`/`night` for a dark card or `light`/`day` for a light card. |
+| **2** | **Theme Entity** | `theme_entity` | Tracks a specific entity (e.g., a "Dark Mode" toggle). Activates dark mode if the state is `dark`, `night`, `evening`, `on`, `true`, or `below_horizon`. |
+| **3** | **Sun Entity** | `sun_entity` | Automatically switches based on the sun's position. Uses `below_horizon` to trigger the dark theme. |
+| **4** | **System Setting** | — | The final fallback. It simply matches your global Home Assistant dark mode toggle in the sidebar. |
 
 > [!NOTE]
 > For the "Standalone Mode", `sun_entity: sun.sun` is all you need. The `theme_entity` option is useful if you use the "Immersive Mode" with a dark/light theme that you want the card to follow instead of the sun. The `mode` option is meant for using "Immersive Mode" with a fixed theme (permanent dark or light dashboard background).
