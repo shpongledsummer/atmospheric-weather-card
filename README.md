@@ -341,9 +341,8 @@ tap_action:
 <br>
 
 > [!TIP]
-> **Play Weather God**
-> To test out how different weather visuals look, you can manually override the weather at any time by navigating to the **Developer Tools > States** tab in Home Assistant. Locate your weather entity (e.g., `weather.forecast_home`), click its name to open the state properties, and simply type a new value such as `lightning-rainy`, `snowy`, or `sunny` into the **State** field before clicking **Set State**.
-
+> **Play Weather God**<br>
+> To test out how different weather visuals look, you can manually override the weather at any time by navigating to the **Developer Tools > States** tab in Home Assistant.
 
 ---
 
