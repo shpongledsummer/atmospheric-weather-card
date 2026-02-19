@@ -376,7 +376,7 @@ The card determines whether to render a day or night scene using a 4-level prior
 | **4** | **System Setting** | — | The final fallback. It simply matches your global Home Assistant dark mode toggle in the sidebar. |
 
 > [!NOTE]
-> For the "Standalone Mode", `sun_entity: sun.sun` is all you need. The `theme_entity` option is useful if you use the "Immersive Mode" with a dark/light theme that you want the card to follow instead of the sun. The `mode` option is meant for using "Immersive Mode" with a fixed theme (permanent dark or light dashboard background).
+> For the "Standalone Mode", `sun_entity: sun.sun` is all you need. The `theme_entity` option is useful if you use the "Immersive Mode" with a dark/light theme that you want the card to follow instead of the sun. The `mode` option is meant for fixed themes (permanent dark or light dashboard background).
 
 <br>
 
