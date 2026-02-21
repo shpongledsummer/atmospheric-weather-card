@@ -1,3 +1,10 @@
+/**
+ * ATMOSPHERIC WEATHER CARD
+ * Version: 2.3
+ * * A custom Home Assistant card that renders animated weather effects.
+ * * https://github.com/shpongledsummer/atmospheric-weather-card
+ */
+
 console.info(
     "%c ATMOSPHERIC WEATHER CARD ",
     "color: white; font-weight: 700; background: linear-gradient(90deg, #355C7D 0%, #6C5B7B 50%, #C06C84 100%); padding: 6px 12px; border-radius: 6px; font-family: sans-serif; letter-spacing: 0.5px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);"
@@ -3696,3 +3703,4 @@ if (!customElements.get(CARD_NAME)) {
 } else {
     console.info(`%c ${CARD_NAME} already defined - skipping registration`, 'color: orange; font-weight: bold;');
 }
+
