@@ -274,7 +274,7 @@ tap_action:
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `card_style` | `string` | `immersive` | Set to `standalone` to enable the self-contained card with background and text. |
-| `card_height` | `number\|string` | `200px` | Card height. Numbers are treated as pixels (`110` → `110px`). |
+| `card_height` | `number\|string` | `110` | Card height. Numbers are treated as pixels (`110` → `110px`). |
 | `square` | `boolean` | `false` | Forces the card into a strict 1:1 aspect ratio. Useful for Grid layouts. |
 | `full_width` | `boolean` | `false` | Stretches the card edge-to-edge by removing side margins. |
 | `css_mask_vertical` | `boolean` | `true` | Toggles the top/bottom fade effect. Disable for full-height headers. |
