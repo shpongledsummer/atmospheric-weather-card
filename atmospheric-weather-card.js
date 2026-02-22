@@ -1,6 +1,6 @@
 /**
  * ATMOSPHERIC WEATHER CARD
- * Version: 2.3
+ * Version: 2.4
  * * A custom Home Assistant card that renders animated weather effects.
  * * https://github.com/shpongledsummer/atmospheric-weather-card
  */
@@ -56,16 +56,16 @@ const FALLBACK_WEATHER = Object.freeze({
  */
 const WEATHER_MAP = Object.freeze({
     'clear-night':      Object.freeze({ type: 'stars', count: 280, cloud: 4,  wind: 0.1, rays: false, atmosphere: 'night', stars: 420 }),
-    'cloudy':           Object.freeze({ type: 'cloud', count: 0,   cloud: 26, wind: 0.3, dark: false, rays: false, atmosphere: 'overcast', stars: 120, scale: 1.2 }),
-    'fog':              Object.freeze({ type: 'fog',   count: 0,   cloud: 18, wind: 0.2, rays: false, atmosphere: 'mist', foggy: true, stars: 125, scale: 1.5 }),
-    'hail':             Object.freeze({ type: 'hail',  count: 150, cloud: 18, wind: 0.8, dark: true, rays: false, atmosphere: 'storm', stars: 50, scale: 1.3 }),
-    'lightning':        Object.freeze({ type: 'rain',  count: 200, cloud: 18, wind: 2.0, thunder: true, dark: true, rays: false, atmosphere: 'storm', stars: 20, scale: 1.0 }),
-    'lightning-rainy':  Object.freeze({ type: 'rain',  count: 150, cloud: 14, wind: 2.0, thunder: true, dark: true, rays: false, atmosphere: 'storm', stars: 20, scale: 1.0 }),
+    'cloudy':           Object.freeze({ type: 'cloud', count: 0,   cloud: 24, wind: 0.3, dark: false, rays: false, atmosphere: 'overcast', stars: 120, scale: 1.2 }),
+    'fog':              Object.freeze({ type: 'fog',   count: 0,   cloud: 18, wind: 0.2, rays: false, atmosphere: 'mist', foggy: true, stars: 125, scale: 1.2 }),
+    'hail':             Object.freeze({ type: 'hail',  count: 150, cloud: 17, wind: 0.8, dark: true, rays: false, atmosphere: 'storm', stars: 50, scale: 1.2 }),
+    'lightning':        Object.freeze({ type: 'rain',  count: 200, cloud: 18, wind: 2.0, thunder: true, dark: true, rays: false, atmosphere: 'storm', stars: 50, scale: 1.0 }),
+    'lightning-rainy':  Object.freeze({ type: 'rain',  count: 150, cloud: 14, wind: 2.0, thunder: true, dark: true, rays: false, atmosphere: 'storm', stars: 50, scale: 1.0 }),
     'pouring':          Object.freeze({ type: 'rain',  count: 220, cloud: 16, wind: 0.3, dark: true, rays: false, atmosphere: 'storm', stars: 40, scale: 1.2 }),
     'rainy':            Object.freeze({ type: 'rain',  count: 120, cloud: 22, wind: 0.6, rays: false, atmosphere: 'rain', stars: 60, scale: 1.3 }),
-    'snowy':            Object.freeze({ type: 'snow',  count: 50, cloud: 20, wind: 0.3, rays: false, atmosphere: 'snow', stars: 60, scale: 1.3 }),
+    'snowy':            Object.freeze({ type: 'snow',  count: 60, cloud: 20, wind: 0.3, rays: false, atmosphere: 'snow', stars: 90, scale: 1.3 }),
     'snowy-rainy':      Object.freeze({ type: 'mix',   count: 100, cloud: 18, wind: 0.4, rays: false, atmosphere: 'snow', stars: 125, scale: 1.3 }),
-    'partlycloudy':     Object.freeze({ type: 'cloud', count: 0,   cloud: 18, wind: 0.2, rays: true, atmosphere: 'fair', stars: 125, scale: 1.0 }),
+    'partlycloudy':     Object.freeze({ type: 'cloud', count: 0,   cloud: 16, wind: 0.2, rays: true, atmosphere: 'fair', stars: 125, scale: 1.0 }),
     'windy':            Object.freeze({ type: 'cloud', count: 0,   cloud: 18, wind: 2.2, leaves: true, rays: false, atmosphere: 'windy', stars: 125, scale: 1.2 }),
     'windy-variant':    Object.freeze({ type: 'cloud', count: 0,   cloud: 15, wind: 2.4, dark: false, leaves: true, rays: false, atmosphere: 'windy', stars: 125, scale: 1.2 }),
     'sunny':            Object.freeze({ type: 'sun',   count: 0,   cloud: 5,  wind: 0.1, rays: true, atmosphere: 'clear', stars: 0 }),
@@ -94,6 +94,43 @@ const LIMITS = Object.freeze({
     MAX_DUST: 40,
     MAX_SUN_CLOUDS: 5
 });
+
+// ============================================================================
+// GEOMETRY TABLES — replaces inline magic-number pixel offsets
+// ============================================================================
+
+/**
+ * Moon crater definitions: each entry is [dx, dy, rx, ry, rotation].
+ * Two groups: maria (large dark seas) and detail (small impact craters).
+ * Coordinates are offsets from moon center.
+ */
+const MOON_CRATERS = Object.freeze({
+    maria: Object.freeze([
+        Object.freeze({ dx: -9, dy:  2, rx: 7, ry: 9, rot:  0.2 }),
+        Object.freeze({ dx:  8, dy: -6, rx: 6, ry: 4, rot: -0.3 }),
+        Object.freeze({ dx: -2, dy: 10, rx: 5, ry: 3, rot:  0.1 })
+    ]),
+    mariaInner: Object.freeze([
+        Object.freeze({ dx: -9, dy:  2, rx: 4, ry: 6, rot:  0.2 }),
+        Object.freeze({ dx:  8, dy: -6, rx: 3, ry: 2, rot: -0.3 }),
+        Object.freeze({ dx: -2, dy: 10, rx: 2.5, ry: 1.5, rot: 0.1 })
+    ]),
+    detail: Object.freeze([
+        Object.freeze({ dx:  6, dy:  5, r: 1.2 }),
+        Object.freeze({ dx: -5, dy: -8, r: 1.0 })
+    ])
+});
+
+/**
+ * Plane silhouette path segments (relative to plane origin, unscaled).
+ * Each segment is [fromX, fromY, toX, toY] — drawn as stroke lines.
+ * `dir` multiplier is applied at draw time to the X coordinates.
+ */
+const PLANE_PATH = Object.freeze([
+    Object.freeze([  6, 0, -6,  0 ]),   // fuselage
+    Object.freeze([ -5, 0, -8, -4 ]),   // tail fin
+    Object.freeze([  1, 0, -2,  2 ])    // wing stub
+]);
 
 // Performance tuning
 const PERFORMANCE_CONFIG = Object.freeze({
@@ -126,7 +163,7 @@ class CloudShapeGenerator {
             const baseRad = isStorm ? 55 : 36;
             const radVariation = isStorm ? 20 : 14;
             const rad = baseRad + seededRandom() * radVariation - centerDist * 15;
-            const verticalShade = 0.4 + (1 - (dy + baseHeight/2) / baseHeight) * 0.4;
+            const verticalShade = 0.4 + (1 - (dy + baseHeight / 2) / baseHeight) * 0.4;
             const shade = verticalShade + seededRandom() * 0.2;
             const softness = 0.3 + seededRandom() * 0.4;
             const squash = 0.75 + seededRandom() * 0.25;
@@ -135,9 +172,7 @@ class CloudShapeGenerator {
                 dx, dy,
                 rad: Math.max(15, rad),
                 shade: Math.min(1, shade),
-                softness,
-                squash,
-                rotation,
+                softness, squash, rotation,
                 depth: seededRandom()
             });
         }
@@ -228,51 +263,56 @@ class CloudShapeGenerator {
         const seededRandom = this._seededRandom(seed);
 
         if (variety === 'cumulus') {
-            const mainPuffCount = 14 + Math.floor(seededRandom() * 6);
-            const baseWidth = 110;
-            const baseHeight = 48;
+            const baseWidth   = 110;
+            const towerFactor = 0.5 + seededRandom() * 0.9;
+            const asymShift   = (seededRandom() - 0.5) * 22;
 
-            for (let i = 0; i < mainPuffCount; i++) {
-                const angle = (i / mainPuffCount) * Math.PI * 2 + seededRandom() * 0.6;
-                const dist = seededRandom() * 0.30 + 0.05;
-                const dx = Math.cos(angle) * (baseWidth / 2) * dist;
-                const dy = Math.sin(angle) * (baseHeight / 2) * dist * 0.5;
+            const baseCount = 5 + Math.floor(seededRandom() * 3);
+            for (let i = 0; i < baseCount; i++) {
+                const t = baseCount > 1 ? (i / (baseCount - 1)) - 0.5 : 0;
                 puffs.push({
-                    dx,
-                    dy: dy - 5,
-                    rad: 18 + seededRandom() * 16,
-                    shade: 0.6 + seededRandom() * 0.35,
-                    softness: 0.25 + seededRandom() * 0.25,
-                    squash: 0.85 + seededRandom() * 0.15,
-                    rotation: (seededRandom() - 0.5) * 0.5,
-                    depth: seededRandom() * 0.6
+                    dx: t * baseWidth * 0.88 + (seededRandom() - 0.5) * 15,
+                    dy: 6 + seededRandom() * 10,
+                    rad: 20 + seededRandom() * 18,
+                    shade: 0.38 + seededRandom() * 0.20,
+                    softness: 0.35, squash: 1.0, rotation: 0,
+                    depth: seededRandom() * 0.25
                 });
             }
 
-            for (let i = 0; i < 7; i++) {
-                const angle = Math.PI * 0.15 + seededRandom() * Math.PI * 0.7;
+            const bodyCount = 11 + Math.floor(seededRandom() * 6);
+            for (let i = 0; i < bodyCount; i++) {
                 puffs.push({
-                    dx: Math.cos(angle) * (baseWidth / 2) * (0.3 + seededRandom() * 0.35),
-                    dy: -baseHeight / 2 * (0.25 + seededRandom() * 0.45),
-                    rad: 14 + seededRandom() * 12,
-                    shade: 0.75 + seededRandom() * 0.25,
-                    softness: 0.2 + seededRandom() * 0.2,
-                    squash: 0.9,
-                    rotation: (seededRandom() - 0.5) * 1.0,
-                    depth: 0.7 + seededRandom() * 0.3
+                    dx: (seededRandom() - 0.5) * baseWidth * (0.50 + seededRandom() * 0.40) + asymShift * 0.35,
+                    dy: -(20 + seededRandom() * 58),
+                    rad: 16 + seededRandom() * 18,
+                    shade: 0.62 + seededRandom() * 0.28,
+                    softness: 0.28, squash: 1.0, rotation: 0,
+                    depth: 0.22 + seededRandom() * 0.48
+                });
+            }
+
+            const crownCount = 5 + Math.floor(seededRandom() * 3 + towerFactor * 2);
+            for (let i = 0; i < crownCount; i++) {
+                puffs.push({
+                    dx: (seededRandom() - 0.5) * baseWidth * 0.42 + asymShift * 0.60,
+                    dy: -(82 + towerFactor * 54 + seededRandom() * 52),
+                    rad: 12 + seededRandom() * 16,
+                    shade: 0.80 + seededRandom() * 0.20,
+                    softness: 0.22, squash: 1.0, rotation: 0,
+                    depth: 0.68 + seededRandom() * 0.32
                 });
             }
 
             for (let i = 0; i < 5; i++) {
+                const a = seededRandom() * Math.PI * 2;
                 puffs.push({
-                    dx: (seededRandom() - 0.5) * baseWidth * 0.7,
-                    dy: baseHeight / 2 * 0.3 + seededRandom() * 5,
-                    rad: 16 + seededRandom() * 12,
-                    shade: 0.4 + seededRandom() * 0.2,
-                    softness: 0.35 + seededRandom() * 0.25,
-                    squash: 0.6 + seededRandom() * 0.2,
-                    rotation: 0,
-                    depth: 0.2 + seededRandom() * 0.3
+                    dx: Math.cos(a) * (baseWidth * 0.44 + seededRandom() * 14),
+                    dy: -(28 + seededRandom() * 48),
+                    rad: 10 + seededRandom() * 13,
+                    shade: 0.60 + seededRandom() * 0.28,
+                    softness: 0.38, squash: 1.0, rotation: 0,
+                    depth: seededRandom()
                 });
             }
         } else if (variety === 'stratus') {
@@ -382,6 +422,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         // --- Weather State ---
         this._params = WEATHER_MAP['default'];
         this._flashOpacity = 0;
+        this._flashHold = 0;
         // Two independent axes:
         //   _isTimeNight → Content axis: sun below horizon → draw stars/moon
         //   _isThemeDark → Contrast axis: dark background → use glowing colors
@@ -390,6 +431,10 @@ class AtmosphericWeatherCard extends HTMLElement {
         this._lastState = null;
         this._stateInitialized = false;
         this._hasReceivedFirstHass = false;
+
+        // Pre-computed render state (populated by _buildRenderState)
+        this._rs = null;
+        this._celestialSize = null;
 
         // --- Moon Phase ---
         this._moonPhaseState = 'full_moon';
@@ -541,7 +586,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                 z-index: -1;
                 pointer-events: none;
                 background-image: radial-gradient(
-                    circle var(--c-r, 30cqmax) at var(--c-x, 60%) var(--c-y, 40%),
+                    circle var(--c-r, 10cqmax) at var(--c-x, 60%) var(--c-y, 40%),
                     rgba(var(--g-rgb, 255,240,190), 0.80) 0%,
                     rgba(var(--g-rgb, 255,240,190), 0.55) 35%,
                     rgba(var(--g-rgb, 255,240,190), 0.18) 62%,
@@ -569,14 +614,14 @@ class AtmosphericWeatherCard extends HTMLElement {
             }
 
             /* Day backgrounds */
-            #card-root.standalone.scheme-day                      { background-image: radial-gradient(ellipse at top, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.10) 40%, transparent 70%), linear-gradient(160deg, #5CA0D3 0%, #C5E0F5 100%); }
-            #card-root.standalone.scheme-day.weather-exceptional  { background-image: radial-gradient(ellipse at top, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.15) 40%, transparent 70%), linear-gradient(160deg, #4a8dbd 0%, #b3d9f2 100%) !important; }
-            #card-root.standalone.scheme-day.weather-partly       { background-image: radial-gradient(ellipse at top, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.10) 45%, transparent 75%), linear-gradient(160deg, #74AEDF 0%, #DCEEFA 100%) !important; }
-            #card-root.standalone.scheme-day.weather-overcast     { background-image: radial-gradient(ellipse at top, rgba(240,245,255,0.50) 0%, rgba(240,245,255,0.15) 50%, transparent 80%), linear-gradient(160deg, #ccdcf9 0%, #def6ff 100%) !important; }
-            #card-root.standalone.scheme-day.weather-rainy        { background-image: radial-gradient(ellipse at top, rgba(210,225,240,0.45) 0%, rgba(210,225,240,0.10) 45%, transparent 75%), linear-gradient(160deg, #F0F6F8 0%, #B8C7D3 100%) !important; }
-            #card-root.standalone.scheme-day.weather-storm        { background-image: radial-gradient(ellipse at top, rgba(180,195,210,0.40) 0%, rgba(180,195,210,0.08) 45%, transparent 75%), linear-gradient(160deg, #D8E5E0 0%, #A8C0BC 100%) !important; }
-            #card-root.standalone.scheme-day.weather-snow         { background-image: radial-gradient(ellipse at top, rgba(255,255,255,0.60) 0%, rgba(255,255,255,0.20) 45%, transparent 75%), linear-gradient(160deg, #ffffff 0%, #d6e1f0 100%) !important; }
-            #card-root.standalone.scheme-day.weather-fog          { background-image: radial-gradient(ellipse at top, rgba(245,250,255,0.70) 0%, rgba(245,250,255,0.25) 50%, transparent 85%), linear-gradient(160deg, #f2f4f8 0%, #f8faff 100%) !important; }
+            #card-root.standalone.scheme-day                      { background-image: radial-gradient(ellipse at top, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.10) 40%, transparent 70%), linear-gradient(160deg, #4A95D6 0%, #89C4F4 50%, #D8F0FE 100%); }
+            #card-root.standalone.scheme-day.weather-exceptional  { background-image: radial-gradient(ellipse at top, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.15) 40%, transparent 70%), linear-gradient(160deg, #3B82C4 0%, #7CB9E8 50%, #CDE8FD 100%) !important; }
+            #card-root.standalone.scheme-day.weather-partly       { background-image: radial-gradient(ellipse at top, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.10) 45%, transparent 75%), linear-gradient(160deg, #66A5D9 0%, #9BCBEE 50%, #E6F4FB 100%) !important; }
+            #card-root.standalone.scheme-day.weather-overcast     { background-image: radial-gradient(ellipse at top, rgba(225,230,235,0.28) 0%, rgba(225,230,235,0.06) 50%, transparent 80%), linear-gradient(160deg, #B8C7D6 0%, #D6DEE9 50%, #F0F4F8 100%) !important; }
+            #card-root.standalone.scheme-day.weather-rainy        { background-image: radial-gradient(ellipse at top, rgba(208,223,238,0.45) 0%, rgba(208,223,238,0.10) 45%, transparent 75%), linear-gradient(160deg, #F2F7F9 0%, #DDE9EE 50%, #C7D4DF 100%) !important; }
+			#card-root.standalone.scheme-day.weather-storm        { background-image: radial-gradient(ellipse at top, rgba(180,195,210,0.40) 0%, rgba(180,195,210,0.08) 45%, transparent 75%), linear-gradient(160deg, #92A5B0 0%, #B3C5CE 50%, #DDEBEE 100%) !important; }
+			#card-root.standalone.scheme-day.weather-snow         { background-image: radial-gradient(ellipse at top, rgba(240,245,250,0.45) 0%, rgba(240,245,250,0.15) 45%, transparent 75%), linear-gradient(160deg, #B5C8DA 0%, #D8E5F0 50%, #F2F7FB 100%) !important; }
+            #card-root.standalone.scheme-day.weather-fog          { background-image: radial-gradient(ellipse at top, rgba(245,250,255,0.70) 0%, rgba(245,250,255,0.25) 50%, transparent 85%), linear-gradient(160deg, #D9E3ED 0%, #EDF2F7 50%, #FDFEFF 100%) !important; }
 			
 			/* Night backgrounds */
             #card-root.standalone.scheme-night                    { background: radial-gradient(ellipse at top, rgba(160,190,255,0.12) 0%, rgba(160,190,255,0.02) 40%, transparent 70%), linear-gradient(160deg, #000000 40%, #080c18 100%); }
@@ -734,6 +779,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         this._fgClouds = [];
         this._stars = [];
         this._bolts = [];
+        this._flashHold = 0;
         this._fogBanks = [];
         this._leaves = [];
         this._shootingStars = [];
@@ -775,16 +821,28 @@ class AtmosphericWeatherCard extends HTMLElement {
             img.style.transform = '';
 
             const marginVar = 'calc(var(--ha-view-sections-narrow-column-gap, var(--ha-card-margin, 16px)) * 1)';
-            if (align.includes('left')) {
+            const isCenterH = align === 'center' || align.includes('-center') ||
+                               (!align.includes('left') && !align.includes('right') && align === 'center');
+            const isCenterV = align.includes('center') && !align.includes('left') && !align.includes('right');
+            const isLeft    = align.includes('left');
+            const isBottom  = align.includes('bottom');
+
+            if (isLeft) {
                 img.style.left = marginVar; img.style.right = 'auto';
+            } else if (align === 'center' || align === 'top-center' || align === 'bottom-center' || align === 'center-left' || align === 'center-right') {
+                img.style.left = '50%'; img.style.right = 'auto';
+                img.style.transform = 'translateX(-50%)';
             } else {
                 img.style.right = marginVar; img.style.left = 'auto';
             }
 
-            if (align.includes('bottom')) {
+            if (isBottom) {
                 img.style.bottom = '0'; img.style.top = 'auto';
-            } else if (align.includes('center')) {
-                img.style.top = '50%'; img.style.transform = 'translateY(-50%)';
+            } else if (align === 'center') {
+                img.style.top = '50%';
+                img.style.transform = 'translateX(-50%) translateY(-50%)';
+            } else if (align.includes('center') && !align.includes('top') && !align.includes('bottom')) {
+                img.style.top = '50%'; img.style.transform = 'translateX(-50%) translateY(-50%)';
             } else {
                 img.style.top = '0'; img.style.bottom = 'auto';
             }
@@ -795,6 +853,12 @@ class AtmosphericWeatherCard extends HTMLElement {
         root.classList.toggle('no-mask-h', config.css_mask_horizontal === false);
 
         this._hasStatusFeature = !!(config.status_entity && (config.status_image_day || config.status_image_night));
+
+        // Unified celestial body size: when sun_moon_size is set, all celestial
+        // bodies (sun disc, moon disc) use this diameter in pixels.
+        // When null, each body keeps its natural default size.
+        const csz = config.sun_moon_size != null ? parseInt(config.sun_moon_size, 10) : null;
+        this._celestialSize = (csz && csz > 0) ? csz : null;
     }
 
     // ========================================================================
@@ -846,11 +910,11 @@ class AtmosphericWeatherCard extends HTMLElement {
             this._moonPhaseConfig = MOON_PHASES[moonEntity.state] || MOON_PHASES['full_moon'];
         }
 
-        // 4. Day/Night & Theme resolution — two independent axes
-        //    isTimeNight = Is the sun actually below the horizon? (Content: stars vs sun)
-        //    isThemeDark = Is the background dark?               (Contrast: glow vs ink)
-        const isTimeNight = this._resolveTimeNight(sunEntity, themeEntity);
-        const isThemeDark = this._resolveThemeDark(themeEntity, sunEntity, sysDark);
+        // 4. Day/Night & Theme resolution — two independent axes + image axis
+        //    All three computed in a single pass over entities.
+        const axes = this._resolveAxes(sunEntity, themeEntity, sysDark);
+        const isTimeNight = axes.isTimeNight;
+        const isThemeDark = axes.isThemeDark;
         const hasNightChanged = this._isTimeNight !== isTimeNight || this._isThemeDark !== isThemeDark;
 
         this._isTimeNight = isTimeNight;
@@ -874,7 +938,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         const windSpeed = typeof windSpeedRaw === 'number' ? windSpeedRaw : parseFloat(windSpeedRaw) || 0;
         this._windSpeed = Math.min(Math.max(windSpeed / 10, 0), 2);
 
-        const imageNight = this._resolveImageNight(themeEntity, sunEntity, sysDark);
+        const imageNight = axes.isImageNight;
         this._updateImage(hass, imageNight);
 
         // 7. First load gate
@@ -884,6 +948,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             this._lastState = weatherState;
             this._params = newParams;
             this._stateInitialized = true;
+            this._buildRenderState();
             this._tryInitialize();
             return;
         }
@@ -892,57 +957,261 @@ class AtmosphericWeatherCard extends HTMLElement {
         this._handleWeatherChange(weatherState, newParams, hasNightChanged);
     }
 
-    // Image axis: Original combined resolution for day/night image switching.
-    // Priority: YAML forced mode → Theme Entity → Sun Entity → System Dark
-    _resolveImageNight(themeEntity, sunEntity, sysDark) {
-        if (this._config.mode) {
-            const m = this._config.mode.toLowerCase();
-            if (m === 'dark' || m === 'night') return true;
-            if (m === 'light' || m === 'day') return false;
-        }
-        if (themeEntity && !['unavailable', 'unknown'].includes(themeEntity.state)) {
-            return NIGHT_MODES.includes(themeEntity.state.toLowerCase());
-        }
-        if (sunEntity) {
-            const state = sunEntity.state.toLowerCase();
-            return state === 'below_horizon' || NIGHT_MODES.includes(state);
-        }
-        return !!sysDark;
+    // ========================================================================
+    // UNIFIED STATE AXIS RESOLUTION
+    // ========================================================================
+    // Replaces the three WET methods (_resolveTimeNight, _resolveThemeDark,
+    // _resolveImageNight) with a single pass that evaluates entities once.
+    //
+    // Returns: { isTimeNight, isThemeDark, isImageNight }
+    //
+    // The three axes share entity reads but differ in priority order:
+    //   Time:  mode('night'/'day') → sun → theme → false
+    //   Theme: mode('dark'/'light') → theme → sun → sysDark
+    //   Image: mode('dark'|'night' / 'light'|'day') → theme → sun → sysDark
+    _resolveAxes(sunEntity, themeEntity, sysDark) {
+        // 'theme' is the canonical config key; 'mode' kept as legacy fallback
+        const modeRaw = this._config.theme || this._config.mode;
+        const mode = modeRaw ? modeRaw.toLowerCase() : null;
+
+        // Pre-compute shared entity booleans exactly once
+        const themeValid = themeEntity &&
+            themeEntity.state !== 'unavailable' &&
+            themeEntity.state !== 'unknown';
+        const themeIsNight = themeValid &&
+            NIGHT_MODES.includes(themeEntity.state.toLowerCase());
+
+        const sunState = sunEntity ? sunEntity.state.toLowerCase() : null;
+        const sunIsBelowHorizon = sunState === 'below_horizon';
+        const sunIsNight = sunIsBelowHorizon || (sunState !== null && NIGHT_MODES.includes(sunState));
+
+        // --- Time axis: Is the sun below the horizon? ---
+        // Priority: YAML forced mode → Sun Entity → Theme Entity hint → false
+        let isTimeNight;
+        if      (mode === 'night') isTimeNight = true;
+        else if (mode === 'day')   isTimeNight = false;
+        else if (sunEntity)        isTimeNight = sunIsBelowHorizon;
+        else if (themeValid)       isTimeNight = themeIsNight;
+        else                       isTimeNight = false;
+
+        // --- Theme axis: Is the background dark? ---
+        // Priority: YAML forced mode → Theme Entity → Sun Entity → System Dark
+        let isThemeDark;
+        if      (mode === 'dark')  isThemeDark = true;
+        else if (mode === 'light') isThemeDark = false;
+        else if (themeValid)       isThemeDark = themeIsNight;
+        else if (sunEntity)        isThemeDark = sunIsNight;
+        else                       isThemeDark = !!sysDark;
+
+        // --- Image axis: day/night image switching ---
+        // Priority: YAML forced mode → Theme Entity → Sun Entity → System Dark
+        let isImageNight;
+        if      (mode === 'dark' || mode === 'night') isImageNight = true;
+        else if (mode === 'light' || mode === 'day')  isImageNight = false;
+        else if (themeValid)                          isImageNight = themeIsNight;
+        else if (sunEntity)                           isImageNight = sunIsNight;
+        else                                          isImageNight = !!sysDark;
+
+        return { isTimeNight, isThemeDark, isImageNight };
     }
 
-    // Time axis: Is the sun below the horizon?
-    // Priority: YAML forced mode → Sun Entity → Theme Entity hint → fallback day
-    _resolveTimeNight(sunEntity, themeEntity) {
-        if (this._config.mode) {
-            const m = this._config.mode.toLowerCase();
-            if (m === 'night') return true;
-            if (m === 'day') return false;
+    // ========================================================================
+    // PRE-COMPUTED RENDER STATE
+    // ========================================================================
+    // Built once per weather/theme change. The render loop reads flat values
+    // from this._rs instead of branching on strings every frame.
+    _buildRenderState() {
+        const p = this._params;
+        const isDark  = this._isThemeDark;
+        const isNight = this._isTimeNight;
+        const isLight = !isDark; // === this._isLightBackground
+        const type    = p?.type || 'none';
+        const atm     = p?.atmosphere || '';
+        const state   = (this._lastState || '').toLowerCase();
+
+        // --- Weather classification flags ---
+        const isStormy = !!(p?.thunder) ||
+            type === 'lightning' || type === 'lightning-rainy' || type === 'pouring';
+        const isBadWeatherForPlanes =
+            type === 'rain' || type === 'hail' || type === 'lightning' ||
+            type === 'pouring' || type === 'snowy' || type === 'fog';
+        const isBadWeatherForComets =
+            type === 'rain' || type === 'hail' || type === 'lightning' ||
+            type === 'pouring' || type === 'snowy' || type === 'snowy-rainy';
+        const isSevereWeather = !!(p?.thunder) || type === 'hail' || type === 'pouring';
+
+        // --- Visibility flags (replace per-frame _shouldShowSun / _shouldShowCloudySun) ---
+        const goodWeather = state === 'sunny' || state === 'partlycloudy' ||
+                            state === 'clear-night' || state === 'exceptional';
+        const showSun = !isNight && goodWeather;
+
+        let showCloudySun = false;
+        if (!(isNight && isDark)) {
+            if (!(isDark && state === 'cloudy')) {
+                const isBad = !!(p?.dark) ||
+                    type === 'rain' || type === 'hail' || type === 'lightning' ||
+                    type === 'pouring' || type === 'snowy' || type === 'snowy-rainy';
+                const isOvercastType = state === 'cloudy' || state === 'windy' ||
+                                       state === 'windy-variant' || state === 'fog';
+                showCloudySun = isOvercastType && !isBad;
+            }
         }
-        if (sunEntity) {
-            return sunEntity.state.toLowerCase() === 'below_horizon';
+
+        // --- Rain color base ---
+        const rainRgb = isLight ? '85, 95, 110' : '210, 225, 255';
+
+        // --- Star rendering mode ---
+        //   'glow'   = bright stars on dark bg (existing dark theme night)
+        //   'golden' = warm golden stars on light immersive bg (new)
+        //   'hidden' = no stars (day, or standalone light night)
+        const isStandalone = this._config.card_style === 'standalone';
+        let starMode = 'hidden';
+        if (isNight) {
+            if (isDark) {
+                starMode = 'glow';
+            } else if (!isStandalone) {
+                starMode = 'golden';
+            }
         }
-        if (themeEntity && !['unavailable', 'unknown'].includes(themeEntity.state)) {
-            return NIGHT_MODES.includes(themeEntity.state.toLowerCase());
-        }
-        return false;
+
+        // --- Cloud palette: massive if/else tree evaluated once ---
+        const cp = this._computeCloudPalette(isDark, isNight, isLight, p, type, atm);
+
+        // --- Cloud global opacity ---
+        const cloudGlobalOp = isDark ? 0.64 : 0.85;
+
+        this._rs = {
+            isStormy,
+            isBadWeatherForPlanes,
+            isBadWeatherForComets,
+            isSevereWeather,
+            showSun,
+            showCloudySun,
+            rainRgb,
+            cloudGlobalOp,
+            starMode,
+            cp  // cloud palette
+        };
     }
 
-    // Theme axis: Is the background dark?
-	_resolveThemeDark(themeEntity, sunEntity, sysDark) {
-		if (this._config.mode) {
-			const m = this._config.mode.toLowerCase();
-			if (m === 'dark') return true;
-			if (m === 'light') return false;
-		}
-		if (themeEntity && !['unavailable', 'unknown'].includes(themeEntity.state)) {
-			return NIGHT_MODES.includes(themeEntity.state.toLowerCase());
-		}
-		if (sunEntity) {
-			const state = sunEntity.state.toLowerCase();
-			return state === 'below_horizon' || NIGHT_MODES.includes(state);
-		}
-		return !!sysDark;
-	}
+    /**
+     * Computes the cloud rendering color palette.
+     * Returns a flat object with lit/mid/shadow/flash RGB channels,
+     * ambient, highlightOffsetBase, hOffset, and per-puff modifier flags.
+     */
+    _computeCloudPalette(isDark, isNight, isLight, p, type, atm) {
+        // --- Flash colors (lightning sheet flash) ---
+        let flashLitR, flashLitG, flashLitB;
+        let flashMidR, flashMidG, flashMidB;
+        let flashShadowR, flashShadowG, flashShadowB;
+
+        if (isDark) {
+            flashLitR = 180; flashLitG = 200; flashLitB = 255;
+            flashMidR = 120; flashMidG = 145; flashMidB = 220;
+            flashShadowR = 60; flashShadowG = 75; flashShadowB = 160;
+        } else {
+            flashLitR = 255; flashLitG = 250; flashLitB = 255;
+            flashMidR = 240; flashMidG = 238; flashMidB = 250;
+            flashShadowR = 210; flashShadowG = 215; flashShadowB = 235;
+        }
+
+        // --- Base cloud colors ---
+        let litR, litG, litB;
+        let midR, midG, midB;
+        let shadowR, shadowG, shadowB;
+        let ambient;
+        let highlightOffsetBase;
+        let hOffset;
+
+        const darkWeatherTypes = ['lightning', 'lightning-rainy', 'pouring', 'rainy', 'hail', 'snowy', 'snowy-rainy'];
+        const badTypeForLight  = ['rain', 'rainy', 'hail', 'snowy-rainy', 'fog'];
+
+        if (isDark && isNight) {
+            litR=215; litG=225; litB=240;
+            midR=55;  midG=68;  midB=95;
+            shadowR=10; shadowG=16; shadowB=30;
+            ambient=0.75;
+            highlightOffsetBase = 0.65;
+            hOffset = 0.05;
+        } else if (isDark && !isNight && (p?.dark || p?.thunder || darkWeatherTypes.includes(type))) {
+            litR=110; litG=118; litB=135;
+            midR=38;  midG=43;  midB=58;
+            shadowR=12; shadowG=15; shadowB=22;
+            ambient=0.85;
+            highlightOffsetBase = 0.50;
+            hOffset = 0.05;
+        } else if (isDark && !isNight) {
+            litR=228; litG=238; litB=255;
+            midR=125; midG=138; midB=172;
+            shadowR=24; shadowG=29; shadowB=48;
+            ambient=0.82;
+            highlightOffsetBase = 0.55;
+            hOffset = 0.05;
+        } else if (p?.dark || ['rain', 'hail', 'fog', 'lightning', 'lightning-rainy', 'pouring', 'rainy', 'snowy-rainy'].includes(type) || p?.foggy) {
+            if (isLight) {
+                const isStorm = p?.thunder || ['lightning', 'lightning-rainy', 'pouring'].includes(type);
+                if (isStorm) {
+                    litR = 248; litG = 248; litB = 252;
+                    midR = 195; midG = 205; midB = 222;
+                    shadowR = 120; shadowG = 132; shadowB = 158;
+                    ambient = 0.92;
+                } else {
+                    litR = 255; litG = 255; litB = 255;
+                    midR = 210; midG = 218; midB = 228;
+                    shadowR = 155; shadowG = 166; shadowB = 190;
+                    ambient = 1.0;
+                }
+            } else {
+                const stormDarken = p?.thunder ? 10 : 0;
+                litR=145 - stormDarken; litG=158 - stormDarken; litB=182 - stormDarken;
+                midR=70 - stormDarken; midG=80 - stormDarken; midB=100 - stormDarken;
+                shadowR=20 - stormDarken; shadowG=25 - stormDarken; shadowB=35 - stormDarken;
+                ambient=0.90;
+            }
+            highlightOffsetBase = 0.75;
+            hOffset = 0.15;
+        } else if (isLight) {
+            const isFairWeather = atm === 'fair' || atm === 'clear';
+            const isOvercast    = atm === 'overcast' || atm === 'cloudy';
+            litR = 255; litG = 255; litB = 255;
+            if (isFairWeather) {
+                midR = 230; midG = 236; midB = 242;
+                shadowR = 180; shadowG = 190; shadowB = 210;
+            } else if (isOvercast) {
+                midR = 188; midG = 196; midB = 212;
+                shadowR = 128; shadowG = 140; shadowB = 166;
+            } else {
+                midR = 210; midG = 218; midB = 228;
+                shadowR = 163; shadowG = 175; shadowB = 200;
+            }
+            ambient = 1.0;
+            highlightOffsetBase = 0.75;
+            hOffset = 0.15;
+        }
+
+        // --- Per-puff modifier flags (constant for the frame) ---
+        const isRainyBoost = isLight && !isDark && (
+            badTypeForLight.includes(type) || p?.foggy
+        );
+        const isStormOverride = isRainyBoost && (
+            p?.thunder || type === 'lightning' || type === 'lightning-rainy' || type === 'pouring'
+        );
+        // On light bg, non-storm rainy clouds get opacity boost
+        const rainyOpacityMul = (isRainyBoost && !isStormOverride) ? 1.22 : 1.0;
+
+        return {
+            litR, litG, litB,
+            midR, midG, midB,
+            shadowR, shadowG, shadowB,
+            flashLitR, flashLitG, flashLitB,
+            flashMidR, flashMidG, flashMidB,
+            flashShadowR, flashShadowG, flashShadowB,
+            ambient,
+            highlightOffsetBase,
+            hOffset,
+            rainyOpacityMul
+        };
+    }
 
     _updateStandaloneStyles(isNight, newParams) {
         const root = this._elements.root;
@@ -954,9 +1223,16 @@ class AtmosphericWeatherCard extends HTMLElement {
         // HA dashboard background — same as the JS canvas glow does. Both work.
         // Default --g-op: 0 in CSS so nothing shows until JS fires.
         if (w > 0) {
+            const h = this._cachedDimensions.height / (this._cachedDimensions.dpr || 1);
             const celestial = this._getCelestialPosition(w);
             root.style.setProperty('--c-x', `${celestial.x}px`);
             root.style.setProperty('--c-y', `${celestial.y}px`);
+            if (h > 0) {
+                const dx = Math.max(celestial.x, w - celestial.x);
+                const dy = Math.max(celestial.y, h - celestial.y);
+                const minSafeRadius = Math.ceil(Math.sqrt(dx * dx + dy * dy) * 0.3);
+                root.style.setProperty('--c-r', `${minSafeRadius}px`);
+            }
         }
 
         if (this._isTimeNight) {
@@ -970,8 +1246,16 @@ class AtmosphericWeatherCard extends HTMLElement {
                 (atm === 'mist' || atm === 'fog')         ? 0.20 :
                 (atm === 'fair')                           ? 0.80 :
                 1.0; // clear/exceptional/night
-            const nightOp = (0.18 + illum * 0.28) * weatherFactor;
-            root.style.setProperty('--g-rgb', '190, 210, 255');
+            const nightOp = (0.20 + illum * 0.30) * weatherFactor;
+            const isStandalone = this._config.card_style === 'standalone';
+			const isImmersiveLight = !this._isThemeDark && !isStandalone;
+
+			// Moon glow color: respects moon_style config ('blue' default, 'yellow' for warm gold)
+			const moonStyle = (this._config.moon_style || 'blue').toLowerCase();
+			const moonRgb = isImmersiveLight
+				? (moonStyle === 'yellow' ? '255, 200, 50' : '100, 125, 175')
+				: (this._isLightBackground ? '218, 228, 255' : '190, 210, 255');
+            root.style.setProperty('--g-rgb', moonRgb);
             root.style.setProperty('--g-op', nightOp.toFixed(3));
         } else {
             // Sun glow — warm yellow/amber. These opacity values work WITHOUT
@@ -991,7 +1275,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
 
         // === STANDALONE-ONLY: scheme classes, background gradients, film grain ===
-        if (!this._config.card_style) {
+        if (this._config.card_style !== 'standalone') {
             if (this._prevStyleSig !== null) {
                 root.classList.remove(
                     'standalone', 'scheme-day', 'scheme-night',
@@ -1159,6 +1443,7 @@ class AtmosphericWeatherCard extends HTMLElement {
 
         if (typeChanged || stateChanged || hasNightChanged) {
             this._params = newParams;
+            this._buildRenderState();
             if (this.isConnected) {
                 setTimeout(() => {
                     this._initParticles();
@@ -1168,6 +1453,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             }
         } else {
             this._params = newParams;
+            this._buildRenderState();
         }
     }
 
@@ -1428,7 +1714,9 @@ class AtmosphericWeatherCard extends HTMLElement {
             const cssH = scaledHeight / dpr;
             const celestial = this._getCelestialPosition(cssW);
             
-            const glowRadius = cssH * 0.75;
+            const dx2 = Math.max(celestial.x, cssW - celestial.x);
+            const dy2 = Math.max(celestial.y, cssH - celestial.y);
+            const glowRadius = Math.ceil(Math.sqrt(dx2 * dx2 + dy2 * dy2) * 0.3);
             this._elements.root.style.setProperty('--c-x', `${celestial.x}px`);
             this._elements.root.style.setProperty('--c-y', `${celestial.y}px`);
             this._elements.root.style.setProperty('--c-r', `${glowRadius}px`);
@@ -1537,7 +1825,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             this._initSunClouds(w, h);
         }
 
-        const starCount = (this._isTimeNight && this._isThemeDark) ? (p.stars || 0) : 0;
+        const starCount = (this._rs && this._rs.starMode !== 'hidden') ? (p.stars || 0) : 0;
         if (starCount > 0) {
             this._initStars(w, h, starCount);
         }
@@ -1654,7 +1942,12 @@ class AtmosphericWeatherCard extends HTMLElement {
                     op: this._isLightBackground ? 0.35 + Math.random() * 0.35 : 0.25 + Math.random() * 0.35
                 });
             } else {
-                const flakeSize = (1.5 + Math.random() * 2.5) * z;
+                // Wide size variance: tiny specks to large soft flakes
+                const sizeRoll = Math.random();
+                let flakeSize;
+                if (sizeRoll < 0.25)      flakeSize = (0.5 + Math.random() * 0.7) * z;  // tiny specks
+                else if (sizeRoll < 0.65)  flakeSize = (1.5 + Math.random() * 1.5) * z;  // medium
+                else                        flakeSize = (2.8 + Math.random() * 2.7) * z;  // large soft
                 Object.assign(particle, {
                     speedY: (0.4 + Math.random() * 0.8) * z * (flakeSize / 3),
                     size: flakeSize,
@@ -1674,97 +1967,138 @@ class AtmosphericWeatherCard extends HTMLElement {
 
     _initClouds(w, h, p) {
         const isStandalone = this._config.card_style === 'standalone';
-        const heightLimit = isStandalone ? 0.75 : 0.5;
-        const totalClouds = p.cloud || 0;
+        const heightLimit  = isStandalone ? 0.75 : 0.55;
+        const totalClouds  = p.cloud || 0;
         if (totalClouds <= 0) return;
+        const configScale = p.scale || 1.0;
+        const isStorm     = p.dark;
+
+        // Spatial rejection: avoid stacking clouds at same position
+        const placed = [];
+        const tryPlace = (idealX, idealY, radius) => {
+            const minSep = radius * 0.8;
+            for (let attempt = 0; attempt < 5; attempt++) {
+                const tx = attempt === 0 ? idealX : idealX + (Math.random() - 0.5) * w * 0.25;
+                const ty = attempt === 0 ? idealY : idealY + (Math.random() - 0.5) * h * 0.12;
+                let ok = true;
+                for (let p = 0; p < placed.length; p++) {
+                    const dx = tx - placed[p].x, dy = ty - placed[p].y;
+                    const combined = minSep + placed[p].r * 0.5;
+                    if (dx * dx + dy * dy < combined * combined) { ok = false; break; }
+                }
+                if (ok) return { x: tx, y: ty };
+            }
+            return { x: idealX, y: idealY };
+        };
+
+        // Gap zones: 1-2 vertical columns kept clear for sky breathing room
+        const gapZones = [];
+        if (!isStorm && totalClouds >= 8) {
+            const numGaps = 1 + Math.floor(Math.random() * 2);
+            for (let g = 0; g < numGaps; g++) {
+                const center = 0.15 + Math.random() * 0.70;
+                const width = 0.10 + Math.random() * 0.12;
+                gapZones.push({ min: center - width / 2, max: center + width / 2 });
+            }
+        }
+
+        // Horizontal Y-gap: a clear band creating visible sky between cloud layers
+        const yGapCenter = h * (0.18 + Math.random() * 0.22);
+        const yGapHalf = h * (0.03 + Math.random() * 0.03);
+        const yGapMin = yGapCenter - yGapHalf;
+        const yGapMax = yGapCenter + yGapHalf;
 
         const fillerCount = Math.floor(totalClouds * 0.15);
         for (let i = 0; i < fillerCount; i++) {
             const seed = Math.random() * 10000;
-            const useStratus = i % 2 === 0;
-            const puffs = useStratus
-                ? CloudShapeGenerator.generateMixedPuffs(seed, 'stratus')
-                : CloudShapeGenerator.generateMixedPuffs(seed, 'cumulus');
             this._clouds.push({
                 x: Math.random() * w,
                 y: Math.random() * (h * heightLimit * 0.6),
-                scale: useStratus ? (0.35 + Math.random() * 0.25) : (0.3 + Math.random() * 0.2),
+                scale: 0.35 + Math.random() * 0.25,
                 speed: 0.002 + Math.random() * 0.002,
-                puffs,
-                cloudType: useStratus ? 'stratus' : 'cumulus',
-                layer: 0,
-                opacity: 0.4 + Math.random() * 0.2,
-                seed,
-                breathPhase: Math.random() * Math.PI * 2,
-                breathSpeed: 0.001,
-                flashIntensity: 0,
-                flashOriginX: 0,
-                flashOriginY: 0
+                puffs: CloudShapeGenerator.generateMixedPuffs(seed, 'stratus'),
+                cloudType: 'stratus', layer: 0,
+                opacity: 0.40 + Math.random() * 0.20,
+                seed, breathPhase: Math.random() * Math.PI * 2,
+                breathSpeed: 0.001, flashIntensity: 0,
+                flashOriginX: 0, flashOriginY: 0
             });
         }
 
-        const mainCount = totalClouds - fillerCount;
-        const configScale = p.scale || 1.0;
-        const isStorm = p.dark;
+        const mainCount  = totalClouds - fillerCount;
+        const shortCard  = Math.max(0, 1 - h / 200);
+        const scaleBoost = 1 + shortCard * 0.70;
+
+        const numAnchors = Math.max(2, Math.round(mainCount / 5));
+        const anchors = [];
+        for (let a = 0; a < numAnchors; a++) {
+            anchors.push(w * ((a + 0.5 + (Math.random() - 0.5) * 0.7) / numAnchors));
+        }
+        const anchorSpread = w * (0.55 + Math.random() * 0.30);
+
+        // Companion clouds buffer: thin stratus spawned behind larger clouds
+        const companions = [];
 
         for (let i = 0; i < mainCount; i++) {
             const layer = 1 + (i % 4);
-            const seed = Math.random() * 10000;
+            const seed  = Math.random() * 10000;
 
-            let puffs;
-            let type;
+            let pick    = Math.random() * anchors.length;
+            const anchor = anchors[Math.floor(pick)];
+            let xPos = anchor + (Math.random() - Math.random()) * anchorSpread * 0.5;
 
-            if (isStorm) {
-                type = 'storm';
-                puffs = CloudShapeGenerator.generateOrganicPuffs(true, seed);
-            } else {
-                // Atmosphere-aware cloud type distribution
-                let types;
-                if (p.atmosphere === 'fair' || p.atmosphere === 'clear') {
-                    types = [
-                        'cumulus', 'cumulus', 'cumulus', 'cumulus',
-                        'organic', 'organic', 'organic',
-                        'stratus', 'stratus', 'stratus'
-                    ];
-                } else if (p.atmosphere === 'overcast' || p.atmosphere === 'cloudy') {
-                    types = [
-                        'organic', 'organic', 'organic', 'organic',
-                        'cumulus', 'cumulus', 'cumulus', 'cumulus',
-                        'stratus', 'stratus'
-                    ];
-                } else if (p.atmosphere === 'windy') {
-                    types = [
-                        'stratus', 'stratus', 'stratus', 'stratus',
-                        'organic', 'organic', 'organic',
-                        'cumulus', 'cumulus', 'cumulus'
-                    ];
-                } else {
-                    types = [
-                        'organic', 'organic', 'organic',
-                        'cumulus', 'cumulus', 'cumulus', 'cumulus',
-                        'stratus', 'stratus', 'stratus'
-                    ];
-                }
-
-                type = types[Math.floor(Math.random() * types.length)];
-
-                if (type === 'stratus') {
-                    puffs = CloudShapeGenerator.generateMixedPuffs(seed, 'stratus');
-                } else if (type === 'organic') {
-                    puffs = CloudShapeGenerator.generateOrganicPuffs(false, seed);
-                } else {
-                    puffs = CloudShapeGenerator.generateMixedPuffs(seed, 'cumulus');
+            // Enforce gap zones
+            for (const gap of gapZones) {
+                const gMin = gap.min * w, gMax = gap.max * w;
+                if (xPos > gMin && xPos < gMax) {
+                    xPos = (xPos - gMin < gMax - xPos) ? gMin - 25 : gMax + 25;
                 }
             }
 
-            let scaleX = 1.0;
-            let scaleY = 1.0;
-            let radiusMod = 1.0;
+            let type;
+            if (isStorm) {
+                type = 'storm';
+            } else {
+                let types;
+                if (p.atmosphere === 'fair' || p.atmosphere === 'clear') {
+                    types = ['cumulus','cumulus','cumulus','cumulus','organic','organic','organic','stratus','stratus','stratus'];
+                } else if (p.atmosphere === 'overcast' || p.atmosphere === 'cloudy') {
+                    types = ['stratus','stratus','stratus','stratus','stratus','stratus','cumulus','cumulus','cumulus','organic','organic','organic'];
+                } else if (p.atmosphere === 'windy') {
+                    types = ['stratus','stratus','stratus','stratus','organic','organic','organic','cumulus','cumulus','cumulus'];
+                } else {
+                    types = ['organic','organic','organic','cumulus','cumulus','cumulus','cumulus','stratus','stratus','stratus'];
+                }
+                type = types[Math.floor(Math.random() * types.length)];
+            }
 
+            // Occasionally spawn cirrus wisps (10% chance for eligible layers)
+            if (!isStorm && layer <= 2 && Math.random() < 0.10 && totalClouds >= 10) {
+                type = 'cirrus';
+            }
+
+            let puffs;
+            if (type === 'storm') {
+                puffs = CloudShapeGenerator.generateOrganicPuffs(true, seed);
+            } else if (type === 'stratus') {
+                puffs = CloudShapeGenerator.generateMixedPuffs(seed, 'stratus');
+            } else if (type === 'cirrus') {
+                puffs = CloudShapeGenerator.generateMixedPuffs(seed, 'cirrus');
+            } else if (type === 'organic') {
+                puffs = CloudShapeGenerator.generateOrganicPuffs(false, seed);
+            } else {
+                puffs = CloudShapeGenerator.generateMixedPuffs(seed, 'cumulus');
+            }
+
+            let scaleX = 1.0, scaleY = 1.0, radiusMod = 1.0;
             if (type === 'stratus') {
                 scaleX = 1.98 + Math.random() * 0.9;
                 scaleY = 0.525 + Math.random() * 0.26;
                 radiusMod = 0.55;
+            } else if (type === 'cirrus') {
+                scaleX = 2.5 + Math.random() * 1.2;
+                scaleY = 0.3 + Math.random() * 0.15;
+                radiusMod = 0.6;
             } else if (type === 'organic' || type === 'storm') {
                 scaleX = 0.855 + Math.random() * 0.18;
                 scaleY = 0.945 + Math.random() * 0.21;
@@ -1785,39 +2119,81 @@ class AtmosphericWeatherCard extends HTMLElement {
 
             let cloudScale;
             const sizeRoll = Math.random();
-            if (sizeRoll < 0.20) {
-                cloudScale = (1.1 + Math.random() * 0.35) * configScale;
-            } else if (sizeRoll < 0.65) {
-                cloudScale = (0.7 + Math.random() * 0.35) * configScale;
-            } else {
-                cloudScale = (0.45 + Math.random() * 0.25) * configScale;
-            }
+            // Layer-correlated sizing: foreground clouds (layer 3-4) tend larger,
+            // background (layer 1-2) tend smaller. Creates natural depth perspective.
+            const layerSizeBias = 0.85 + layer * 0.05; // 0.90 at layer 1, 1.05 at layer 4
+            if (sizeRoll < 0.20)      cloudScale = (1.1  + Math.random() * 0.35) * configScale * scaleBoost * layerSizeBias;
+            else if (sizeRoll < 0.65) cloudScale = (0.7  + Math.random() * 0.35) * configScale * scaleBoost * layerSizeBias;
+            else                       cloudScale = (0.45 + Math.random() * 0.25) * configScale * scaleBoost * layerSizeBias;
 
             let yPos;
-            if (type === 'stratus') {
-                yPos = h * 0.05 + Math.random() * (h * 0.35);
+            if (type === 'cirrus') {
+                yPos = h * 0.02 + Math.random() * (h * 0.15);
+            } else if (type === 'stratus') {
+                yPos = h * 0.04 + Math.random() * (h * 0.30);
             } else if (type === 'cumulus') {
-                yPos = h * 0.10 + Math.random() * (h * (heightLimit - 0.10));
+                yPos = h * 0.08 + Math.random() * (h * (heightLimit - 0.08));
             } else {
-                yPos = h * 0.08 + Math.random() * (h * (heightLimit - 0.05));
+                yPos = h * 0.06 + Math.random() * (h * (heightLimit - 0.05));
+            }
+            yPos = Math.max(h * 0.02, yPos);
+
+            // Push clouds out of horizontal Y-gap for visible sky between layers
+            if (!isStorm && yPos > yGapMin && yPos < yGapMax) {
+                yPos = (yPos < yGapCenter) ? yGapMin - 5 : yGapMax + 5;
             }
 
+            // Spatial rejection: account for cloud type width.
+            // Stratus/cirrus are stretched 2-3x horizontally, so their visual footprint
+            // is much wider than cloudScale alone suggests.
+            const typeWidthFactor = (type === 'stratus' || type === 'cirrus') ? 1.8 : 1.0;
+            const vr = cloudScale * 40 * typeWidthFactor;
+            const pos = tryPlace(xPos, yPos, vr);
+            placed.push({ x: pos.x, y: pos.y, r: vr });
+
             this._clouds.push({
-                x: Math.random() * w,
-                y: yPos,
+                x: pos.x,
+                y: pos.y,
                 scale: cloudScale,
                 speed: (0.02 + Math.random() * 0.03) * (layer * 0.4 + 1),
-                puffs,
-                cloudType: type,
-                layer,
-                opacity: 1 - (layer * 0.08),
-                seed,
-                breathPhase: Math.random() * Math.PI * 2,
+                puffs, cloudType: type, layer,
+                opacity: 1 - (layer * 0.12),
+                seed, breathPhase: Math.random() * Math.PI * 2,
                 breathSpeed: 0.002 + Math.random() * 0.004,
-                flashIntensity: 0,
-                flashOriginX: 0,
-                flashOriginY: 0
+                flashIntensity: 0, flashOriginX: 0, flashOriginY: 0
             });
+
+            // Companion stratus: spawn a thin wide cloud behind larger cumulus/organic.
+            // Creates the natural "layered" look of different cloud types together.
+            if (!isStorm && (type === 'cumulus' || type === 'organic') &&
+                cloudScale > 0.75 * configScale && Math.random() < 0.28) {
+                const cSeed = Math.random() * 10000;
+                const cPuffs = CloudShapeGenerator.generateMixedPuffs(cSeed, 'stratus');
+                const cScaleX = 2.2 + Math.random() * 0.8;
+                const cScaleY = 0.45 + Math.random() * 0.2;
+                for (let k = 0; k < cPuffs.length; k++) {
+                    cPuffs[k].dx *= cScaleX;
+                    cPuffs[k].dy *= cScaleY;
+                    cPuffs[k].rad *= 0.5;
+                }
+                companions.push({
+                    x: pos.x + (Math.random() - 0.5) * 60,
+                    y: pos.y + (Math.random() - 0.5) * 20,
+                    scale: cloudScale * (0.7 + Math.random() * 0.3),
+                    speed: 0.01 + Math.random() * 0.02,
+                    puffs: cPuffs, cloudType: 'stratus',
+                    layer: Math.max(0, layer - 1),
+                    opacity: 0.45 + Math.random() * 0.20,
+                    seed: cSeed, breathPhase: Math.random() * Math.PI * 2,
+                    breathSpeed: 0.002,
+                    flashIntensity: 0, flashOriginX: 0, flashOriginY: 0
+                });
+            }
+        }
+
+        // Add companions to cloud list
+        for (let c = 0; c < companions.length; c++) {
+            this._clouds.push(companions[c]);
         }
 
         this._clouds.sort((a, b) => a.layer - b.layer);
@@ -1826,22 +2202,17 @@ class AtmosphericWeatherCard extends HTMLElement {
             const scudCount = 3 + Math.floor(Math.random() * 3);
             for (let i = 0; i < scudCount; i++) {
                 const seed = Math.random() * 10000;
-                const puffs = CloudShapeGenerator.generateMixedPuffs(seed, 'cumulus');
                 this._fgClouds.push({
                     x: Math.random() * w,
                     y: Math.random() * (h * heightLimit) - 40,
                     scale: 0.7 + Math.random() * 0.3,
                     speed: 0.1 + Math.random() * 0.06,
-                    puffs,
-                    cloudType: 'scud',
-                    layer: 5,
+                    puffs: CloudShapeGenerator.generateMixedPuffs(seed, 'cumulus'),
+                    cloudType: 'scud', layer: 5,
                     opacity: 0.65,
-                    seed,
-                    breathPhase: Math.random() * Math.PI * 2,
+                    seed, breathPhase: Math.random() * Math.PI * 2,
                     breathSpeed: 0.004,
-                    flashIntensity: 0,
-                    flashOriginX: 0,
-                    flashOriginY: 0
+                    flashIntensity: 0, flashOriginX: 0, flashOriginY: 0
                 });
             }
         }
@@ -1861,7 +2232,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                 puffs,
                 cloudType: 'stratus', // Tells _drawClouds to apply the proper horizontal stretch
                 layer: 4,
-                opacity: 0.35, // Boosted from 0.12 so the 3D shading actually has room to render
+                opacity: 0.35,
                 seed,
                 breathPhase: Math.random() * Math.PI * 2,
                 breathSpeed: 0.002,
@@ -1984,12 +2355,26 @@ class AtmosphericWeatherCard extends HTMLElement {
 
             const k = Math.random();
             let hColor, sColor, lColor;
-            if (k < 0.3) {
-                hColor = 215; sColor = 30; lColor = 88;
-            } else if (k > 0.85) {
-                hColor = 35; sColor = 35; lColor = 85;
+            const isGolden = this._rs && this._rs.starMode === 'golden';
+
+            if (isGolden) {
+                // Warm golden palette for light immersive backgrounds
+                if (k < 0.3) {
+                    hColor = 45; sColor = 70; lColor = 65;
+                } else if (k > 0.85) {
+                    hColor = 38; sColor = 60; lColor = 60;
+                } else {
+                    hColor = 48; sColor = 55; lColor = 70;
+                }
             } else {
-                hColor = 200; sColor = 5; lColor = 95;
+                // Standard stellar palette for dark backgrounds
+                if (k < 0.3) {
+                    hColor = 215; sColor = 30; lColor = 88;  // cool blue
+                } else if (k > 0.85) {
+                    hColor = 35; sColor = 35; lColor = 85;   // warm amber
+                } else {
+                    hColor = 200; sColor = 5; lColor = 95;   // near-white
+                }
             }
 
             this._stars.push({
@@ -2045,18 +2430,22 @@ class AtmosphericWeatherCard extends HTMLElement {
         let curY = 0;
         let iter = 0;
 
+        // Gives the entire strike a subtle diagonal direction
+        const mainBias = (Math.random() - 0.5) * 15;
+
         while (curY < h && iter < 80) {
-            const nextY = curY + 15 + Math.random() * 25;
-            const nextX = curX + (Math.random() * 50 - 25);
+            const nextY = curY + 12 + Math.random() * 20;
+            const nextX = curX + mainBias + (Math.random() * 30 - 15);
+            
             segments.push({ x: curX, y: curY, nx: nextX, ny: nextY, branch: false });
-            if (Math.random() < 0.25 && curY > 20) {
+            
+            if (Math.random() < 0.18 && curY > 20) {
                 const branchDir = Math.random() > 0.5 ? 1 : -1;
-                const branchLen = 20 + Math.random() * 40;
                 segments.push({
                     x: curX,
                     y: curY,
-                    nx: curX + branchDir * branchLen,
-                    ny: curY + branchLen * 0.7,
+                    nx: curX + branchDir * (15 + Math.random() * 30),
+                    ny: curY + 15 + Math.random() * 25,
                     branch: true
                 });
             }
@@ -2065,7 +2454,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             iter++;
         }
 
-        return { segments, alpha: 1.0, glow: 1.0 };
+        return { segments, life: 1.0, alpha: 1.0, glow: 1.0 };
     }
 
     // ========================================================================
@@ -2127,11 +2516,13 @@ class AtmosphericWeatherCard extends HTMLElement {
 
         if (!this._isLightBackground) {
             const pulse = Math.sin(this._rayPhase * 0.4) * 0.02 + 0.98;
-            const sunRadius = 25 * pulse;
+            const sunBaseR = this._celestialSize ? this._celestialSize / 2 : 25;
+            const sunRadius = sunBaseR * pulse;
+            const sunGlowScale = sunBaseR / 25; // proportional glow scaling
             ctx.globalCompositeOperation = 'source-over';
 
             ctx.beginPath();
-            ctx.arc(centerX, centerY, sunRadius + 5, 0, Math.PI * 2);
+            ctx.arc(centerX, centerY, sunRadius + 4.5 * sunGlowScale, 0, Math.PI * 2);
             ctx.fillStyle = `rgba(255, 180, 40, ${0.12 * fadeOpacity})`;
             ctx.fill();
 
@@ -2158,7 +2549,9 @@ class AtmosphericWeatherCard extends HTMLElement {
 
         const glowBreath = 1 + Math.sin(this._rayPhase * 0.3) * 0.025;
         const pulse = Math.sin(this._rayPhase * 0.4) * 0.04 + 0.96;
-        const sunRadius = 26 * pulse; // Match dark-bg sun size as reference
+        const sunBaseR = this._celestialSize ? this._celestialSize / 2 : 26;
+        const sunRadius = sunBaseR * pulse;
+        const sunGlowScale = sunBaseR / 26; // proportional glow scaling
 
         // Sky haze is now handled entirely by the CSS ::after pseudo-element
         // (--g-rgb / --g-op injected from _updateStandaloneStyles) for ALL modes.
@@ -2201,10 +2594,12 @@ class AtmosphericWeatherCard extends HTMLElement {
         if (this._isThemeDark) {
             ctx.globalCompositeOperation = 'source-over';
             const pulse = Math.sin(this._rayPhase * 0.4) * 0.02 + 0.98;
-            const sunRadius = 25 * pulse;
+            const sunBaseR = this._celestialSize ? this._celestialSize / 2 : 22.5;
+            const sunRadius = sunBaseR * pulse;
+            const sunGlowScale = sunBaseR / 22.5;
 
             ctx.beginPath();
-            ctx.arc(celestial.x, celestial.y, sunRadius + 5, 0, Math.PI * 2);
+            ctx.arc(celestial.x, celestial.y, sunRadius + 5 * sunGlowScale, 0, Math.PI * 2);
             ctx.fillStyle = `rgba(255, 180, 40, ${0.12 * fadeOpacity})`;
             ctx.fill();
 
@@ -2236,21 +2631,26 @@ class AtmosphericWeatherCard extends HTMLElement {
         const c3 = isMoon ? '210, 220, 240' : '255, 245, 220';
         const cCore = isMoon ? '200, 220, 255' : '255, 220, 100';
 
-        const g = ctx.createRadialGradient(celestial.x, celestial.y, 0, celestial.x, celestial.y, 140);
+        // Glow radii scale proportionally with celestial body size
+        const csGlowScale = this._celestialSize ? (this._celestialSize / 2) / 26 : 1.0;
+        const outerR = 140 * csGlowScale;
+        const coreR  = 45 * csGlowScale;
+
+        const g = ctx.createRadialGradient(celestial.x, celestial.y, 0, celestial.x, celestial.y, outerR);
         g.addColorStop(0,   `rgba(${c1}, ${0.7 * fadeOpacity})`);
         g.addColorStop(0.4, `rgba(${c2}, ${0.4 * fadeOpacity})`);
         g.addColorStop(1,   `rgba(${c3}, 0)`);
         ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.arc(celestial.x, celestial.y, 140, 0, Math.PI * 2);
+        ctx.arc(celestial.x, celestial.y, outerR, 0, Math.PI * 2);
         ctx.fill();
 
-        const core = ctx.createRadialGradient(celestial.x, celestial.y, 0, celestial.x, celestial.y, 45);
+        const core = ctx.createRadialGradient(celestial.x, celestial.y, 0, celestial.x, celestial.y, coreR);
         core.addColorStop(0, `rgba(${cCore}, ${0.35 * fadeOpacity})`);
         core.addColorStop(1, `rgba(${c1}, 0)`);
         ctx.fillStyle = core;
         ctx.beginPath();
-        ctx.arc(celestial.x, celestial.y, 45, 0, Math.PI * 2);
+        ctx.arc(celestial.x, celestial.y, coreR, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.restore();
@@ -2261,12 +2661,12 @@ class AtmosphericWeatherCard extends HTMLElement {
         const fadeOpacity = this._layerFadeProgress.clouds;
         if (fadeOpacity <= 0) return;
 
-        const isStormy = this._params?.thunder ||
-            this._params?.type === 'lightning' ||
-            this._params?.type === 'lightning-rainy' ||
-            this._params?.type === 'pouring';
+        const rs = this._rs;
+        if (!rs) return;
 
-        if (isStormy && cloudList.length > 0 && Math.random() < 0.03) {
+        const isStormy = rs.isStormy;
+
+        if (isStormy && cloudList.length > 0 && Math.random() < 0.036) {
             const candidates = cloudList.filter(c => c.layer >= 1 && c.puffs && c.puffs.length > 5);
             const pool = candidates.length > 0 ? candidates : cloudList;
             const target = pool[Math.floor(Math.random() * pool.length)];
@@ -2278,90 +2678,13 @@ class AtmosphericWeatherCard extends HTMLElement {
             }
         }
 
-        let flashLitR, flashLitG, flashLitB;
-        let flashMidR, flashMidG, flashMidB;
-        let flashShadowR, flashShadowG, flashShadowB;
-
-        if (this._isThemeDark) {
-            flashLitR = 180; flashLitG = 200; flashLitB = 255;
-            flashMidR = 120; flashMidG = 145; flashMidB = 220;
-            flashShadowR = 60; flashShadowG = 75; flashShadowB = 160;
-        } else {
-            flashLitR = 255; flashLitG = 250; flashLitB = 255;
-            flashMidR = 240; flashMidG = 238; flashMidB = 250;
-            flashShadowR = 210; flashShadowG = 215; flashShadowB = 235;
-        }
-
-        let litR, litG, litB;
-        let midR, midG, midB;
-        let shadowR, shadowG, shadowB;
-        let ambient;
-        let highlightOffsetBase;
-        let hOffset;
-
-        if (this._isThemeDark && this._isTimeNight) {
-            litR=195; litG=208; litB=225;
-            midR=32;  midG=42;  midB=65;
-            shadowR=8;  shadowG=14; shadowB=26;
-            ambient=0.75;
-            highlightOffsetBase = 0.45;
-            hOffset = 0.02;
-        } else if (this._isThemeDark && !this._isTimeNight && (this._params?.dark || this._params?.thunder || ['lightning', 'lightning-rainy', 'pouring', 'rainy', 'hail', 'snowy', 'snowy-rainy'].includes(this._params?.type))) {
-            litR=110; litG=118; litB=135;
-            midR=38;  midG=43;  midB=58;
-            shadowR=12; shadowG=15; shadowB=22;
-            ambient=0.85;
-            highlightOffsetBase = 0.50;
-            hOffset = 0.05;
-        } else if (this._isThemeDark && !this._isTimeNight) {
-            // Day clouds on dark/black background.
-            // Mid must be substantially darker than lit to create visible 3D puff shaping.
-            // mid=168 (too close to lit=228) produced a flat bright blob. mid=125 gives
-            // real center-to-edge contrast without creating dark rings on opaque puffs.
-            litR=228; litG=238; litB=255;
-            midR=125; midG=138; midB=172;
-            shadowR=24; shadowG=29; shadowB=48;
-            ambient=0.82;
-            highlightOffsetBase = 0.55;
-            hOffset = 0.05;
-        } else if (this._params?.dark || ['rain', 'hail', 'fog', 'lightning', 'lightning-rainy', 'pouring', 'rainy', 'snowy-rainy'].includes(this._params?.type) || this._params?.foggy) {
-            if (this._isLightBackground) {
-                const isStorm = this._params?.thunder || ['lightning', 'lightning-rainy', 'pouring'].includes(this._params?.type);
-                if (isStorm) {
-                    const dim = 0.88;
-                    litR = 255 * dim; litG = 255 * dim; litB = 255 * dim;
-                    midR = 205 * dim; midG = 215 * dim; midB = 230 * dim;
-                    shadowR = 145 * dim; shadowG = 155 * dim; shadowB = 175 * dim;
-                    ambient = 0.88;
-                } else {
-                    litR = 255; litG = 255; litB = 255;
-                    midR = 210; midG = 218; midB = 228;
-                    shadowR = 155; shadowG = 166; shadowB = 190;
-                    ambient = 1.0;
-                }
-            } else {
-                const stormDarken = this._params?.thunder ? 10 : 0;
-                litR=145 - stormDarken; litG=158 - stormDarken; litB=182 - stormDarken;
-                midR=70 - stormDarken; midG=80 - stormDarken; midB=100 - stormDarken;
-                shadowR=20 - stormDarken; shadowG=25 - stormDarken; shadowB=35 - stormDarken;
-                ambient=0.90;
-            }
-            highlightOffsetBase = 0.75;
-            hOffset = 0.15;
-        } else if (this._isLightBackground) {
-            const isFairWeather = this._params?.atmosphere === 'fair' || this._params?.atmosphere === 'clear';
-            litR = 255; litG = 255; litB = 255;
-            if (isFairWeather) {
-                midR = 230; midG = 236; midB = 242;
-                shadowR = 180; shadowG = 190; shadowB = 210;
-            } else {
-                midR = 210; midG = 218; midB = 228;
-                shadowR = 163; shadowG = 175; shadowB = 200;
-            }
-            ambient = 1.0;
-            highlightOffsetBase = 0.75;
-            hOffset = 0.15;
-        }
+        // Read pre-computed cloud palette (built once per state change)
+        const cp = rs.cp;
+        const { litR, litG, litB, midR, midG, midB, shadowR, shadowG, shadowB,
+                flashLitR, flashLitG, flashLitB,
+                flashMidR, flashMidG, flashMidB,
+                flashShadowR, flashShadowG, flashShadowB,
+                ambient, highlightOffsetBase, hOffset, rainyOpacityMul } = cp;
 
         for (let i = 0; i < cloudList.length; i++) {
             const cloud = cloudList[i];
@@ -2385,9 +2708,11 @@ class AtmosphericWeatherCard extends HTMLElement {
             const breathScale = 1 + Math.sin(cloud.breathPhase) * 0.015;
 
             ctx.save();
-            ctx.translate(cloud.x, cloud.y - (h * 0.1));
+            ctx.translate(cloud.x, cloud.y - (h * 0.06));
             const vScale = this._params?.dark ? 0.40 : 0.55;
-            ctx.scale(cloud.scale * breathScale, cloud.scale * vScale * breathScale);
+            const hStretch = cloud.cloudType === 'cirrus' ? 1.4 : 1.0;
+            const vCompress = cloud.cloudType === 'cirrus' ? 0.7 : 1.0;
+            ctx.scale(cloud.scale * breathScale * hStretch, cloud.scale * vScale * breathScale * vCompress);
 
             const puffs = cloud.puffs;
             const len = puffs.length;
@@ -2411,7 +2736,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                 const drawX = puff.dx + noiseX;
                 const drawY = puff.dy + noiseY;
                 const normalizedY = (puff.dy + 50) / 100;
-                const shadeFactor = Math.max(0.3, 1 - normalizedY * 0.5);
+                const shadeFactor = Math.max(0.24, 1 - normalizedY * 0.60);
                 const invShade = 1 - shadeFactor;
 
                 let r = (litR * shadeFactor + shadowR * invShade) | 0;
@@ -2455,6 +2780,11 @@ class AtmosphericWeatherCard extends HTMLElement {
 
                 let finalOpacity = (globalOpacity * cloud.opacity * ambient * fadeOpacity * puffAmbientBoost) * puff.shade;
 
+                // Pre-computed: light-bg rainy clouds get opacity boost (1.22), else 1.0
+                if (rainyOpacityMul !== 1.0) {
+                    finalOpacity = Math.min(1.0, finalOpacity * rainyOpacityMul);
+                }
+
                 let dR=r, dG=g, dB=b;
                 let dMidR=useMidR, dMidG=useMidG, dMidB=useMidB;
                 let dShadR=useShadowR, dShadG=useShadowG, dShadB=useShadowB;
@@ -2475,11 +2805,10 @@ class AtmosphericWeatherCard extends HTMLElement {
                 }
                 
 
-                // Stratus on dark background: the architecture (24-34 tiny puffs spread
-                // 800px+ wide) always looks like a flat smear on black. Draw at very low
-                // opacity so it reads as a faint background haze, not a dominant bright band.
-                if (this._isThemeDark && !this._isTimeNight && cloud.cloudType === 'stratus') {
-                    finalOpacity *= 0.28;
+                // Stratus and cirrus on dark background: many tiny puffs spread wide
+                // looks like a flat smear. Draw at very low opacity for faint haze.
+                if (this._isThemeDark && !this._isTimeNight && (cloud.cloudType === 'stratus' || cloud.cloudType === 'cirrus')) {
+                    finalOpacity *= cloud.cloudType === 'cirrus' ? 0.32 : 0.28;
                     if (finalOpacity < 0.005) continue;
                 }
 
@@ -2494,14 +2823,12 @@ class AtmosphericWeatherCard extends HTMLElement {
                     puff.rad
                 );
 
-                grad.addColorStop(0, `rgba(${dR|0}, ${dG|0}, ${dB|0}, ${finalOpacity})`);
-                grad.addColorStop(0.40, `rgba(${dMidR|0}, ${dMidG|0}, ${dMidB|0}, ${finalOpacity * 0.85})`);
+                const midStop = 0.28 + puff.softness * 0.28;
+                grad.addColorStop(0,       `rgba(${dR|0}, ${dG|0}, ${dB|0}, ${finalOpacity})`);
+                grad.addColorStop(midStop, `rgba(${dMidR|0}, ${dMidG|0}, ${dMidB|0}, ${finalOpacity * 0.85})`);
                 if (this._isLightBackground) {
-                    // Light bg: wide soft fade — transparent edge blends into sky invisibly
                     grad.addColorStop(1.0, `rgba(${dShadR|0}, ${dShadG|0}, ${dShadB|0}, 0)`);
                 } else {
-                    // Dark bg: hold opacity until 0.68, cut to 0 by 0.88 — tighter edge,
-                    // less visible glow-halo on the black background
                     grad.addColorStop(0.68, `rgba(${dShadR|0}, ${dShadG|0}, ${dShadB|0}, ${finalOpacity * 0.25})`);
                     grad.addColorStop(0.88, `rgba(${dShadR|0}, ${dShadG|0}, ${dShadB|0}, 0)`);
                 }
@@ -2520,10 +2847,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         if (fadeOpacity <= 0) return;
 
         const isDay = this._isLightBackground;
-        const rC = isDay ? 85 : 210;
-        const gC = isDay ? 95 : 225;
-        const bC = isDay ? 110 : 255;
-        const rgbBase = `${rC}, ${gC}, ${bC}`;
+        const rgbBase = this._rs.rainRgb;
         const len = this._rain.length;
 
         for (let i = 0; i < len; i++) {
@@ -2574,6 +2898,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         const fadeOpacity = this._layerFadeProgress.precipitation;
         if (fadeOpacity <= 0) return;
         const len = this._snow.length;
+        const isLight = this._isLightBackground;
 
         for (let i = 0; i < len; i++) {
             const pt = this._snow[i];
@@ -2591,29 +2916,51 @@ class AtmosphericWeatherCard extends HTMLElement {
             if (pt.x > w + 10) pt.x = -10;
             else if (pt.x < -10) pt.x = w + 10;
 
+            // Shimmer: gentle size pulse + opacity glimmer
+            const shimmer = 0.92 + Math.sin(pt.wobblePhase * 2.5) * 0.08;
             const glimmer = 0.8 + Math.sin(pt.wobblePhase * 3) * 0.2;
             const finalOpacity = pt.op * fadeOpacity * glimmer;
+            const drawSize = pt.size * shimmer;
 
             if (pt.z > 0.7) {
-                // Large foreground flake — soft glow disc.
-                // On light bg: tighter radius so white is concentrated and visible
-                // rather than diffuse (a small crisp white dot reads better than a large faint blob).
-                const glowR = this._isLightBackground ? pt.size * 0.95 : pt.size * 1.5;
-                const innerOp = this._isLightBackground ? finalOpacity * 1.1 : finalOpacity;
-                const g = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, glowR);
-                g.addColorStop(0,   `rgba(255, 255, 255, ${Math.min(1, innerOp)})`);
-                g.addColorStop(0.5, `rgba(255, 255, 255, ${innerOp * 0.55})`);
-                g.addColorStop(1,   `rgba(255, 255, 255, 0)`);
-                ctx.fillStyle = g;
-                ctx.beginPath();
-                ctx.arc(pt.x, pt.y, glowR, 0, Math.PI * 2);
-                ctx.fill();
+                // Foreground flakes: soft gradient circles (no hard edges, no stroke rings)
+                if (isLight) {
+                    // Tight gradient: bright white center fading to transparent.
+                    // Slightly larger than the fill radius for soft edge.
+                    const r = drawSize * 0.9;
+                    const g = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, r);
+                    g.addColorStop(0,   `rgba(255, 255, 255, ${Math.min(1, finalOpacity * 1.4)})`);
+                    g.addColorStop(0.5, `rgba(255, 255, 255, ${Math.min(1, finalOpacity * 1.1)})`);
+                    g.addColorStop(1,   `rgba(255, 255, 255, 0)`);
+                    ctx.fillStyle = g;
+                    ctx.beginPath();
+                    ctx.arc(pt.x, pt.y, r, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // Dark bg: broader glow
+                    const glowR = drawSize * 1.5;
+                    const g = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, glowR);
+                    g.addColorStop(0,   `rgba(255, 255, 255, ${Math.min(1, finalOpacity)})`);
+                    g.addColorStop(0.5, `rgba(255, 255, 255, ${finalOpacity * 0.55})`);
+                    g.addColorStop(1,   `rgba(255, 255, 255, 0)`);
+                    ctx.fillStyle = g;
+                    ctx.beginPath();
+                    ctx.arc(pt.x, pt.y, glowR, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             } else {
-                // Small background flake — solid disc, slightly boosted opacity on light bg
-                const smallOp = this._isLightBackground ? finalOpacity * 1.15 : finalOpacity * 0.8;
-                ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, smallOp)})`;
+                // Background flakes: tiny soft dots
+                const smallR = drawSize * 0.75;
+                if (isLight) {
+                    const g = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, smallR);
+                    g.addColorStop(0, `rgba(255, 255, 255, ${Math.min(1, finalOpacity * 1.3)})`);
+                    g.addColorStop(1, `rgba(255, 255, 255, 0)`);
+                    ctx.fillStyle = g;
+                } else {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(1, finalOpacity * 0.8)})`;
+                }
                 ctx.beginPath();
-                ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+                ctx.arc(pt.x, pt.y, smallR, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
@@ -2681,21 +3028,36 @@ class AtmosphericWeatherCard extends HTMLElement {
         if (!this._params?.thunder) return;
         const fadeOpacity = this._layerFadeProgress.effects;
 
-        if (Math.random() < 0.007 && this._bolts.length < LIMITS.MAX_BOLTS) {
-            this._flashOpacity = 0.4;
+        if (Math.random() < 0.0084 && this._bolts.length < LIMITS.MAX_BOLTS) {
+            this._flashOpacity = 0.92;
+            this._flashHold = 6;
             this._bolts.push(this._createBolt(w, h));
         }
 
+        // Inter-flash storm darkness — persistent brooding veil between flashes
+        if (!this._isLightBackground) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.fillStyle = `rgba(0, 0, 10, ${0.18 * fadeOpacity})`;
+            ctx.fillRect(0, 0, w, h);
+            ctx.restore();
+        }
+
         if (this._flashOpacity > 0) {
+            if (this._flashHold > 0) {
+                this._flashHold--;
+            } else {
+                this._flashOpacity *= 0.74;
+            }
             ctx.save();
             ctx.globalCompositeOperation = this._isThemeDark ? 'screen' : 'source-over';
             const flashColor = this._isLightBackground
-                ? `rgba(200, 210, 230, ${this._flashOpacity * fadeOpacity * 0.3})`
+                ? `rgba(200, 210, 230, ${this._flashOpacity * fadeOpacity * 0.45})`
                 : `rgba(220, 235, 255, ${this._flashOpacity * fadeOpacity})`;
             ctx.fillStyle = flashColor;
             ctx.fillRect(0, 0, w, h);
             ctx.restore();
-            this._flashOpacity *= 0.78;
+            if (this._flashOpacity < 0.005) this._flashOpacity = 0;
         }
 
         if (this._bolts.length > 0) {
@@ -2901,8 +3263,7 @@ class AtmosphericWeatherCard extends HTMLElement {
     }
 
     _drawComets(ctx, w, h) {
-        const p = this._params;
-        const badWeather = ['rain', 'hail', 'lightning', 'pouring', 'snowy', 'snowy-rainy'].includes(p.type);
+        const badWeather = this._rs.isBadWeatherForComets;
 
         if (this._isNight && !badWeather && this._comets.length === 0 && Math.random() < 0.00025) {
             const startX = Math.random() < 0.5 ? -60 : w + 60;
@@ -2979,8 +3340,7 @@ class AtmosphericWeatherCard extends HTMLElement {
     }
 
     _drawPlanes(ctx, w, h) {
-        const p = this._params;
-        const badWeather = ['rain', 'hail', 'lightning', 'pouring', 'snowy', 'fog'].includes(p.type);
+        const badWeather = this._rs.isBadWeatherForPlanes;
 
         if (!badWeather && this._planes.length === 0 && Math.random() < 0.005) {
             this._planes.push(this._createPlane(w, h));
@@ -3063,13 +3423,13 @@ class AtmosphericWeatherCard extends HTMLElement {
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
+            // Draw plane silhouette from geometry table
             ctx.beginPath();
-            ctx.moveTo(6 * dir, 0);
-            ctx.lineTo(-6 * dir, 0);
-            ctx.moveTo(-5 * dir, 0);
-            ctx.lineTo(-8 * dir, -4);
-            ctx.moveTo(1 * dir, 0);
-            ctx.lineTo(-2 * dir, 2);
+            for (let seg = 0; seg < PLANE_PATH.length; seg++) {
+                const s = PLANE_PATH[seg];
+                ctx.moveTo(s[0] * dir, s[1]);
+                ctx.lineTo(s[2] * dir, s[3]);
+            }
             ctx.stroke();
 
             plane.blinkPhase += 0.12;
@@ -3103,7 +3463,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
 
         const p = this._params;
-        const isSevereWeather = p.thunder || p.type === 'hail' || p.type === 'pouring';
+        const isSevereWeather = this._rs.isSevereWeather;
 
         if (this._isLightBackground && !isSevereWeather && this._birds.length === 0) {
             const dir = Math.random() > 0.5 ? 1 : -1;
@@ -3223,7 +3583,7 @@ class AtmosphericWeatherCard extends HTMLElement {
     }
 
     _drawDustMotes(ctx, w, h) {
-        if (!this._shouldShowSun()) return;
+        if (!this._rs.showSun) return;
         const fadeOpacity = this._layerFadeProgress.effects;
 
         ctx.save();
@@ -3263,9 +3623,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         if (!this._isTimeNight) return;
         if (!this._stateInitialized || !this._renderGate.isRevealed) return;
 
-        const cloudCover = this._params?.cloud || 0;
-        const moonVisibility = cloudCover > 30 ? 0.4 : cloudCover > 20 ? 0.6 : cloudCover > 10 ? 0.8 : 1;
-        const fadeOpacity = this._layerFadeProgress.stars * moonVisibility;
+        const fadeOpacity = this._layerFadeProgress.stars;
         if (fadeOpacity <= 0.05) return;
 
         this._moonAnimPhase += 0.003;
@@ -3273,45 +3631,84 @@ class AtmosphericWeatherCard extends HTMLElement {
         const celestial = this._getCelestialPosition(w);
         const moonX = celestial.x;
         const moonY = celestial.y;
-        const moonRadius = 18;
-        // Cap glow radius so it never overflows the card even at small heights (e.g. 110px).
-        // Use the smaller of w/h so a portrait card doesn't spill sideways either.
-        const glowRadius = Math.min(h, w) * 0.48;
+        const moonRadius = this._celestialSize ? this._celestialSize / 2 : 18;
+        const moonScale = moonRadius / 18; // 1.0 at default, proportional glow scaling
 
-        // _drawMoon only runs when _isTimeNight is true, so isDayMoon is always false here.
-        // useLightColors: any light theme (including forced light at night).
-        // Governs ALL disc, shadow and crater colors so the moon reads against a light background.
         const useLightColors = !this._isThemeDark;
+        const isImmersiveLight = useLightColors && this._config.card_style !== 'standalone';
 
+        const moonStyle = (this._config.moon_style || 'blue').toLowerCase();
+        const useBlue = isImmersiveLight && moonStyle === 'blue';
+        const useYellow = isImmersiveLight && moonStyle === 'yellow';
+		
         ctx.save();
 
+        // Glow intensity: weather-dependent (clouds dim the glow, not the disc)
+        const cloudCover = this._params?.cloud || 0;
+        const glowWeatherScale = cloudCover > 30 ? 0.4 : cloudCover > 20 ? 0.6 : cloudCover > 10 ? 0.8 : 1;
         const glowIntensity = 0.23 + this._moonPhaseConfig.illumination * 0.18;
-        const effectiveGlow = glowIntensity * fadeOpacity * moonVisibility;
+        const atmScale = (!useLightColors && this._params?.atmosphere === 'fair') ? 0.79 : 1.0;
+        let effectiveGlow = glowIntensity * fadeOpacity * glowWeatherScale * atmScale;
+
+        if (isImmersiveLight) {
+            effectiveGlow *= 0.85;
+        }
 
         if (useLightColors) {
-            // Light bg: source-over blue-periwinkle halo. screen is invisible on white.
-            // Needs strong opacity since it competes against an already light background.
             ctx.globalCompositeOperation = 'source-over';
-            const lightGlowR = Math.min(h, w) * 0.42;
+            const lightGlowR = Math.min(h, w) * 0.42 * moonScale;
             const dmGlow = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, lightGlowR);
-            dmGlow.addColorStop(0,    `rgba(140, 175, 255, ${effectiveGlow * 0.85})`);
-            dmGlow.addColorStop(0.35, `rgba(155, 190, 255, ${effectiveGlow * 0.45})`);
-            dmGlow.addColorStop(0.65, `rgba(175, 205, 255, ${effectiveGlow * 0.16})`);
-            dmGlow.addColorStop(1,    'rgba(200, 220, 255, 0)');
+            
+            if (useYellow) {
+                // Warm yellow glow for white background
+                dmGlow.addColorStop(0,    `rgba(255, 220, 80, ${effectiveGlow * 1.10})`);
+                dmGlow.addColorStop(0.35, `rgba(255, 180, 40, ${effectiveGlow * 0.60})`);
+                dmGlow.addColorStop(0.65, `rgba(255, 140, 0, ${effectiveGlow * 0.22})`);
+                dmGlow.addColorStop(1,    'rgba(255, 140, 0, 0)');
+            } else if (useBlue) {
+                // Calm muted dark blue glow — subtle but magical on white background.
+                // Uses low opacity and desaturated blue to avoid looking electric.
+                dmGlow.addColorStop(0,    `rgba(90, 115, 170, ${effectiveGlow * 0.75})`);
+                dmGlow.addColorStop(0.30, `rgba(100, 125, 175, ${effectiveGlow * 0.35})`);
+                dmGlow.addColorStop(0.60, `rgba(115, 138, 180, ${effectiveGlow * 0.12})`);
+                dmGlow.addColorStop(1,    'rgba(130, 150, 190, 0)');
+            } else {
+                // Standalone light: cool blue
+                dmGlow.addColorStop(0,    `rgba(140, 175, 255, ${effectiveGlow * 1.10})`);
+                dmGlow.addColorStop(0.35, `rgba(155, 190, 255, ${effectiveGlow * 0.60})`);
+                dmGlow.addColorStop(0.65, `rgba(175, 205, 255, ${effectiveGlow * 0.22})`);
+                dmGlow.addColorStop(1,    'rgba(200, 220, 255, 0)');
+            }
+            
             ctx.fillStyle = dmGlow;
             ctx.beginPath();
             ctx.arc(moonX, moonY, lightGlowR, 0, Math.PI * 2);
             ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(moonX, moonY, moonRadius + 1.5, 0, Math.PI * 2);
+            if (useBlue) {
+                ctx.strokeStyle = `rgba(100, 125, 168, ${0.22 * fadeOpacity})`;
+            } else {
+                ctx.strokeStyle = `rgba(155, 182, 228, ${0.28 * fadeOpacity})`;
+            }
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
         } else {
-            // Dark background: large screen-blend blue corona.
+            // Dark bg: screen-blend corona. Cap radius so the circle never extends
+            // beyond canvas edges (prevents hard clip on small/short cards).
+            const maxR = Math.min(
+                Math.min(h, w) * 0.35 * moonScale,
+                moonX, w - moonX, moonY, h - moonY
+            );
             ctx.globalCompositeOperation = 'screen';
-            const glowGrad = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, glowRadius);
+            const glowGrad = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, maxR);
             glowGrad.addColorStop(0,   `rgba(180, 200, 255, ${effectiveGlow})`);
             glowGrad.addColorStop(0.5, `rgba(165, 195, 245, ${effectiveGlow * 0.4})`);
             glowGrad.addColorStop(1,   'rgba(150, 180, 220, 0)');
             ctx.fillStyle = glowGrad;
             ctx.beginPath();
-            ctx.arc(moonX, moonY, glowRadius, 0, Math.PI * 2);
+            ctx.arc(moonX, moonY, maxR, 0, Math.PI * 2);
             ctx.fill();
         }
 
@@ -3337,7 +3734,13 @@ class AtmosphericWeatherCard extends HTMLElement {
         const direction = this._moonPhaseConfig.direction;
 
         if (illumination <= 0) {
-            if (useLightColors) {
+            if (useYellow) {
+                ctx.fillStyle = `rgba(210, 205, 190, ${0.10 * fadeOpacity})`;
+                ctx.beginPath(); ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2); ctx.fill();
+            } else if (useBlue) {
+                ctx.fillStyle = `rgba(140, 155, 180, ${0.10 * fadeOpacity})`;
+                ctx.beginPath(); ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2); ctx.fill();
+            } else if (useLightColors) {
                 ctx.fillStyle = `rgba(200, 210, 225, ${0.20 * fadeOpacity})`;
                 ctx.beginPath(); ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2); ctx.fill();
             } else {
@@ -3351,7 +3754,16 @@ class AtmosphericWeatherCard extends HTMLElement {
                 moonX - moonRadius * 0.3, moonY - moonRadius * 0.3, 0,
                 moonX, moonY, moonRadius
             );
-            if (useLightColors) {
+            if (useYellow) {
+                moonGrad.addColorStop(0,   `rgba(245, 230, 140, ${0.95 * fadeOpacity})`);
+                moonGrad.addColorStop(0.5, `rgba(240, 210, 80, ${0.85 * fadeOpacity})`);
+                moonGrad.addColorStop(1,   `rgba(235, 180, 40, ${0.75 * fadeOpacity})`);
+            } else if (useBlue) {
+                // Muted dark blue disc with subtle lighter center — calm, not electric
+                moonGrad.addColorStop(0,   `rgba(165, 180, 210, ${0.88 * fadeOpacity})`);
+                moonGrad.addColorStop(0.5, `rgba(125, 145, 185, ${0.80 * fadeOpacity})`);
+                moonGrad.addColorStop(1,   `rgba(95, 115, 160, ${0.70 * fadeOpacity})`);
+            } else if (useLightColors) {
                 moonGrad.addColorStop(0,   `rgba(255, 255, 255, ${0.85 * fadeOpacity})`);
                 moonGrad.addColorStop(0.5, `rgba(238, 242, 250, ${0.78 * fadeOpacity})`);
                 moonGrad.addColorStop(1,   `rgba(210, 220, 238, ${0.65 * fadeOpacity})`);
@@ -3364,7 +3776,11 @@ class AtmosphericWeatherCard extends HTMLElement {
             ctx.beginPath(); ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2); ctx.fill();
         } else {
             // Shadow/dark side of disc
-            if (useLightColors) {
+            if (useYellow) {
+                ctx.fillStyle = `rgba(210, 205, 190, ${0.15 * fadeOpacity})`;
+            } else if (useBlue) {
+                ctx.fillStyle = `rgba(120, 135, 165, ${0.14 * fadeOpacity})`;
+            } else if (useLightColors) {
                 ctx.fillStyle = `rgba(175, 188, 208, ${0.55 * fadeOpacity})`;
             } else {
                 ctx.fillStyle = `rgba(35, 40, 50, ${0.9 * fadeOpacity})`;
@@ -3394,7 +3810,15 @@ class AtmosphericWeatherCard extends HTMLElement {
                 moonX - moonRadius * 0.2, moonY - moonRadius * 0.2, 0,
                 moonX, moonY, moonRadius
             );
-            if (useLightColors) {
+            if (useYellow) {
+                moonGrad.addColorStop(0,   `rgba(245, 230, 140, ${0.90 * fadeOpacity})`);
+                moonGrad.addColorStop(0.6, `rgba(240, 210, 80, ${0.80 * fadeOpacity})`);
+                moonGrad.addColorStop(1,   `rgba(235, 180, 40, ${0.70 * fadeOpacity})`);
+            } else if (useBlue) {
+                moonGrad.addColorStop(0,   `rgba(165, 180, 210, ${0.85 * fadeOpacity})`);
+                moonGrad.addColorStop(0.6, `rgba(125, 145, 185, ${0.75 * fadeOpacity})`);
+                moonGrad.addColorStop(1,   `rgba(95, 115, 160, ${0.65 * fadeOpacity})`);
+            } else if (useLightColors) {
                 moonGrad.addColorStop(0,   `rgba(255, 255, 255, ${0.82 * fadeOpacity})`);
                 moonGrad.addColorStop(0.6, `rgba(240, 244, 252, ${0.72 * fadeOpacity})`);
                 moonGrad.addColorStop(1,   `rgba(218, 228, 242, ${0.58 * fadeOpacity})`);
@@ -3409,33 +3833,45 @@ class AtmosphericWeatherCard extends HTMLElement {
 
         ctx.restore();
 
-        // Craters
+        // Craters — drawn from MOON_CRATERS geometry table, scaled with moon size
         if (illumination > 0.05) {
             const op = fadeOpacity * Math.min(1, illumination * 4.0);
-            if (useLightColors) {
-                ctx.fillStyle = `rgba(180, 190, 210, ${0.12 * op})`;
-                ctx.beginPath(); ctx.ellipse(moonX - 9, moonY + 2, 7, 9, 0.2, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.ellipse(moonX + 8, moonY - 6, 6, 4, -0.3, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.ellipse(moonX - 2, moonY + 10, 5, 3, 0.1, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = `rgba(170, 180, 200, ${0.16 * op})`;
-                ctx.beginPath(); ctx.ellipse(moonX - 9, moonY + 2, 4, 6, 0.2, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.ellipse(moonX + 8, moonY - 6, 3, 2, -0.3, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.ellipse(moonX - 2, moonY + 10, 2.5, 1.5, 0.1, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = `rgba(175, 185, 205, ${0.10 * op})`;
-                ctx.beginPath(); ctx.arc(moonX + 6, moonY + 5, 1.2, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(moonX - 5, moonY - 8, 1.0, 0, Math.PI * 2); ctx.fill();
-            } else {
-                ctx.fillStyle = `rgba(30, 35, 50, ${0.13 * op})`;
-                ctx.beginPath(); ctx.ellipse(moonX - 9, moonY + 2, 7, 9, 0.2, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.ellipse(moonX + 8, moonY - 6, 6, 4, -0.3, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.ellipse(moonX - 2, moonY + 10, 5, 3, 0.1, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = `rgba(25, 30, 45, ${0.22 * op})`;
-                ctx.beginPath(); ctx.ellipse(moonX - 9, moonY + 2, 4, 6, 0.2, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.ellipse(moonX + 8, moonY - 6, 3, 2, -0.3, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.ellipse(moonX - 2, moonY + 10, 2.5, 1.5, 0.1, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = `rgba(25, 30, 45, ${0.13 * op})`;
-                ctx.beginPath(); ctx.arc(moonX + 6, moonY + 5, 1.2, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(moonX - 5, moonY - 8, 1.0, 0, Math.PI * 2); ctx.fill();
+            const ms = moonScale; // crater coordinate scale factor
+
+            // Maria (large dark seas) — outer ring
+            const mariaColor = useLightColors
+                ? `rgba(180, 190, 210, ${0.12 * op})`
+                : `rgba(30, 35, 50, ${0.13 * op})`;
+            ctx.fillStyle = mariaColor;
+            for (let m = 0; m < MOON_CRATERS.maria.length; m++) {
+                const c = MOON_CRATERS.maria[m];
+                ctx.beginPath();
+                ctx.ellipse(moonX + c.dx * ms, moonY + c.dy * ms, c.rx * ms, c.ry * ms, c.rot, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Maria inner cores — darker centers
+            const innerColor = useLightColors
+                ? `rgba(170, 180, 200, ${0.16 * op})`
+                : `rgba(25, 30, 45, ${0.22 * op})`;
+            ctx.fillStyle = innerColor;
+            for (let m = 0; m < MOON_CRATERS.mariaInner.length; m++) {
+                const c = MOON_CRATERS.mariaInner[m];
+                ctx.beginPath();
+                ctx.ellipse(moonX + c.dx * ms, moonY + c.dy * ms, c.rx * ms, c.ry * ms, c.rot, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Small detail craters
+            const detailColor = useLightColors
+                ? `rgba(175, 185, 205, ${0.10 * op})`
+                : `rgba(25, 30, 45, ${0.13 * op})`;
+            ctx.fillStyle = detailColor;
+            for (let m = 0; m < MOON_CRATERS.detail.length; m++) {
+                const c = MOON_CRATERS.detail[m];
+                ctx.beginPath();
+                ctx.arc(moonX + c.dx * ms, moonY + c.dy * ms, c.r * ms, 0, Math.PI * 2);
+                ctx.fill();
             }
         }
 
@@ -3443,7 +3879,7 @@ class AtmosphericWeatherCard extends HTMLElement {
     }
 
     _drawHeatShimmer(ctx, w, h) {
-        if (!this._shouldShowSun() || this._isNight) return;
+        if (!this._rs.showSun || this._isNight) return;
         const fadeOpacity = this._layerFadeProgress.effects;
         this._heatShimmerPhase += 0.02;
 
@@ -3522,10 +3958,11 @@ class AtmosphericWeatherCard extends HTMLElement {
 
         this._rayPhase += 0.008;
         this._atmospherePhase += 0.005;
-        const cloudGlobalOp = this._isThemeDark ? 0.64 : 0.85;
+        const cloudGlobalOp = this._rs.cloudGlobalOp;
+        const rs = this._rs;
 
         // ---- BACKGROUND LAYER ----
-        if (this._shouldShowSun()) {
+        if (rs.showSun) {
             this._drawSunGlow(bg, w, h);
         }
         // Sky haze for all weather states is handled by CSS ::after (--g-rgb/--g-op)
@@ -3533,12 +3970,16 @@ class AtmosphericWeatherCard extends HTMLElement {
 
         this._drawAurora(mid, w, h);
 
-        // Stars — isInkMode: dark dots on light bg rather than glowing on dark
+        // Stars — three render modes driven by _buildRenderState:
+        //   'glow'   → bright additive stars on dark background
+        //   'golden' → warm golden stars on light immersive background
+        //   'hidden' → no stars (day, or standalone light)
         const starFade = this._layerFadeProgress.stars;
-        const isInkMode = !this._isThemeDark;
+        const starMode = rs.starMode;
 
-        if (starFade > 0.01) {
+        if (starFade > 0.01 && starMode !== 'hidden') {
             const len = this._stars.length;
+            const isGolden = starMode === 'golden';
 
             for (let i = 0; i < len; i++) {
                 const s = this._stars[i];
@@ -3554,36 +3995,46 @@ class AtmosphericWeatherCard extends HTMLElement {
 
                 if (finalOpacity <= 0.05) continue;
 
-                let dynamicColor;
-                if (isInkMode) {
-                    const inkLight = 25 + (twinkleVal * 3);
-                    const inkSat = 8 + (twinkleVal * 2);
-                    dynamicColor = `hsla(220, ${inkSat}%, ${inkLight}%,`;
-                } else {
-                    const shift = twinkleVal * 5;
-                    const dynamicHue = s.hsl.h + shift;
-                    const dynamicLight = s.hsl.l + (twinkleVal * 2);
-                    dynamicColor = `hsla(${dynamicHue}, ${s.hsl.s}%, ${dynamicLight}%,`;
-                }
+                // Both modes use the star's own HSL palette — golden stars were
+                // initialized with warm amber/gold hues, glow stars with cool blue/white
+                const shift = twinkleVal * 5;
+                const dynamicHue = s.hsl.h + shift;
+                const dynamicLight = s.hsl.l + (twinkleVal * 2);
+                const dynamicColor = `hsla(${dynamicHue}, ${s.hsl.s}%, ${dynamicLight}%,`;
 
                 if (s.tier === 'hero') {
                     bg.save();
 
-                    if (isInkMode) {
+                    if (isGolden) {
+                        // Golden hero: warm painterly glow on light background
                         bg.globalCompositeOperation = 'source-over';
-                        bg.fillStyle = `${dynamicColor} ${finalOpacity * 0.9})`;
+                        bg.fillStyle = `${dynamicColor} ${finalOpacity * 0.85})`;
                         bg.beginPath();
-                        bg.arc(s.x, s.y, currentSize * 0.7, 0, Math.PI * 2);
+                        bg.arc(s.x, s.y, currentSize * 0.65, 0, Math.PI * 2);
                         bg.fill();
 
-                        const haloGrad = bg.createRadialGradient(s.x, s.y, currentSize * 0.7, s.x, s.y, currentSize * 2.0);
-                        haloGrad.addColorStop(0, `${dynamicColor} ${finalOpacity * 0.15})`);
+                        // Soft warm halo
+                        const haloGrad = bg.createRadialGradient(s.x, s.y, currentSize * 0.6, s.x, s.y, currentSize * 2.2);
+                        haloGrad.addColorStop(0, `${dynamicColor} ${finalOpacity * 0.18})`);
                         haloGrad.addColorStop(1, `${dynamicColor} 0)`);
                         bg.fillStyle = haloGrad;
                         bg.beginPath();
-                        bg.arc(s.x, s.y, currentSize * 2.0, 0, Math.PI * 2);
+                        bg.arc(s.x, s.y, currentSize * 2.2, 0, Math.PI * 2);
                         bg.fill();
+
+                        // Subtle short cross spikes for painterly sparkle
+                        const spikeLen = currentSize * 1.4;
+                        const spikeOp = finalOpacity * 0.22;
+                        bg.strokeStyle = `${dynamicColor} ${spikeOp})`;
+                        bg.lineWidth = 0.5;
+                        bg.beginPath();
+                        bg.moveTo(s.x - spikeLen, s.y);
+                        bg.lineTo(s.x + spikeLen, s.y);
+                        bg.moveTo(s.x, s.y - spikeLen);
+                        bg.lineTo(s.x, s.y + spikeLen);
+                        bg.stroke();
                     } else {
+                        // Glow hero: bright additive star on dark background
                         bg.globalCompositeOperation = 'lighter';
                         bg.fillStyle = `${dynamicColor} ${finalOpacity})`;
                         bg.beginPath();
@@ -3608,14 +4059,38 @@ class AtmosphericWeatherCard extends HTMLElement {
                         bg.moveTo(s.x, s.y - spikeLen);
                         bg.lineTo(s.x, s.y + spikeLen);
                         bg.stroke();
+
+                        // Rotating crown — 4 diagonal rays slow-drifting around the cross
+                        const crownPhase = s.phase * 0.18;
+                        const crownLen  = currentSize * 2.5;
+                        const crownOp   = finalOpacity * 0.28;
+                        bg.save();
+                        bg.translate(s.x, s.y);
+                        bg.rotate(crownPhase);
+                        bg.strokeStyle = `${dynamicColor} ${crownOp})`;
+                        bg.lineWidth = 0.8;
+                        bg.beginPath();
+                        for (let r = 0; r < 4; r++) {
+                            const a = (r / 4) * Math.PI * 2 + Math.PI / 4;
+                            bg.moveTo(0, 0);
+                            bg.lineTo(Math.cos(a) * crownLen, Math.sin(a) * crownLen);
+                        }
+                        bg.stroke();
+                        bg.restore();
                     }
 
                     bg.restore();
                 } else {
+                    if (isGolden) {
+                        bg.globalCompositeOperation = 'source-over';
+                    }
                     bg.fillStyle = `${dynamicColor} ${finalOpacity})`;
                     bg.beginPath();
-                    bg.arc(s.x, s.y, currentSize * (isInkMode ? 0.6 : 0.5), 0, Math.PI * 2);
+                    bg.arc(s.x, s.y, currentSize * (isGolden ? 0.55 : 0.5), 0, Math.PI * 2);
                     bg.fill();
+                    if (isGolden) {
+                        bg.globalCompositeOperation = 'source-over';
+                    }
                 }
             }
         }
@@ -3638,7 +4113,8 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
 
         // Dark theme cloudy-sun drawn on bg (behind all clouds)
-        if (this._shouldShowCloudySun()) {
+        const showCloudySun = rs.showCloudySun;
+        if (showCloudySun) {
             if (this._isThemeDark) {
                 this._drawCloudySun(bg, w, h);
             }
@@ -3647,7 +4123,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         this._drawClouds(mid, this._clouds, w, h, effectiveWind, cloudGlobalOp);
 
         // Light theme cloudy-sun drawn on mid (diffuse glow through cloud layer)
-        if (this._shouldShowCloudySun() && !this._isThemeDark) {
+        if (showCloudySun && !this._isThemeDark) {
             this._drawCloudySun(mid, w, h);
         }
 
@@ -3703,4 +4179,3 @@ if (!customElements.get(CARD_NAME)) {
 } else {
     console.info(`%c ${CARD_NAME} already defined - skipping registration`, 'color: orange; font-weight: bold;');
 }
-
