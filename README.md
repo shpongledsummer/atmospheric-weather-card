@@ -145,6 +145,7 @@ content: |
 # 2. The Weather Card (Background Layer)
 type: custom:atmospheric-weather-card
 weather_entity: weather.forecast_home
+card_style: immersive
 full_width: true
 card_height: 240
 # Pulls the card up 120px to sit behind the Markdown card
@@ -202,6 +203,7 @@ type: custom:atmospheric-weather-card
 weather_entity: weather.forecast_home
 full_width: true
 card_height: 200
+card_style: immersive
 image_scale: 100
 image_alignment: bottom
 offset: "-50px 0px 0px 0px"
@@ -271,7 +273,7 @@ tap_action:
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `card_style` | `string` | `false` | Set to `standalone` to enable the self-contained card with background and text. |
+| `card_style` | `string` | `immersive` | Set to `standalone` to enable the self-contained card with background and text. |
 | `card_height` | `number\|string` | `200px` | Card height. Numbers are treated as pixels (`110` → `110px`). |
 | `square` | `boolean` | `false` | Forces the card into a strict 1:1 aspect ratio. Useful for Grid layouts. |
 | `full_width` | `boolean` | `false` | Stretches the card edge-to-edge by removing side margins. |
