@@ -288,8 +288,9 @@ tap_action:
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `sun_moon_x_position` | `number` | `100` | Horizontal position. Positive = left offset, Negative = right offset. |
-| `sun_moon_y_position` | `number` | `100` | Vertical distance from the top. |
+| `sun_moon_x_position` | `number` | `55` | Horizontal position. Positive = left offset, Negative = right offset. |
+| `sun_moon_y_position` | `number` | `-55` | Vertical distance from the top. |
+| `sun_moon_size` | `number` | `40` | Adjusts the scale of the sun and moon elements proportionally. |
 
 </details>
 
@@ -301,7 +302,7 @@ tap_action:
 | `day` | `string` | — | Path to a daytime image (e.g. `/local/images/house-day.png`). |
 | `night` | `string` | — | Path to a nighttime image. Falls back to `day` if not set. |
 | `image_scale` | `number` | `100` | Image height as a percentage of the card height. |
-| `image_alignment` | `string` | `top-right` | Image position (e.g. `bottom-right`, `center-left`). |
+| `image_alignment` | `string` | `top-right` | Image position (e.g. `center`, `bottom-center`, `top-right`). |
 
 </details>
 
@@ -334,8 +335,9 @@ tap_action:
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `mode` | `string` | `auto` | Force day/night: `light`/`day` or `dark`/`night`. |
+| `theme` | `string` | `auto` | Force day/night: `light`/`day` or `dark`/`night` (`mode` also works as a fallback). |
 | `theme_entity` | `string` | — | Entity whose state triggers night mode (e.g. `dark`, `night`, `on`). |
+| `moon_style` | `string` | `blue` | Manually choose the moon color for the light theme (`blue` or `yellow`). |
 | `tap_action` | `object` | — | Standard HA action config. |
 
 </details>
@@ -372,13 +374,16 @@ The card determines whether to render a day or night scene using a 4-level prior
 
 | Priority | Source | Config Option | Logic |
 | :---: | :--- | :--- | :--- |
-| **1** | **Manual Override** | `mode` | Directly forces the look. Set to `dark`/`night` for a dark card or `light`/`day` for a light card. |
+| **1** | **Manual Override** | `theme` | Directly forces the look. Set to `dark`/`night` for a dark card or `light`/`day` for a light card. |
 | **2** | **Theme Entity** | `theme_entity` | Tracks a specific entity (e.g., a "Dark Mode" toggle). Activates dark mode if the state is `dark`, `night`, `evening`, `on`, `true`, or `below_horizon`. |
 | **3** | **Sun Entity** | `sun_entity` | Automatically switches based on the sun's position. Uses `below_horizon` to trigger the dark theme. |
 | **4** | **System Setting** | — | The final fallback. It simply matches your global Home Assistant dark mode toggle in the sidebar. |
 
 > [!NOTE]
-> For the "Standalone Mode", `sun_entity: sun.sun` is all you need. The `theme_entity` option is useful if you use the "Immersive Mode" with a dark/light theme that you want the card to follow instead of the sun. The `mode` option is meant for fixed themes (permanent dark or light dashboard background).
+> **Which setting should you use?**
+> * **`sun_entity`:** Best for most setups. The card will naturally change with the real-world sunrise and sunset.
+> * **`theme_entity`:** Best if your dashboard switches between light and dark mode based on a custom toggle or schedule, rather than the actual sun.
+> * **`theme`:** Best for fixed dashboards. Use this to permanently lock the card to either dark or light mode so it matches a static background.
 
 <br>
 
@@ -416,7 +421,11 @@ The status feature swaps the displayed image when an entity becomes active. Some
 
 ### ADDING BUTTONS
 
-The floating buttons in the dashboard screenshots are built with `custom:paper-buttons-row` placed before the weather card. Use the `offset` option on this card to layer them visually. A reference config is included in `paper-buttons-row-example.yml`.
+To keep this card fast and focused strictly on the weather engine, it does not include built-in buttons. If I added a full dashboard layout engine to a weather card, the code would get huge (it is already big enough).
+
+Instead, the floating buttons you see in the example screenshots are a visual trick using separate cards layered on top. 
+
+This is a somewhat advanced dashboard technique. You achieve this look by placing a separate button card (like `custom:paper-buttons-row`) directly before the weather card in your dashboard layout. You then use the `offset` setting on the weather card to pull it up, sliding it underneath the buttons so it acts as a dynamic background. Since the layout can be a bit complex to set up from scratch, you can find a simplified version of the configuration used in the screenshots in the included `paper-buttons-row-example.yml` file in the repository.
 
 <br>
 
