@@ -423,11 +423,9 @@ The status feature swaps the displayed image when an entity becomes active. Some
 
 ### ADDING BUTTONS
 
-To keep this card fast and focused strictly on the weather engine, it does not include built-in buttons. If I added a full dashboard layout engine to a weather card, the code would get huge (it is already big enough).
+To keep this card fast and focused strictly on the weather engine, it does not include built-in buttons. Instead, the floating buttons you see in the example immersive mode screenshots are a visual trick using separate cards layered on top. 
 
-Instead, the floating buttons you see in the example screenshots are a visual trick using separate cards layered on top. 
-
-This is a somewhat advanced dashboard technique. You achieve this look by placing a separate button card (like `custom:paper-buttons-row`) directly before the weather card in your dashboard layout. You then use the `offset` setting on the weather card to pull it up, sliding it underneath the buttons so it acts as a dynamic background. Since the layout can be a bit complex to set up from scratch, you can find a simplified version of the configuration used in the screenshots in the included `paper-buttons-row-example.yml` file in the repository.
+This is a somewhat advanced dashboard technique. You achieve this look by placing a separate button card (like `custom:paper-buttons-row`) directly before the weather card in your dashboard layout. You then use the `offset` setting on the weather card to pull it up, sliding it underneath the buttons so it acts as a dynamic background. You can find a simplified version of the configuration used in the screenshots in the included `paper-buttons-row-example.yaml` file in the repository.
 
 <br>
 
