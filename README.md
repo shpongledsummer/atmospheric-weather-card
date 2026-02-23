@@ -260,89 +260,109 @@ tap_action:
 
 ---
 
+
 ### CONFIGURATION
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| **`weather_entity`** | string | **Required** | Your weather integration entity (e.g. `weather.forecast_home`). |
-| **`sun_entity`** | string | **Recommended** | The sun entity (e.g. `sun.sun`) is used to automatically calculate day/night cycles. |
-| **`moon_phase_entity`** | `string` |**Recommended** | The moon phase entity (e.g. `sensor.moon_phase`) is used to render accurate phases and illumination. |
+| **`weather_entity`** | `string` | **Required** | Your weather integration entity (e.g., `weather.forecast_home`). |
+| **`sun_entity`** | `string` | *Recommended* | Used to automatically track the sun and switch between day and night. |
+| **`moon_phase_entity`** | `string` | *Recommended* | Used to show the correct moon phase. |
 
 <details>
-<summary><strong>Layout & Appearance</strong></summary>
+<summary><strong>Style & Appearance</strong></summary>
+
+*Settings that change the visual look of the card.*
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `theme` | `string` | `auto` | Force the card into a constant light or dark look (`dark`, `light`, `night`, `day`). |
-| `card_style` | `string` | `immersive` | Set to `standalone` to enable the self-contained card with background and text. |
-| `card_height` | `number\|string` | `110` | Card height. Numbers are treated as pixels (`110` → `110px`). |
-| `square` | `boolean` | `false` | Forces the card into a strict 1:1 aspect ratio. Useful for Grid layouts. |
-| `full_width` | `boolean` | `false` | Stretches the card edge-to-edge by removing side margins. |
-| `css_mask_vertical` | `boolean` | `true` | Toggles the top/bottom fade effect on immersive mode. |
-| `css_mask_horizontal` | `boolean` | `true` | Toggles the left/right fade effect in immersive mode. |
-| `offset` | `string` | `0px` | CSS margin shorthand applied to the card (e.g. `"-50px 0px 0px 0px"`). |
-
-</details>
-
-
-<details>
-<summary><strong>Sun & Moon Position</strong></summary>
-
-| Option | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `sun_moon_x_position` | `number` | `55` | Horizontal position. Positive = left offset, Negative = right offset. |
-| `sun_moon_y_position` | `number` | `-55` | Vertical distance from the top. |
-| `sun_moon_size` | `number` | `40` | Adjusts the scale of the sun and moon elements proportionally. |
+| `card_style` | `string` | `immersive` | Set to `standalone` for a solid background with text, or `immersive` for a transparent background. |
+| `theme` | `string` | `auto` | Force the card to always look dark or light (`dark`, `light`, `night`, `day`). |
+| `moon_style` | `string` | `blue` | Choose the moon color for the light theme (`blue` or `yellow`). |
 
 </details>
 
 <details>
-<summary><strong>Custom Image</strong></summary>
+<summary><strong>Layout & Dimensions</strong></summary>
+
+*Settings to control the size, shape, and placement of the card.*
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `day` | `string` | — | Path to a daytime image (e.g. `/local/images/house-day.png`). |
-| `night` | `string` | — | Path to a nighttime image. Falls back to `day` if not set. |
-| `image_scale` | `number` | `100` | Image height as a percentage of the card height. |
-| `image_alignment` | `string` | `top-right` | Image position (e.g. `center`, `bottom-center`, `top-right`). |
+| `card_height` | `number\|string` | `110` | Height of the card in pixels (`110` means `110px`). |
+| `square` | `boolean` | `false` | Forces the card into a perfect square. Great for grid layouts. |
+| `full_width` | `boolean` | `false` | Stretches the card edge-to-edge by removing the side margins. |
+| `offset` | `string` | `0px` | Move the card around using CSS margins (e.g., `"-50px 0px 0px 0px"`). |
 
 </details>
 
 <details>
-<summary><strong>Standalone Text</strong></summary>
+<summary><strong>Sky & Elements</strong></summary>
+
+*Adjust the positioning and scale of the sky objects.*
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `top_text_sensor` | `string` | — | Entity ID of a sensor to display at the top (defaults to Temperature). |
-| `bottom_text_sensor` | `string` | — | Entity ID of a sensor to display at the bottom (defaults to Wind Speed). |
-| `bottom_text_icon` | `string` | *Auto* | Force a specific icon (e.g. `mdi:home`). |
-| `disable_text` | `boolean` | `false` | If `true`, hides both the temperature and bottom text completely. |
-| `disable_bottom_icon` | `boolean` | `false` | If `true`, hides only the icon in the bottom text. |
+| `sun_moon_size` | `number` | `100` | Change the overall size of the sun and moon. |
+| `sun_moon_x_position` | `number` | `100` | Move the sun/moon left or right. |
+| `sun_moon_y_position` | `number` | `100` | Move the sun/moon up or down. |
 
 </details>
 
 <details>
-<summary><strong>Smart Status</strong></summary>
+<summary><strong>Custom Images & Status</strong></summary>
+
+*Add your own home images to the card (works in both standalone and immersive modes).*
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `status_entity` | `string` | — | Entity to watch (e.g. `binary_sensor.front_door`). |
-| `status_image_day` | `string` | — | Override image for daytime when entity is active. |
-| `status_image_night` | `string` | — | Override image for nighttime when entity is active. |
+| `day` | `string` | — | Image to show during the day (e.g., `/local/house-day.png`). |
+| `night` | `string` | — | Image to show at night. Uses the day image if you leave this empty. |
+| `image_scale` | `number` | `100` | Change the image size (percentage of the card height). |
+| `image_alignment` | `string` | `top-right` | Where to place the image (`center`, `bottom-center`, `top-right`, etc.). |
+| `status_entity` | `string` | — | An entity to watch (like a door sensor or lock). |
+| `status_image_day` | `string` | — | Image to show during the day when the status entity is active. |
+| `status_image_night` | `string` | — | Image to show at night when the status entity is active. |
 
 </details>
 
 <details>
-<summary><strong>Entities & Logic</strong></summary>
+<summary><strong>Text & Data (Standalone Only)</strong></summary>
+
+*Settings that only apply when `card_style: standalone` is active.*
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `theme` | `string` | `auto` | Force the card into a constant light or dark look: `light`/`day` or `dark`/`night`. |
-| `theme_entity` | `string` | — | Entity whose state triggers night mode (e.g. `dark`, `night`, `on`). |
-| `moon_style` | `string` | `blue` | Manually choose the moon color for the light theme (`blue` or `yellow`). |
-| `tap_action` | `object` | — | Standard HA action config. |
+| `top_text_sensor` | `string` | — | Sensor to show at the top (defaults to Temperature). |
+| `bottom_text_sensor` | `string` | — | Sensor to show at the bottom (defaults to Wind Speed). |
+| `bottom_text_icon` | `string` | *Auto* | Force a specific icon to show next to the bottom text. |
+| `disable_text` | `boolean` | `false` | Hides all text completely. |
+| `disable_bottom_icon` | `boolean` | `false` | Hides only the icon next to the bottom text. |
 
 </details>
+
+<details>
+<summary><strong>Edge Fades (Immersive Only)</strong></summary>
+
+*Settings that only apply when `card_style: immersive` is active.*
+
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `css_mask_vertical` | `boolean` | `true` | Turns off the top/bottom fade effect. Useful for tall headers. |
+| `css_mask_horizontal` | `boolean` | `true` | Turns off the left/right fade effect. Useful for full-width headers. |
+
+</details>
+
+<details>
+<summary><strong>Interaction & Logic</strong></summary>
+
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `theme_entity` | `string` | — | An entity that triggers night mode (e.g., a custom toggle). |
+| `tap_action` | `object` | — | Standard Home Assistant click actions. |
+
+</details>
+
 
 <br>
 
