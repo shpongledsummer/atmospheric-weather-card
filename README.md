@@ -278,8 +278,8 @@ tap_action:
 | `card_height` | `number\|string` | `110` | Card height. Numbers are treated as pixels (`110` → `110px`). |
 | `square` | `boolean` | `false` | Forces the card into a strict 1:1 aspect ratio. Useful for Grid layouts. |
 | `full_width` | `boolean` | `false` | Stretches the card edge-to-edge by removing side margins. |
-| `css_mask_vertical` | `boolean` | `true` | Toggles the top/bottom fade effect. Disable for full-height headers. |
-| `css_mask_horizontal` | `boolean` | `true` | Toggles the left/right fade effect. Disable for full-width headers. |
+| `css_mask_vertical` | `boolean` | `true` | Toggles the top/bottom fade effect on immersive mode. |
+| `css_mask_horizontal` | `boolean` | `true` | Toggles the left/right fade effect in immersive mode. |
 | `offset` | `string` | `0px` | CSS margin shorthand applied to the card (e.g. `"-50px 0px 0px 0px"`). |
 
 </details>
