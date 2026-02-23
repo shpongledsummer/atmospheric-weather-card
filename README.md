@@ -121,8 +121,8 @@ cards:
 
 Renders with a fully transparent background so it blends seamlessly into your dashboard.
 
-> [!IMPORTANT]
-> Immersive mode works best with themes that **automatically switch between light and dark.** If you prefer a fixed theme (always light or always dark), you can manually force the card to match. While this avoids a jarring contrast, it lacks the full visual depth of the auto-switching mode. See [Day / Night Logic](#day--night-logic).
+> [!NOTE]
+> Immersive mode looks best with themes that **automatically switch between light and dark.** If you prefer a fixed theme (always light or always dark), you can manually force the card to match. See [Day / Night Logic](#day--night-logic).
 
 <details>
 <summary><b>Example 1 — Header Integration</b></summary>
