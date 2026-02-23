@@ -270,25 +270,13 @@ tap_action:
 | **`moon_phase_entity`** | `string` | *Recommended* | Used to show the correct moon phase. |
 
 <details>
-<summary><strong>Style & Appearance</strong></summary>
+<summary><strong>Layout & Dimensions</strong></summary>
 
-*Settings that change the visual look of the card.*
+*Controls the physical shape, size, and display mode of the card on your dashboard.*
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `card_style` | `string` | `immersive` | Set to `standalone` for a solid background with text, or `immersive` for a transparent background. |
-| `theme` | `string` | `auto` | Force the card to always look dark or light (`dark`, `light`, `night`, `day`). |
-| `moon_style` | `string` | `blue` | Choose the moon color for the light theme (`blue` or `yellow`). |
-
-</details>
-
-<details>
-<summary><strong>Layout & Dimensions</strong></summary>
-
-*Settings to control the size, shape, and placement of the card.*
-
-| Option | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
 | `card_height` | `number\|string` | `110` | Height of the card in pixels (`110` means `110px`). |
 | `square` | `boolean` | `false` | Forces the card into a perfect square. Great for grid layouts. |
 | `full_width` | `boolean` | `false` | Stretches the card edge-to-edge by removing the side margins. |
@@ -297,9 +285,23 @@ tap_action:
 </details>
 
 <details>
-<summary><strong>Sky & Elements</strong></summary>
+<summary><strong>Visual Styling & Colors</strong></summary>
 
-*Adjust the positioning and scale of the sky objects.*
+*Dedicated settings for purely aesthetic choices and color themes.*
+
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `theme` | `string` | `auto` | Force the card to always look dark or light (`dark`, `light`, `night`, `day`). |
+| `moon_style` | `string` | `blue` | *(Immersive Only)* Choose the moon color for the light theme (`blue` or `yellow`). |
+| `css_mask_vertical` | `boolean` | `true` | *(Immersive Only)* Turns off the top/bottom fade effect. |
+| `css_mask_horizontal` | `boolean` | `true` | *(Immersive Only)* Turns off the left/right fade effect. |
+
+</details>
+
+<details>
+<summary><strong>Sun & Moon Adjustments</strong></summary>
+
+*Adjust the positioning and overall scale of the sun and moon.*
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -310,16 +312,16 @@ tap_action:
 </details>
 
 <details>
-<summary><strong>Custom Images & Status</strong></summary>
+<summary><strong>Custom Home Images & Status</strong></summary>
 
-*Add your own home images to the card (works in both standalone and immersive modes).*
+*Add your own home images to the card and tie them to status entities (works in both standalone and immersive modes).*
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `day` | `string` | — | Image to show during the day (e.g., `/local/house-day.png`). |
 | `night` | `string` | — | Image to show at night. Uses the day image if you leave this empty. |
 | `image_scale` | `number` | `100` | Change the image size (percentage of the card height). |
-| `image_alignment` | `string` | `top-right` | Where to place the image (`center`, `bottom-center`, `top-right`, etc.). |
+| `image_alignment` | `string` | `right` | Where to place the image (`center`, `bottom-center`, `top-right`, etc.). |
 | `status_entity` | `string` | — | An entity to watch (like a door sensor or lock). |
 | `status_image_day` | `string` | — | Image to show during the day when the status entity is active. |
 | `status_image_night` | `string` | — | Image to show at night when the status entity is active. |
@@ -327,7 +329,7 @@ tap_action:
 </details>
 
 <details>
-<summary><strong>Text & Data (Standalone Only)</strong></summary>
+<summary><strong>Text Settings (Standalone Only)</strong></summary>
 
 *Settings that only apply when `card_style: standalone` is active.*
 
@@ -342,19 +344,9 @@ tap_action:
 </details>
 
 <details>
-<summary><strong>Edge Fades (Immersive Only)</strong></summary>
+<summary><strong>Logic & Interactivity</strong></summary>
 
-*Settings that only apply when `card_style: immersive` is active.*
-
-| Option | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `css_mask_vertical` | `boolean` | `true` | Turns off the top/bottom fade effect. |
-| `css_mask_horizontal` | `boolean` | `true` | Turns off the left/right fade effect. |
-
-</details>
-
-<details>
-<summary><strong>Interaction & Logic</strong></summary>
+*Smart behaviors, mode switching, and click actions.*
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -362,7 +354,6 @@ tap_action:
 | `tap_action` | `object` | — | Standard Home Assistant click actions. |
 
 </details>
-
 
 <br>
 
