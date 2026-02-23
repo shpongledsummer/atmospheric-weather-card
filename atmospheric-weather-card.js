@@ -46,7 +46,8 @@ const FALLBACK_WEATHER = Object.freeze({
  *   count      — Precipitation particle count.
  *   cloud      — Number of cloud objects.
  *   wind       — Base wind speed multiplier.
- *   rays       — Whether to draw sun god-rays.
+ *   rays       — Sun-visible weather flag (triggers sun clouds with warm palette).
+ *   sunClouds  — Enables sun cloud layer with cool overcast palette (no sun disc).
  *   dark       — Storm darkening flag (affects cloud colors).
  *   thunder    — Enables lightning bolt spawning.
  *   foggy      — Enables fog bank layer.
@@ -56,7 +57,7 @@ const FALLBACK_WEATHER = Object.freeze({
  */
 const WEATHER_MAP = Object.freeze({
     'clear-night':      Object.freeze({ type: 'stars', count: 280, cloud: 4,  wind: 0.1, rays: false, atmosphere: 'night', stars: 420 }),
-    'cloudy':           Object.freeze({ type: 'cloud', count: 0,   cloud: 24, wind: 0.3, dark: false, rays: false, atmosphere: 'overcast', stars: 120, scale: 1.2 }),
+    'cloudy':           Object.freeze({ type: 'cloud', count: 0,   cloud: 24, wind: 0.3, dark: false, rays: false, sunClouds: true, atmosphere: 'overcast', stars: 120, scale: 1.2 }),
     'fog':              Object.freeze({ type: 'fog',   count: 0,   cloud: 18, wind: 0.2, rays: false, atmosphere: 'mist', foggy: true, stars: 125, scale: 1.2 }),
     'hail':             Object.freeze({ type: 'hail',  count: 150, cloud: 17, wind: 0.8, dark: true, rays: false, atmosphere: 'storm', stars: 50, scale: 1.2 }),
     'lightning':        Object.freeze({ type: 'rain',  count: 200, cloud: 18, wind: 2.0, thunder: true, dark: true, rays: false, atmosphere: 'storm', stars: 50, scale: 1.0 }),
@@ -140,6 +141,14 @@ const PERFORMANCE_CONFIG = Object.freeze({
     MAX_DPR: 2.0,
     TARGET_FPS: 30,
     MAX_PIXELS: 2073600
+});
+
+// Canvas filter presets for visual mood adjustment
+const FILTER_PRESETS = Object.freeze({
+    'darken':  'brightness(0.72) contrast(1.1)',
+    'vivid':   'saturate(1.5) contrast(1.12) brightness(1.02)',
+    'muted':   'saturate(0.55) brightness(1.08)',
+    'warm':    'sepia(0.25) saturate(1.15) brightness(1.0)'
 });
 
 // ============================================================================
@@ -497,6 +506,7 @@ class AtmosphericWeatherCard extends HTMLElement {
 
         this._prevStyleSig = null;
         this._prevSunLeft = null;
+        this._prevTextPosition = null;
 
         this._entityErrors = new Map();
         this._lastErrorLog = 0;
@@ -538,6 +548,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             canvas {
                 position: absolute; top: 0; left: 0; width: 100%; height: 100%;
                 pointer-events: none;
+                filter: var(--awc-canvas-filter, var(--_canvas-filter, none));
                 --mask-v: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
                 --mask-h: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
                 -webkit-mask-image: var(--mask-v), var(--mask-h);
@@ -624,48 +635,65 @@ class AtmosphericWeatherCard extends HTMLElement {
             #card-root.standalone.scheme-day.weather-fog          { background-image: radial-gradient(ellipse at top, rgba(245,250,255,0.70) 0%, rgba(245,250,255,0.25) 50%, transparent 85%), linear-gradient(160deg, #D9E3ED 0%, #EDF2F7 50%, #FDFEFF 100%) !important; }
 			
 			/* Night backgrounds */
-            #card-root.standalone.scheme-night                    { background: radial-gradient(ellipse at top, rgba(160,190,255,0.12) 0%, rgba(160,190,255,0.02) 40%, transparent 70%), linear-gradient(160deg, #000000 40%, #080c18 100%); }
-            #card-root.standalone.scheme-night.weather-partly     { background: radial-gradient(ellipse at top, rgba(160,190,255,0.14) 0%, rgba(160,190,255,0.03) 45%, transparent 75%), linear-gradient(160deg, #010203 30%, #111822 100%) !important; }
-            #card-root.standalone.scheme-night.weather-overcast   { background: radial-gradient(ellipse at top, rgba(140,170,220,0.18) 0%, rgba(140,170,220,0.04) 50%, transparent 80%), linear-gradient(160deg, #010203 30%, #111822 100%) !important; }
-            #card-root.standalone.scheme-night.weather-rainy      { background: radial-gradient(ellipse at top, rgba(120,150,200,0.15) 0%, rgba(120,150,200,0.03) 45%, transparent 75%), linear-gradient(160deg, #020305 20%, #0d1a30 100%) !important; }
-            #card-root.standalone.scheme-night.weather-storm      { background: radial-gradient(ellipse at top, rgba(100,130,180,0.12) 0%, rgba(100,130,180,0.02) 45%, transparent 75%), linear-gradient(160deg, #020305 20%, #0d1a30 100%) !important; }
-            #card-root.standalone.scheme-night.weather-snow       { background: radial-gradient(ellipse at top, rgba(180,210,255,0.22) 0%, rgba(180,210,255,0.05) 45%, transparent 75%), linear-gradient(160deg, #080c11 10%, #1d2733 100%) !important; }
-            #card-root.standalone.scheme-night.weather-fog        { background: radial-gradient(ellipse at top, rgba(150,170,200,0.25) 0%, rgba(150,170,200,0.06) 50%, transparent 85%), linear-gradient(160deg, #0d0f11 0%, #16191c 100%) !important; }
+            #card-root.standalone.scheme-night                    { background-image: radial-gradient(ellipse at top, rgba(160,190,255,0.15) 0%, rgba(160,190,255,0.04) 40%, transparent 70%), linear-gradient(160deg, #000000 0%, #050c18 50%, #0e1a30 100%); }
+            #card-root.standalone.scheme-night.weather-exceptional{ background-image: radial-gradient(ellipse at top, rgba(160,190,255,0.18) 0%, rgba(160,190,255,0.05) 40%, transparent 70%), linear-gradient(160deg, #000000 0%, #040b16 50%, #0b182b 100%) !important; }
+            #card-root.standalone.scheme-night.weather-partly     { background-image: radial-gradient(ellipse at top, rgba(160,190,255,0.12) 0%, rgba(160,190,255,0.03) 45%, transparent 75%), linear-gradient(160deg, #010204 0%, #0a1320 50%, #152236 100%) !important; }
+            #card-root.standalone.scheme-night.weather-overcast   { background-image: radial-gradient(ellipse at top, rgba(140,160,190,0.10) 0%, rgba(140,160,190,0.02) 50%, transparent 80%), linear-gradient(160deg, #030406 0%, #0e1218 50%, #1a202a 100%) !important; }
+            #card-root.standalone.scheme-night.weather-rainy      { background-image: radial-gradient(ellipse at top, rgba(130,150,180,0.12) 0%, rgba(130,150,180,0.03) 45%, transparent 75%), linear-gradient(160deg, #020406 0%, #09121a 50%, #121e2e 100%) !important; }
+            #card-root.standalone.scheme-night.weather-storm      { background-image: radial-gradient(ellipse at top, rgba(100,120,150,0.08) 0%, rgba(100,120,150,0.02) 45%, transparent 75%), linear-gradient(160deg, #000000 0%, #04070a 50%, #091018 100%) !important; }
+            #card-root.standalone.scheme-night.weather-snow       { background-image: radial-gradient(ellipse at top, rgba(180,200,230,0.15) 0%, rgba(180,200,230,0.04) 45%, transparent 75%), linear-gradient(160deg, #040609 0%, #101722 50%, #1d2738 100%) !important; }
+            #card-root.standalone.scheme-night.weather-fog        { background-image: radial-gradient(ellipse at top, rgba(150,160,180,0.15) 0%, rgba(150,160,180,0.04) 50%, transparent 85%), linear-gradient(160deg, #050608 0%, #121418 50%, #1f232a 100%) !important; }
 			
 			
+            #text-wrapper {
+                position: absolute; inset: 0; z-index: 10;
+                pointer-events: none; display: none;
+                flex-direction: column; box-sizing: border-box;
+                padding: calc(var(--awc-card-padding, var(--ha-space-4, 16px)) + 4px);
+                gap: var(--awc-text-gap, 10px);
+                overflow: hidden;
+            }
+            #card-root #text-wrapper { display: flex; }
             #temp-text, #bottom-text {
-                position: absolute; z-index: 10; pointer-events: none;
+                pointer-events: none;
                 font-family: var(--ha-font-family, var(--paper-font-body1_-_font-family, sans-serif));
-                transition: color 0.3s ease; display: none;
+                transition: color 0.3s ease;
+                min-width: 0; max-width: 100%;
             }
-            #card-root.standalone #temp-text,
-            #card-root.standalone #bottom-text { display: flex; }
             #temp-text {
-                top: var(--awc-card-padding, var(--ha-space-4, 16px));
-                font-size: var(--awc-top-font-size, clamp(24px, 12cqw, 52px));
-                font-weight: 600; line-height: 1;
-                letter-spacing: -1px; align-items: flex-start; gap: 6px;
+                font-size: var(--awc-top-font-size, clamp(24px, 11cqw, 52px));
+                font-weight: var(--awc-top-font-weight, 600); line-height: 1;
+                letter-spacing: -1px; display: flex; align-items: flex-start; gap: 6px;
+                white-space: nowrap;
             }
-            .temp-unit { font-size: 0.5em; font-weight: 500; padding-top: 6px; opacity: 0.7; }
+            .temp-val { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+            .temp-unit { font-size: 0.5em; font-weight: 500; padding-top: 6px; opacity: 0.7; flex-shrink: 0; }
             #bottom-text {
-                bottom: var(--awc-card-padding, var(--ha-space-4, 16px));
                 font-size: var(--awc-bottom-font-size, clamp(15px, 5cqmin, 26px));
-                font-weight: 500; opacity: 0.7;
-                letter-spacing: 0.5px; white-space: nowrap; gap: 6px;
+                font-weight: var(--awc-bottom-font-weight, 500); opacity: var(--awc-bottom-opacity, 0.7);
+                letter-spacing: 0.5px; white-space: nowrap; display: flex; gap: 6px;
             }
+            #bottom-text > span { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
             #bottom-text ha-icon,
             #bottom-text ha-state-icon { --mdc-icon-size: var(--awc-icon-size, 1.1em); opacity: 0.9; }
-            .text-left  { left:  calc(var(--awc-card-padding, var(--ha-space-4, 16px)) + 4px); text-align: left; }
-            .text-right { right: calc(var(--awc-card-padding, var(--ha-space-4, 16px)) + 4px); text-align: right; }
-            #card-root.standalone.scheme-day #temp-text,
-            #card-root.standalone.scheme-day #bottom-text {
+            /* text_position: horizontal alignment */
+            .text-left    { align-items: flex-start; text-align: left; }
+            .text-right   { align-items: flex-end;   text-align: right; }
+            .text-hcenter { align-items: center;     text-align: center; }
+            /* text_alignment: vertical distribution */
+            .align-spread { justify-content: space-between; }
+            .align-top    { justify-content: flex-start; }
+            .align-center { justify-content: center; }
+            .align-bottom { justify-content: flex-end; }
+            #card-root.scheme-day #temp-text,
+            #card-root.scheme-day #bottom-text {
                 color: var(--awc-text-day, #333333);
-                text-shadow: 0 1px 2px rgba(255,255,255,0.6);
+                text-shadow: var(--awc-text-shadow-day, 0 1px 2px rgba(255,255,255,0.6));
             }
-            #card-root.standalone.scheme-night #temp-text,
-            #card-root.standalone.scheme-night #bottom-text {
+            #card-root.scheme-night #temp-text,
+            #card-root.scheme-night #bottom-text {
                 color: var(--awc-text-night, #ffffff);
-                text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+                text-shadow: var(--awc-text-shadow-night, 0 1px 3px rgba(0,0,0,0.6));
             }
         `;
     }
@@ -695,11 +723,13 @@ class AtmosphericWeatherCard extends HTMLElement {
 
         const tempText   = document.createElement('div'); tempText.id   = 'temp-text';
         const bottomText = document.createElement('div'); bottomText.id = 'bottom-text';
+        const textWrapper = document.createElement('div'); textWrapper.id = 'text-wrapper';
+        textWrapper.append(tempText, bottomText);
 
-        root.append(bg, mid, img, fg, tempText, bottomText);
+        root.append(bg, mid, img, fg, textWrapper);
         this.shadowRoot.append(style, root);
 
-        this._elements = { root, bg, mid, img, fg, tempText, bottomText };
+        this._elements = { root, bg, mid, img, fg, tempText, bottomText, textWrapper };
 
         const ctxOpts = { alpha: true, willReadFrequently: false };
         const bgCtx  = bg.getContext('2d', ctxOpts);
@@ -851,6 +881,11 @@ class AtmosphericWeatherCard extends HTMLElement {
         const root = this._elements.root;
         root.classList.toggle('no-mask-v', config.css_mask_vertical === false);
         root.classList.toggle('no-mask-h', config.css_mask_horizontal === false);
+
+        // Canvas filter: preset name resolves to a CSS filter string.
+        // User can override via --awc-canvas-filter CSS variable.
+        const filterVal = FILTER_PRESETS[(config.filter || '').toLowerCase()] || '';
+        root.style.setProperty('--_canvas-filter', filterVal || 'none');
 
         this._hasStatusFeature = !!(config.status_entity && (config.status_image_day || config.status_image_night));
 
@@ -1080,6 +1115,9 @@ class AtmosphericWeatherCard extends HTMLElement {
         // --- Cloud global opacity ---
         const cloudGlobalOp = isDark ? 0.64 : 0.85;
 
+        // --- Sun cloud palette: warm (sun-lit) vs cool (overcast accent) ---
+        const sunCloudWarm = !!(p?.rays);
+
         this._rs = {
             isStormy,
             isBadWeatherForPlanes,
@@ -1090,6 +1128,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             rainRgb,
             cloudGlobalOp,
             starMode,
+            sunCloudWarm,
             cp  // cloud palette
         };
     }
@@ -1224,7 +1263,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         // Default --g-op: 0 in CSS so nothing shows until JS fires.
         if (w > 0) {
             const h = this._cachedDimensions.height / (this._cachedDimensions.dpr || 1);
-            const celestial = this._getCelestialPosition(w);
+            const celestial = this._getCelestialPosition(w, h);
             root.style.setProperty('--c-x', `${celestial.x}px`);
             root.style.setProperty('--c-y', `${celestial.y}px`);
             if (h > 0) {
@@ -1250,11 +1289,17 @@ class AtmosphericWeatherCard extends HTMLElement {
             const isStandalone = this._config.card_style === 'standalone';
 			const isImmersiveLight = !this._isThemeDark && !isStandalone;
 
-			// Moon glow color: respects moon_style config ('blue' default, 'yellow' for warm gold)
+			// Moon glow color: respects moon_style config
 			const moonStyle = (this._config.moon_style || 'blue').toLowerCase();
-			const moonRgb = isImmersiveLight
-				? (moonStyle === 'yellow' ? '255, 200, 50' : '100, 125, 175')
-				: (this._isLightBackground ? '218, 228, 255' : '190, 210, 255');
+			let moonRgb;
+			if (isImmersiveLight) {
+				moonRgb = moonStyle === 'yellow' ? '255, 200, 50'
+					: moonStyle === 'purple' ? '140, 115, 175'
+					: moonStyle === 'grey'   ? '105, 110, 120'
+					:                          '100, 125, 175'; // blue (default)
+			} else {
+				moonRgb = this._isLightBackground ? '218, 228, 255' : '190, 210, 255';
+			}
             root.style.setProperty('--g-rgb', moonRgb);
             root.style.setProperty('--g-op', nightOp.toFixed(3));
         } else {
@@ -1274,11 +1319,16 @@ class AtmosphericWeatherCard extends HTMLElement {
             root.style.setProperty('--g-op', dayOp.toFixed(3));
         }
 
-        // === STANDALONE-ONLY: scheme classes, background gradients, film grain ===
+        // === SCHEME CLASSES — applied for ALL modes (used by text colors) ===
+        const isDarkScheme = this._isThemeDark;
+        root.classList.toggle('scheme-night', isDarkScheme);
+        root.classList.toggle('scheme-day', !isDarkScheme);
+
+        // === STANDALONE-ONLY: background gradients, weather classes, film grain ===
         if (this._config.card_style !== 'standalone') {
             if (this._prevStyleSig !== null) {
                 root.classList.remove(
-                    'standalone', 'scheme-day', 'scheme-night',
+                    'standalone',
                     'weather-overcast', 'weather-rainy', 'weather-storm',
                     'weather-snow', 'weather-partly', 'weather-fog', 'weather-exceptional'
                 );
@@ -1287,7 +1337,6 @@ class AtmosphericWeatherCard extends HTMLElement {
             return;
         }
 
-        const isDarkScheme = this._isThemeDark;
         const styleSig = `${isDarkScheme}_${this._isTimeNight}_${atm}_${this._moonPhaseState}`;
         if (this._prevStyleSig === styleSig) return;
         this._prevStyleSig = styleSig;
@@ -1297,8 +1346,6 @@ class AtmosphericWeatherCard extends HTMLElement {
             'weather-overcast', 'weather-rainy', 'weather-storm',
             'weather-snow', 'weather-partly', 'weather-fog', 'weather-exceptional'
         );
-        root.classList.toggle('scheme-night', isDarkScheme);
-        root.classList.toggle('scheme-day', !isDarkScheme);
 
         const atmosphereToClass = {
             'mist': 'weather-fog', 'fog': 'weather-fog',
@@ -1317,13 +1364,14 @@ class AtmosphericWeatherCard extends HTMLElement {
     // TEXT DISPLAY
     // ========================================================================
     _updateTextElements(hass, wEntity, lang) {
-        if (!this._config.card_style || !wEntity) return;
+        if (!wEntity) return;
         if (!this._elements?.tempText || !this._elements?.bottomText) return;
 
         const showText = this._config.disable_text !== true;
         const showIcon = this._config.disable_bottom_icon !== true;
-        this._elements.tempText.style.display = showText ? '' : 'none';
-        this._elements.bottomText.style.display = showText ? '' : 'none';
+        const showBottom = this._config.disable_bottom_text !== true;
+        this._elements.textWrapper.style.display = showText ? '' : 'none';
+        this._elements.bottomText.style.display = showBottom ? '' : 'none';
 
         // Top text: custom sensor (any state type) or temperature attribute
         let topVal, topUnit;
@@ -1403,16 +1451,59 @@ class AtmosphericWeatherCard extends HTMLElement {
             }
         }
 
-        const sunPos = parseInt(this._config.sun_moon_x_position, 10);
-        const isSunLeft = !isNaN(sunPos) ? sunPos >= 0 : true;
-        if (this._prevSunLeft !== isSunLeft) {
-            this._prevSunLeft = isSunLeft;
-            const add = isSunLeft ? 'text-right' : 'text-left';
-            const remove = isSunLeft ? 'text-left' : 'text-right';
-            this._elements.tempText.classList.remove(remove);
-            this._elements.tempText.classList.add(add);
-            this._elements.bottomText.classList.remove(remove);
-            this._elements.bottomText.classList.add(add);
+        const textPos = (this._config.text_position || '').toLowerCase().trim();
+        const textAlign = (this._config.text_alignment || '').toLowerCase().trim();
+
+        const textSig = `${textPos}|${textAlign}`;
+
+        const hMap = { left: 'text-left', right: 'text-right', center: 'text-hcenter' };
+        const vMap = { top: 'align-top', center: 'align-center', bottom: 'align-bottom' };
+        const allPosClasses = ['text-left', 'text-right', 'text-hcenter', 'align-spread', 'align-top', 'align-center', 'align-bottom'];
+
+        if (textPos) {
+            if (this._prevTextPosition !== textSig) {
+                this._prevTextPosition = textSig;
+                const w = this._elements.textWrapper;
+                w.classList.remove(...allPosClasses);
+
+                // Parse compound "vertical-horizontal" or single value
+                let posH, posV;
+                const parts = textPos.split('-');
+                if (parts.length === 2 && vMap[parts[0]] && hMap[parts[1]]) {
+                    posV = parts[0];
+                    posH = parts[1];
+                } else if (parts.length === 2 && hMap[parts[0]] && vMap[parts[1]]) {
+                    // Allow reversed order e.g. "left-top"
+                    posH = parts[0];
+                    posV = parts[1];
+                } else {
+                    // Single value: horizontal only
+                    posH = textPos;
+                }
+
+                // text_alignment overrides vertical component if explicitly set
+                const resolvedV = vMap[textAlign] || vMap[posV] || 'align-spread';
+                const resolvedH = hMap[posH];
+
+                if (resolvedH) w.classList.add(resolvedH);
+                w.classList.add(resolvedV);
+            }
+        } else {
+            // Default auto behavior: text opposite the sun/moon position
+            if (this._prevTextPosition !== textSig) {
+                this._prevTextPosition = textSig;
+                const w = this._elements.textWrapper;
+                w.classList.remove('align-spread', 'align-top', 'align-center', 'align-bottom');
+                w.classList.add(vMap[textAlign] || 'align-spread');
+            }
+            const sunPos = parseInt(this._config.sun_moon_x_position, 10);
+            const isSunLeft = !isNaN(sunPos) ? sunPos >= 0 : true;
+            if (this._prevSunLeft !== isSunLeft) {
+                this._prevSunLeft = isSunLeft;
+                const w = this._elements.textWrapper;
+                w.classList.remove('text-left', 'text-right');
+                w.classList.add(isSunLeft ? 'text-right' : 'text-left');
+            }
         }
     }
 
@@ -1522,18 +1613,28 @@ class AtmosphericWeatherCard extends HTMLElement {
         return value !== undefined && value !== null ? value : defaultValue;
     }
 
-    _getCelestialPosition(w) {
+    _getCelestialPosition(w, h) {
         const result = { x: 100, y: 100 };
         if (this._config.sun_moon_x_position !== undefined) {
-            const posX = parseInt(this._config.sun_moon_x_position, 10);
-            if (!isNaN(posX)) {
-                result.x = posX >= 0 ? posX : w + posX;
+            const raw = String(this._config.sun_moon_x_position).trim().toLowerCase();
+            if (raw === 'center') {
+                result.x = w / 2;
+            } else {
+                const posX = parseInt(raw, 10);
+                if (!isNaN(posX)) {
+                    result.x = posX >= 0 ? posX : w + posX;
+                }
             }
         }
         if (this._config.sun_moon_y_position !== undefined) {
-            const posY = parseInt(this._config.sun_moon_y_position, 10);
-            if (!isNaN(posY)) {
-                result.y = posY;
+            const raw = String(this._config.sun_moon_y_position).trim().toLowerCase();
+            if (raw === 'center') {
+                result.y = h / 2;
+            } else {
+                const posY = parseInt(raw, 10);
+                if (!isNaN(posY)) {
+                    result.y = posY;
+                }
             }
         }
         return result;
@@ -1712,7 +1813,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         if (scaledWidth > 0 && scaledHeight > 0) {
             const cssW = scaledWidth / dpr;
             const cssH = scaledHeight / dpr;
-            const celestial = this._getCelestialPosition(cssW);
+            const celestial = this._getCelestialPosition(cssW, cssH);
             
             const dx2 = Math.max(celestial.x, cssW - celestial.x);
             const dy2 = Math.max(celestial.y, cssH - celestial.y);
@@ -1821,7 +1922,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             this._initNightClouds(w, h);
         }
 
-        if (p.rays && !this._isNight && this._isLightBackground) {
+        if ((p.rays || p.sunClouds) && !this._isNight && this._isLightBackground) {
             this._initSunClouds(w, h);
         }
 
@@ -2244,7 +2345,7 @@ class AtmosphericWeatherCard extends HTMLElement {
     }
 
     _initSunClouds(w, h) {
-        const celestial = this._getCelestialPosition(w);
+        const celestial = this._getCelestialPosition(w, h);
         const sunX = celestial.x;
         const sunY = celestial.y;
         const isExceptional = (this._params.cloud || 0) === 0;
@@ -2406,7 +2507,7 @@ class AtmosphericWeatherCard extends HTMLElement {
 
     _initDustMotes(w, h) {
         if (!this._shouldShowSun()) return;
-        const celestial = this._getCelestialPosition(w);
+        const celestial = this._getCelestialPosition(w, h);
         const count = Math.min(LIMITS.MAX_DUST, 30);
         for (let i = 0; i < count; i++) {
             const spreadX = (Math.random() - 0.5) * 300;
@@ -2483,6 +2584,7 @@ class AtmosphericWeatherCard extends HTMLElement {
 
             const puffs = cloud.puffs;
             const len = puffs.length;
+            const warm = this._rs.sunCloudWarm;
 
             for (let j = 0; j < len; j++) {
                 const puff = puffs[j];
@@ -2491,11 +2593,19 @@ class AtmosphericWeatherCard extends HTMLElement {
                     puff.dx - puff.rad * 0.35, puff.dy - puff.rad * 0.45, 0,
                     puff.dx, puff.dy, puff.rad
                 );
-                grad.addColorStop(0, `rgba(255, 255, 250, ${baseOp})`);
-                grad.addColorStop(0.3, `rgba(255, 245, 225, ${baseOp * 0.9})`);
-                grad.addColorStop(0.6, `rgba(250, 235, 200, ${baseOp * 0.75})`);
-                grad.addColorStop(0.85, `rgba(240, 220, 180, ${baseOp * 0.5})`);
-                grad.addColorStop(1, `rgba(235, 210, 160, 0)`);
+                if (warm) {
+                    grad.addColorStop(0, `rgba(255, 255, 250, ${baseOp})`);
+                    grad.addColorStop(0.3, `rgba(255, 245, 225, ${baseOp * 0.9})`);
+                    grad.addColorStop(0.6, `rgba(250, 235, 200, ${baseOp * 0.75})`);
+                    grad.addColorStop(0.85, `rgba(240, 220, 180, ${baseOp * 0.5})`);
+                    grad.addColorStop(1, `rgba(235, 210, 160, 0)`);
+                } else {
+                    grad.addColorStop(0, `rgba(240, 243, 250, ${baseOp})`);
+                    grad.addColorStop(0.3, `rgba(220, 225, 238, ${baseOp * 0.9})`);
+                    grad.addColorStop(0.6, `rgba(200, 208, 225, ${baseOp * 0.75})`);
+                    grad.addColorStop(0.85, `rgba(180, 190, 212, ${baseOp * 0.5})`);
+                    grad.addColorStop(1, `rgba(165, 178, 200, 0)`);
+                }
                 ctx.fillStyle = grad;
                 ctx.beginPath();
                 ctx.arc(puff.dx, puff.dy, puff.rad, 0, Math.PI * 2);
@@ -2508,7 +2618,7 @@ class AtmosphericWeatherCard extends HTMLElement {
 
     _drawSunGlow(ctx, w, h) {
         const fadeOpacity = this._layerFadeProgress.effects;
-        const celestial = this._getCelestialPosition(w);
+        const celestial = this._getCelestialPosition(w, h);
         const centerX = celestial.x;
         const centerY = celestial.y;
 
@@ -2587,7 +2697,7 @@ class AtmosphericWeatherCard extends HTMLElement {
 
     _drawCloudySun(ctx, w, h) {
         const fadeOpacity = this._layerFadeProgress.effects;
-        const celestial = this._getCelestialPosition(w);
+        const celestial = this._getCelestialPosition(w, h);
 
         ctx.save();
 
@@ -3030,7 +3140,7 @@ class AtmosphericWeatherCard extends HTMLElement {
 
         if (Math.random() < 0.0084 && this._bolts.length < LIMITS.MAX_BOLTS) {
             this._flashOpacity = 0.92;
-            this._flashHold = 6;
+            this._flashHold = this._isLightBackground ? 4 : 2;
             this._bolts.push(this._createBolt(w, h));
         }
 
@@ -3047,13 +3157,13 @@ class AtmosphericWeatherCard extends HTMLElement {
             if (this._flashHold > 0) {
                 this._flashHold--;
             } else {
-                this._flashOpacity *= 0.74;
+                this._flashOpacity *= this._isLightBackground ? 0.78 : 0.65;
             }
             ctx.save();
             ctx.globalCompositeOperation = this._isThemeDark ? 'screen' : 'source-over';
             const flashColor = this._isLightBackground
-                ? `rgba(200, 210, 230, ${this._flashOpacity * fadeOpacity * 0.45})`
-                : `rgba(220, 235, 255, ${this._flashOpacity * fadeOpacity})`;
+                ? `rgba(200, 210, 230, ${this._flashOpacity * fadeOpacity * 0.65})`
+                : `rgba(220, 235, 255, ${this._flashOpacity * fadeOpacity * 0.85})`;
             ctx.fillStyle = flashColor;
             ctx.fillRect(0, 0, w, h);
             ctx.restore();
@@ -3628,7 +3738,7 @@ class AtmosphericWeatherCard extends HTMLElement {
 
         this._moonAnimPhase += 0.003;
 
-        const celestial = this._getCelestialPosition(w);
+        const celestial = this._getCelestialPosition(w, h);
         const moonX = celestial.x;
         const moonY = celestial.y;
         const moonRadius = this._celestialSize ? this._celestialSize / 2 : 18;
@@ -3640,6 +3750,8 @@ class AtmosphericWeatherCard extends HTMLElement {
         const moonStyle = (this._config.moon_style || 'blue').toLowerCase();
         const useBlue = isImmersiveLight && moonStyle === 'blue';
         const useYellow = isImmersiveLight && moonStyle === 'yellow';
+        const usePurple = isImmersiveLight && moonStyle === 'purple';
+        const useGrey = isImmersiveLight && moonStyle === 'grey';
 		
         ctx.save();
 
@@ -3672,6 +3784,18 @@ class AtmosphericWeatherCard extends HTMLElement {
                 dmGlow.addColorStop(0.30, `rgba(100, 125, 175, ${effectiveGlow * 0.35})`);
                 dmGlow.addColorStop(0.60, `rgba(115, 138, 180, ${effectiveGlow * 0.12})`);
                 dmGlow.addColorStop(1,    'rgba(130, 150, 190, 0)');
+            } else if (usePurple) {
+                // Muted dusty purple — gentle lavender glow on light background
+                dmGlow.addColorStop(0,    `rgba(140, 115, 170, ${effectiveGlow * 0.75})`);
+                dmGlow.addColorStop(0.30, `rgba(148, 125, 172, ${effectiveGlow * 0.35})`);
+                dmGlow.addColorStop(0.60, `rgba(155, 138, 175, ${effectiveGlow * 0.12})`);
+                dmGlow.addColorStop(1,    'rgba(165, 150, 180, 0)');
+            } else if (useGrey) {
+                // Natural dark grey — understated and elegant on light background
+                dmGlow.addColorStop(0,    `rgba(105, 110, 120, ${effectiveGlow * 0.70})`);
+                dmGlow.addColorStop(0.30, `rgba(115, 118, 128, ${effectiveGlow * 0.32})`);
+                dmGlow.addColorStop(0.60, `rgba(125, 128, 138, ${effectiveGlow * 0.10})`);
+                dmGlow.addColorStop(1,    'rgba(140, 142, 150, 0)');
             } else {
                 // Standalone light: cool blue
                 dmGlow.addColorStop(0,    `rgba(140, 175, 255, ${effectiveGlow * 1.10})`);
@@ -3689,6 +3813,10 @@ class AtmosphericWeatherCard extends HTMLElement {
             ctx.arc(moonX, moonY, moonRadius + 1.5, 0, Math.PI * 2);
             if (useBlue) {
                 ctx.strokeStyle = `rgba(100, 125, 168, ${0.22 * fadeOpacity})`;
+            } else if (usePurple) {
+                ctx.strokeStyle = `rgba(140, 118, 165, ${0.22 * fadeOpacity})`;
+            } else if (useGrey) {
+                ctx.strokeStyle = `rgba(110, 112, 122, ${0.22 * fadeOpacity})`;
             } else {
                 ctx.strokeStyle = `rgba(155, 182, 228, ${0.28 * fadeOpacity})`;
             }
@@ -3740,6 +3868,12 @@ class AtmosphericWeatherCard extends HTMLElement {
             } else if (useBlue) {
                 ctx.fillStyle = `rgba(140, 155, 180, ${0.10 * fadeOpacity})`;
                 ctx.beginPath(); ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2); ctx.fill();
+            } else if (usePurple) {
+                ctx.fillStyle = `rgba(155, 140, 170, ${0.10 * fadeOpacity})`;
+                ctx.beginPath(); ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2); ctx.fill();
+            } else if (useGrey) {
+                ctx.fillStyle = `rgba(145, 148, 155, ${0.10 * fadeOpacity})`;
+                ctx.beginPath(); ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2); ctx.fill();
             } else if (useLightColors) {
                 ctx.fillStyle = `rgba(200, 210, 225, ${0.20 * fadeOpacity})`;
                 ctx.beginPath(); ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2); ctx.fill();
@@ -3763,6 +3897,14 @@ class AtmosphericWeatherCard extends HTMLElement {
                 moonGrad.addColorStop(0,   `rgba(165, 180, 210, ${0.88 * fadeOpacity})`);
                 moonGrad.addColorStop(0.5, `rgba(125, 145, 185, ${0.80 * fadeOpacity})`);
                 moonGrad.addColorStop(1,   `rgba(95, 115, 160, ${0.70 * fadeOpacity})`);
+            } else if (usePurple) {
+                moonGrad.addColorStop(0,   `rgba(185, 170, 200, ${0.88 * fadeOpacity})`);
+                moonGrad.addColorStop(0.5, `rgba(155, 138, 175, ${0.80 * fadeOpacity})`);
+                moonGrad.addColorStop(1,   `rgba(125, 108, 150, ${0.70 * fadeOpacity})`);
+            } else if (useGrey) {
+                moonGrad.addColorStop(0,   `rgba(175, 178, 185, ${0.88 * fadeOpacity})`);
+                moonGrad.addColorStop(0.5, `rgba(140, 142, 150, ${0.80 * fadeOpacity})`);
+                moonGrad.addColorStop(1,   `rgba(110, 112, 120, ${0.70 * fadeOpacity})`);
             } else if (useLightColors) {
                 moonGrad.addColorStop(0,   `rgba(255, 255, 255, ${0.85 * fadeOpacity})`);
                 moonGrad.addColorStop(0.5, `rgba(238, 242, 250, ${0.78 * fadeOpacity})`);
@@ -3780,6 +3922,10 @@ class AtmosphericWeatherCard extends HTMLElement {
                 ctx.fillStyle = `rgba(210, 205, 190, ${0.15 * fadeOpacity})`;
             } else if (useBlue) {
                 ctx.fillStyle = `rgba(120, 135, 165, ${0.14 * fadeOpacity})`;
+            } else if (usePurple) {
+                ctx.fillStyle = `rgba(138, 125, 155, ${0.14 * fadeOpacity})`;
+            } else if (useGrey) {
+                ctx.fillStyle = `rgba(130, 132, 140, ${0.14 * fadeOpacity})`;
             } else if (useLightColors) {
                 ctx.fillStyle = `rgba(175, 188, 208, ${0.55 * fadeOpacity})`;
             } else {
@@ -3818,6 +3964,14 @@ class AtmosphericWeatherCard extends HTMLElement {
                 moonGrad.addColorStop(0,   `rgba(165, 180, 210, ${0.85 * fadeOpacity})`);
                 moonGrad.addColorStop(0.6, `rgba(125, 145, 185, ${0.75 * fadeOpacity})`);
                 moonGrad.addColorStop(1,   `rgba(95, 115, 160, ${0.65 * fadeOpacity})`);
+            } else if (usePurple) {
+                moonGrad.addColorStop(0,   `rgba(185, 170, 200, ${0.85 * fadeOpacity})`);
+                moonGrad.addColorStop(0.6, `rgba(155, 138, 175, ${0.75 * fadeOpacity})`);
+                moonGrad.addColorStop(1,   `rgba(125, 108, 150, ${0.65 * fadeOpacity})`);
+            } else if (useGrey) {
+                moonGrad.addColorStop(0,   `rgba(175, 178, 185, ${0.85 * fadeOpacity})`);
+                moonGrad.addColorStop(0.6, `rgba(140, 142, 150, ${0.75 * fadeOpacity})`);
+                moonGrad.addColorStop(1,   `rgba(110, 112, 120, ${0.65 * fadeOpacity})`);
             } else if (useLightColors) {
                 moonGrad.addColorStop(0,   `rgba(255, 255, 255, ${0.82 * fadeOpacity})`);
                 moonGrad.addColorStop(0.6, `rgba(240, 244, 252, ${0.72 * fadeOpacity})`);
