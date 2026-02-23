@@ -273,6 +273,7 @@ tap_action:
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
+| `theme` | `string` | `auto` | Force the card into a constant light or dark look (`dark`, `light`, `night`, `day`). |
 | `card_style` | `string` | `immersive` | Set to `standalone` to enable the self-contained card with background and text. |
 | `card_height` | `number\|string` | `110` | Card height. Numbers are treated as pixels (`110` → `110px`). |
 | `square` | `boolean` | `false` | Forces the card into a strict 1:1 aspect ratio. Useful for Grid layouts. |
@@ -282,6 +283,7 @@ tap_action:
 | `offset` | `string` | `0px` | CSS margin shorthand applied to the card (e.g. `"-50px 0px 0px 0px"`). |
 
 </details>
+
 
 <details>
 <summary><strong>Sun & Moon Position</strong></summary>
@@ -335,7 +337,7 @@ tap_action:
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `theme` | `string` | `auto` | Force day/night: `light`/`day` or `dark`/`night` (`mode` also works as a fallback). |
+| `theme` | `string` | `auto` | Force the card into a constant light or dark look: `light`/`day` or `dark`/`night`. |
 | `theme_entity` | `string` | — | Entity whose state triggers night mode (e.g. `dark`, `night`, `on`). |
 | `moon_style` | `string` | `blue` | Manually choose the moon color for the light theme (`blue` or `yellow`). |
 | `tap_action` | `object` | — | Standard HA action config. |
