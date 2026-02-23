@@ -348,8 +348,8 @@ tap_action:
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `css_mask_vertical` | `boolean` | `true` | Turns off the top/bottom fade effect. Useful for tall headers. |
-| `css_mask_horizontal` | `boolean` | `true` | Turns off the left/right fade effect. Useful for full-width headers. |
+| `css_mask_vertical` | `boolean` | `true` | Turns off the top/bottom fade effect. |
+| `css_mask_horizontal` | `boolean` | `true` | Turns off the left/right fade effect. |
 
 </details>
 
@@ -374,7 +374,7 @@ tap_action:
 
 ### STYLING THE CARD
 
-In addition to the **[Layout & Appearance](#configuration)** settings detailed above, you can use these CSS variables within your theme or via `card-mod` to fine-tune the appearance. These are primarily used when `card_style: standalone` is active.
+In addition to the **[Style & Appearance](#configuration)** settings detailed above, you can use these CSS variables within your theme or via `card-mod` to fine-tune the appearance. These are primarily used when `card_style: standalone` is active.
 
 | Variable | Default | Description |
 | :--- | :--- | :--- |
