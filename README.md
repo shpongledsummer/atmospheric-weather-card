@@ -323,7 +323,7 @@ You can add your own images (such as a 3D house model) to the card. This works i
 <details>
 <summary><strong>Text Settings</strong></summary>
 
-Text overlays work seamlessly in **both standalone and immersive** modes. In standalone mode, text is enabled by default. In immersive mode, you can use text settings to add temperature or sensor readouts over the animated weather layer.
+Text overlays work seamlessly in **both standalone and immersive** modes.
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
