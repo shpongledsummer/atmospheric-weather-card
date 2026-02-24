@@ -89,7 +89,7 @@ tap_action:
 <details>
 <summary><b>YAML for the buttons (advanced)</b></summary>
 
-The buttons shown in the screenshot use the `paper-buttons-row` card. While it is highly flexible, configuring it can be slightly complex. The following example demonstrates how to create the buttons within the grid layout.
+The buttons shown in the screenshot use the `paper-buttons-row` card. The following example demonstrates how to create the buttons within the grid layout.
 
 ```yaml
 type: custom:paper-buttons-row
@@ -113,13 +113,11 @@ base_config:
     state:
       font-size: 24px
       font-weight: 700
-      white-space: nowrap
       align-self: flex-start
       padding: 0px
     name:
       font-size: 12px
       font-weight: 700
-      white-space: nowrap
       align-self: flex-start
       padding: 0px
       opacity: 0.5
@@ -156,10 +154,10 @@ buttons:
 
 <img width="400" alt="Immersive mode" src="https://github.com/user-attachments/assets/df6cd241-4a9e-4690-a99d-4cc90b861910" />
 
-This mode uses a transparent background, allowing the card to blend seamlessly into your dashboard as a dynamic weather layer.
+This mode uses a transparent background, allowing the card to blend seamlessly into your dashboard.
 
 > [!NOTE]
-> This mode looks best with themes that automatically switch between light and dark. If you use a fixed theme, set `theme: dark` or `theme: light` in the card configuration so it matches. See [Day / Night Logic](#day--night-logic).
+> Immersive mode looks best with themes that automatically switch between light and dark. If you use a fixed theme, set `theme: dark` or `theme: light` in the card configuration so it matches. See [Day / Night Logic](#day--night-logic).
 
 <details>
 <summary><b>Example 1 — Header Card</b></summary>
@@ -419,7 +417,7 @@ The card evaluates these sources **in exact order** and applies the first match 
 
 ## Styling
 
-You can fine-tune the card's appearance using CSS variables in your theme or via `card-mod`. Text colors automatically adapt to day and night states in both standalone and immersive modes.
+You can fine-tune the card's appearance using CSS variables in your theme or via `card-mod`.
 
 #### Card Variables
 
