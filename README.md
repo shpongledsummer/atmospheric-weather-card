@@ -61,12 +61,12 @@ tap_action:
 
 </details>
 
-<details>
-<summary><b>Example 2 — Grid Layout</b></summary>
+<details markdown="1">
+<summary><b>Example 2 — Square Card</b></summary>
 
 <img width="400" src="https://github.com/user-attachments/assets/5cb58257-4fae-4661-86f9-671b279e3eaf" alt="Grid Layout Example" />
 
-Setting `square: true` allows the card to fit perfectly within a grid or horizontal stack.
+Setting `square: true` allows the card to fit perfectly within a grid. If you want, you can also get a totally round card by adding `--awc-card-border-radius: 100%` to your Home Assistant theme.
 
 ```yaml
 type: custom:atmospheric-weather-card
