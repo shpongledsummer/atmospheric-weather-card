@@ -185,6 +185,7 @@ card_height: 200
 card_style: immersive
 image_scale: 100
 image_alignment: bottom
+disable_text: true
 offset: "-50px 0px 0px 0px"
 sun_moon_x_position: 100
 sun_moon_y_position: 100
