@@ -113,58 +113,31 @@ This mode uses a transparent background, allowing the card to blend seamlessly i
 > This mode looks best with themes that automatically switch between light and dark. If you use a fixed theme, set `theme: dark` or `theme: light` in the card configuration so it matches. See [Day / Night Logic](#day--night-logic).
 
 <details>
-<summary><b>Example 1 — Header Integration</b></summary>
+<summary><b>Example 1 — Header Card</b></summary>
 
 | Day | Night |
 | :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/d810a910-0df0-4b7d-ae0e-a6a4c739f47a" width="100%"> | <img src="https://github.com/user-attachments/assets/5196c877-21c6-4a63-b273-99538cdbe970" width="100%"> |
-
-You can layer the weather card behind another card using the `offset` feature.
+| <img src="https://github.com/user-attachments/assets/f5308bc6-c5da-495f-8cc3-b8816aaa758e" width="100%"> | <img src="https://github.com/user-attachments/assets/d954f22e-a083-4570-9779-1b8935f5d07a" width="100%"> |
 
 ```yaml
-type: markdown
-content: |
-  <br>
-  ⛅ Enjoy the weather!
-  # {{states('sensor.time') }}
 type: custom:atmospheric-weather-card
 weather_entity: weather.forecast_home
 card_style: immersive
-full_width: true
-card_height: 240
-offset: "-120px 0px 0px 0px"
-sun_moon_x_position: -100
-sun_moon_y_position: 100
+card_height: 160
+sun_moon_size: 40
+text_position: top-left
+top_text_sensor: sensor.time
+bottom_text_sensor: sensor.weather_description
 sun_entity: sun.sun
+offset: 24px 0px 12px 0px
+sun_moon_x_position: -80
+sun_moon_y_position: 80
 moon_phase_entity: sensor.moon_phase
 tap_action:
   action: none
+
 ```
 
-<details>
-<summary>💡 Tip — Faster Initial Load</summary>
-
-If your dashboard is slow to load, try using `custom:paper-buttons-row` from HACS instead of standard Home Assistant cards. It tends to load significantly faster in this configuration.
-
-```yaml
-type: custom:paper-buttons-row
-styles:
-  margin: 0px 0px -80px 0px
-  justify-content: flex-start
-base_config:
-  layout: name
-  styles:
-    button:
-      padding: 0px
-    name:
-      font-size: 26px
-      padding: 0px
-      font-weight: 700
-buttons:
-  - name: Sternschnuppe ✨
-```
-
-</details>
 
 </details>
 
