@@ -21,6 +21,8 @@ https://github.com/user-attachments/assets/b7462f32-f193-4b5f-81c6-c6de321b8c42
 * [Weather States](#weather-states)
 * [Performance](#performance)
 
+<br>
+
 ## Usage Modes
 
 The card features two primary modes that change how it renders on your dashboard.
@@ -197,6 +199,8 @@ tap_action:
 
 </details>
 
+<br>
+
 ## Installation
 
 <details>
@@ -222,6 +226,8 @@ tap_action:
 5. Hard-refresh your browser.
 
 </details>
+
+<br>
 
 ## Configuration
 
@@ -329,6 +335,8 @@ By default, text auto-positions to the side opposite the sun or moon. You can ma
 > [!TIP]
 > **Play Weather God** — To easily preview different weather visuals, navigate to **Developer Tools → States** in Home Assistant and manually change the state of your weather entity.
 
+<br>
+
 ## Day / Night Logic
 
 This card handles two separate aspects of its appearance independently:
@@ -339,6 +347,8 @@ This card handles two separate aspects of its appearance independently:
 | **Color Scheme** | Dark vs. light backgrounds and particle colors. | *"Use dark cloud colors"* |
 
 **For the majority of setups, simply setting `sun_entity: sun.sun` is enough.** Both aspects will automatically follow the real-world sun. The distinction between time and color scheme is only important if you want to mix states, such as displaying a moon on a light dashboard background in immersive mode.
+
+<br>
 
 #### How Each Axis is Resolved
 
@@ -378,6 +388,8 @@ The card evaluates these sources **in exact order** and applies the first match 
 > * **`theme: dark` / `theme: light`**: Use this to permanently lock the card to one specific color scheme.
 > * **`theme: night` / `theme: day`**: Use this to force the time axis (moon vs. sun) while letting the color scheme follow your other environment settings.
 
+<br>
+
 ## Styling
 
 You can fine-tune the card's appearance using CSS variables in your theme or via `card-mod`. Text colors automatically adapt to day and night states in both standalone and immersive modes.
@@ -406,6 +418,8 @@ You can fine-tune the card's appearance using CSS variables in your theme or via
 | `--awc-icon-size` | `1.1em` | Size of the bottom icon. |
 | `--awc-text-gap` | `10px` | Vertical spacing between the top and bottom text elements. |
 
+<br>
+
 ## Custom House Image
 
 To achieve the immersive look featuring your own home, follow these steps:
@@ -416,6 +430,8 @@ To achieve the immersive look featuring your own home, follow these steps:
 3. **Remove the background** and save the resulting image as a transparent PNG.
 4. **Create day and night variants** by adjusting the lighting and colors appropriately.
 5. **Upload the files** to your `config/www/images/` directory and reference them in the card config as `/local/images/my-house-day.png`.
+
+<br>
 
 ## Smart Status Entity
 
@@ -428,11 +444,15 @@ The status feature dynamically swaps the displayed house/custom image when a mon
 | Toggle | `input_boolean.party_mode` | `on` |
 | Presence | `person.me` | `home` |
 
+<br>
+
 ## Adding Buttons
 
 The weather card itself does not include built-in buttons. The floating buttons seen in the example screenshots are separate cards layered over the weather animation.
 
 To replicate this, place a button card (such as `custom:paper-buttons-row`) immediately before the weather card in your dashboard config. Then, use the weather card's `offset` setting to pull the weather background up and directly behind the buttons. A simplified configuration example is included as `paper-buttons-row-example.yaml` in the repository.
+
+<br>
 
 ## Weather States
 
@@ -441,6 +461,8 @@ The card supports the following weather states: `sunny` · `clear-night` · `par
 Each state triggers a unique combination of particle types, cloud densities, wind behaviors, and atmospheric lighting. The card also reads the `wind_speed` directly from your weather entity to dynamically influence particle movement in real-time. If your weather integration reports `sunny` during the night, the card is smart enough to automatically switch to `clear-night` (and vice versa).
 
 In addition to core weather conditions, ambient details will appear randomly. Keep an eye out for drifting fog banks, sun rays with heat shimmer, lightning bolts, airplanes, bird formations, shooting stars, comets, and the rare aurora borealis on clear, dark nights.
+
+<br>
 
 ## Performance
 
