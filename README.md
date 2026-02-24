@@ -27,6 +27,8 @@ https://github.com/user-attachments/assets/b7462f32-f193-4b5f-81c6-c6de321b8c42
 
 The card features two primary modes that change how it renders on your dashboard.
 
+<br>
+
 ### Standalone
 
 <img width="400" alt="Standalone mode" src="https://github.com/user-attachments/assets/00be4670-d259-4690-92ba-e440e71244ef" />
@@ -98,6 +100,8 @@ cards:
 ```
 
 </details>
+
+<br>
 
 ### Immersive
 
