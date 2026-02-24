@@ -64,41 +64,90 @@ tap_action:
 <details>
 <summary><b>Example 2 — Grid Layout</b></summary>
 
-| Grid |
-| :---: |
-| <img width="400" src="https://github.com/user-attachments/assets/cf6121ab-b8d0-43c4-89e6-a29faaa62fdd" /> |
+<img width="400" src="https://github.com/user-attachments/assets/5cb58257-4fae-4661-86f9-671b279e3eaf" alt="Grid Layout Example" />
 
-A taller card fits perfectly into a grid or horizontal stack alongside your other dashboard cards.
+Setting `square: true` allows the card to fit perfectly within a grid or horizontal stack.
 
 ```yaml
-type: grid
-columns: 2
-cards:
-  - type: custom:atmospheric-weather-card
-    weather_entity: weather.forecast_home
-    card_style: standalone
-    card_height: 200
-    sun_moon_x_position: -30
-    sun_moon_y_position: 30
-    sun_entity: sun.sun
-    tap_action:
-      action: more-info
-      entity: weather.forecast_home
-  - type: vertical-stack
-    cards:
-      - type: sensor
-        graph: line
-        entity: sensor.temperature_indoor
-        detail: 1
-        name: Indoor Temp
-      - type: tile
-        entity: sensor.climate_sensor
-        name: Air Quality
-        icon: mdi:leaf
-        state_content: state
-        vertical: false
+type: custom:atmospheric-weather-card
+weather_entity: weather.forecast_home
+card_style: standalone
+theme: light
+sun_moon_size: 70
+square: true
+text_alignment: center
+text_position: center
+sun_entity: sun.sun
+disable_text: true
+sun_moon_x_position: center
+sun_moon_y_position: center
+tap_action:
+  action: more-info
+  entity: weather.forecast_home
 ```
 
+<details>
+<summary><b>YAML for the buttons (advanced)</b></summary>
+
+The buttons shown in the screenshot use the `paper-buttons-row` card. While it is highly flexible, configuring it can be slightly complex. The following example demonstrates how to create the buttons within the grid layout.
+
+```yaml
+type: custom:paper-buttons-row
+styles:
+  display: grid
+  grid-template-columns: 1fr
+  grid-template-rows: 1fr 1fr
+  aspect-ratio: 1
+  align-items: stretch
+  gap: 12px
+base_config:
+  layout: icon|name_state
+  styles:
+    button:
+      background-color: var(--ha-card-background)
+      box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08)
+      border-radius: var(--ha-card-border-radius)
+      justify-content: flex-start
+      align-items: center
+      padding: 16px
+    state:
+      font-size: 24px
+      font-weight: 700
+      white-space: nowrap
+      align-self: flex-start
+      padding: 0px
+    name:
+      font-size: 12px
+      font-weight: 700
+      white-space: nowrap
+      align-self: flex-start
+      padding: 0px
+      opacity: 0.5
+    icon:
+      border-radius: var(--ha-card-border-radius)
+      background-color: "#F6F5F3"
+      display: flex
+      justify-content: center
+      align-items: center
+      height: 100%
+      aspect-ratio: 1
+      "--mdc-icon-size": 26px
+      color: "#BDBBB8"
+      margin-right: 20px
+buttons:
+  - name: Innen
+    icon: mdi:home-thermometer-outline
+    entity: sensor.your_indoor_temperature_sensor
+    state:
+      postfix: °
+  - name: Außen
+    icon: mdi:cloud-outline
+    entity: sensor.your_outdoor_temperature_sensor
+    state:
+      postfix: °
+```
+
+</details>
 </details>
 
 <br>
