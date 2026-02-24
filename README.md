@@ -31,7 +31,7 @@ The card features two primary modes that change how it renders on your dashboard
 
 <img width="400" alt="Standalone mode" src="https://github.com/user-attachments/assets/00be4670-d259-4690-92ba-e440e71244ef" />
 
-This is a self-contained card featuring weather-aware background gradients, a temperature display, and a customizable detail line (which defaults to wind speed). The text automatically positions itself on the opposite side of the sun or moon to prevent overlapping.
+This is a self-contained card featuring weather-aware background gradients.
 
 <details>
 <summary><b>Example 1 — Basic Card</b></summary>
@@ -103,7 +103,7 @@ cards:
 
 <img width="400" alt="Immersive mode" src="https://github.com/user-attachments/assets/df6cd241-4a9e-4690-a99d-4cc90b861910" />
 
-This mode uses a transparent background, allowing the card to blend seamlessly into your dashboard as a dynamic weather layer. You can also display text overlays in this mode (see [Text Settings](#text-settings)).
+This mode uses a transparent background, allowing the card to blend seamlessly into your dashboard as a dynamic weather layer.
 
 > [!NOTE]
 > This mode looks best with themes that automatically switch between light and dark. If you use a fixed theme, set `theme: dark` or `theme: light` in the card configuration so it matches. See [Day / Night Logic](#day--night-logic).
