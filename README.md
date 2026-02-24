@@ -1,10 +1,10 @@
 ![Contains](https://img.shields.io/badge/contains-★_shooting_stars-333?style=flat-square)
 
+<br>
 
+# Atmospheric Weather Card
 
-### ATMOSPHERIC WEATHER CARD
-
-I started this because I wanted a weather card that looked nice, but I ended up building a physics engine. The code generates the clouds and rain so they move naturally and never repeat. It also adds random details based on the current weather like wind-blown leaves, planes, birds and shooting stars to make the dashboard feel alive. And if you're lucky, you might even see the rare aurora borealis.
+I started this because I wanted a weather card that looked nice, but I ended up building a physics engine. The code generates clouds and rain so they move naturally and never repeat. It also adds random ambient details like wind-blown leaves, planes, birds in formation, shooting stars, and if you're lucky, the rare aurora borealis.
 
 https://github.com/user-attachments/assets/b7462f32-f193-4b5f-81c6-c6de321b8c42
 
@@ -12,42 +12,36 @@ https://github.com/user-attachments/assets/b7462f32-f193-4b5f-81c6-c6de321b8c42
 
 <br>
 
-#### CONTENTS
+## Contents
 
 [Usage Modes](#usage-modes)<br>
 [Installation](#installation)<br>
 [Configuration](#configuration)<br>
-[Styling the Card](#styling-the-card)<br>
 [Day / Night Logic](#day--night-logic)<br>
+[Styling](#styling)<br>
 [Custom House Image](#custom-house-image)<br>
 [Smart Status Entity](#smart-status-entity)<br>
 [Adding Buttons](#adding-buttons)<br>
-[Weather States](#supported-weather-states)<br>
-[Performance](#performance)
+[Weather States](#weather-states)<br>
+[Performance](#performance)<br>
 
 <br>
 
-<br>
-
----
-
-### USAGE MODES
-
-The card has two modes that affect how it renders and what kind of dashboard setup it expects.
+## Usage Modes
 
 <br>
 
-### Standalone Mode
+The card has two modes that affect how it renders.
 
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/00be4670-d259-4690-92ba-e440e71244ef" />
+### Standalone
 
-A self-contained card with its own weather-aware background gradients. The card renders the current temperature and bottom detail pulled from your entities (defaults to Wind Speed). The text automatically positions itself on the opposite side of the sun/moon to avoid overlap.
+<img width="400" alt="Standalone mode" src="https://github.com/user-attachments/assets/00be4670-d259-4690-92ba-e440e71244ef" />
+
+A self-contained card with weather-aware background gradients, temperature display, and a detail line (defaults to wind speed). Text automatically positions itself on the opposite side of the sun/moon to avoid overlap.
 
 <details>
 <summary><b>Example 1 — Basic Card</b></summary>
 <br>
-
-
 
 | Day | Night |
 | :---: | :---: |
@@ -67,7 +61,7 @@ tap_action:
   entity: weather.forecast_home
 ```
 
-> **Tip:** Use `bottom_text_sensor` to replace the default **Wind Speed** with any entity (e.g., humidity or address). The sun and moon share a single position, swapping based on time and weather. In standalone mode, the text automatically shifts to the opposite side.
+> **Tip:** Use `bottom_text_sensor` to replace the default wind speed with any entity. Use `text_position` to manually override where the text appears instead of letting it auto-position opposite the sun/moon.
 
 
 </details>
@@ -80,7 +74,7 @@ tap_action:
 | :---: |
 | <img width="400" src="https://github.com/user-attachments/assets/cf6121ab-b8d0-43c4-89e6-a29faaa62fdd" /> |
 
-You can use a taller card height to fit the card into a grid or horizontal stack alongside other cards. This example pairs it with a graph and a tile card.
+A taller card fits nicely into a grid or horizontal stack alongside other cards.
 
 ```yaml
 type: grid
@@ -115,14 +109,14 @@ cards:
 
 <br>
 
-### Immersive Mode
+### Immersive
 
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/df6cd241-4a9e-4690-a99d-4cc90b861910" />
+<img width="400" alt="Immersive mode" src="https://github.com/user-attachments/assets/df6cd241-4a9e-4690-a99d-4cc90b861910" />
 
-Renders with a fully transparent background so it blends seamlessly into your dashboard.
+Transparent background — blends into your dashboard as a dynamic weather layer. You can also display text overlays in this mode (see [Text Settings](#text-settings)).
 
 > [!NOTE]
-> Immersive mode looks best with themes that **automatically switch between light and dark.** If you prefer a fixed theme (always light or always dark), you can manually force the card to match. See [Day / Night Logic](#day--night-logic).
+> Looks best with themes that auto-switch between light and dark. If you use a fixed theme, set `theme: dark` or `theme: light` so the card matches. See [Day / Night Logic](#day--night-logic).
 
 <details>
 <summary><b>Example 1 — Header Integration</b></summary>
@@ -132,7 +126,7 @@ Renders with a fully transparent background so it blends seamlessly into your da
 | :---: | :---: |
 | <img src="https://github.com/user-attachments/assets/d810a910-0df0-4b7d-ae0e-a6a4c739f47a" width="100%"> | <img src="https://github.com/user-attachments/assets/5196c877-21c6-4a63-b273-99538cdbe970" width="100%"> |
 
-This layout gives the weather effects space to breathe. You can combine it with any other card and layer both cards with the `offset` feature.
+Layer the weather card behind another card using the `offset` feature.
 
 ```yaml
 # 1. The Content Card (Foreground)
@@ -159,15 +153,14 @@ tap_action:
 ```
 
 <details>
-<summary><b>💡 Tip: Faster Initial Load Times</b></summary>
+<summary>💡 Tip — Faster Initial Load</summary>
 
-If your dashboard loads slowly, try using the `paper-buttons-row` custom card from HACS instead of standard Home Assistant cards. For some reason it loads significantly faster.
+If your dashboard loads slowly, try `custom:paper-buttons-row` from HACS instead of standard HA cards. For some reason it loads significantly faster.
 
-**Example configuration for a simple header:**
 ```yaml
 type: custom:paper-buttons-row
 styles:
-  margin: 0px 0px -80px 0px  # Use negative margin here instead of on weather card (faster)
+  margin: 0px 0px -80px 0px
   justify-content: flex-start
 base_config:
   layout: name
@@ -196,7 +189,7 @@ buttons:
 | :---: | :---: |
 | <img src="https://github.com/user-attachments/assets/6d07c654-c791-483a-9351-ce3ec33ff083" width="100%" /> | <img src="https://github.com/user-attachments/assets/f6fa7d65-8777-4746-9878-b32a1960b470" width="100%" /> |
 
-This setup shows how I use this card. It uses it as a dynamic backdrop for the entire top section of the view, combining it with a custom image and overlay buttons. The card provides the animated weather and image; the buttons shown in the screenshots are separate elements layered on top. [See Adding Buttons](#adding-buttons) and [Custom House Image](#custom-house-image) for details.
+This is how I personally use this card — as a dynamic backdrop for the entire top section, combining it with a custom house image and overlay buttons. The buttons are separate elements layered on top. See [Adding Buttons](#adding-buttons) and [Custom House Image](#custom-house-image).
 
 ```yaml
 type: custom:atmospheric-weather-card
@@ -228,246 +221,347 @@ tap_action:
 
 <br>
 
----
 
-### INSTALLATION
+
+<br>
+
+## Installation
 
 <details>
-<summary><b>Method 1: HACS (Recommended)</b></summary>
+<summary><b>Method 1 — HACS (Recommended)</b></summary>
 
-1. Open **HACS** in Home Assistant.
-2. Go to **Frontend** → **Custom repositories** (top-right menu).
-3. Add this repository URL and select the category **Dashboard**.
-4. Click **Install**.
-5. Reload the dashboard when prompted.
+1. Open **HACS** in Home Assistant
+2. Go to **Frontend** → **Custom repositories** (top-right menu)
+3. Add this repository URL, category **Dashboard**
+4. Click **Install**
+5. Reload your dashboard
 
 </details>
 
 <details>
-<summary><b>Method 2: Manual</b></summary>
+<summary><b>Method 2 — Manual</b></summary>
 
-1. Download `atmospheric-weather-card.js` from the latest release.
-2. Place it in your `config/www/` folder.
-3. Go to **Settings** → **Dashboards** → **⋮** → **Resources**.
+1. Download `atmospheric-weather-card.js` from the latest release
+2. Place it in your `config/www/` folder
+3. Go to **Settings** → **Dashboards** → **⋮** → **Resources**
 4. Add a resource:
     - **URL:** `/local/atmospheric-weather-card.js`
     - **Type:** JavaScript Module
-5. Hard-refresh your browser.
+5. Hard-refresh your browser
 
 </details>
 
 <br>
 
----
 
 
-### CONFIGURATION
+<br>
+
+## Configuration
+
+#### Required & Recommended
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| **`weather_entity`** | `string` | **Required** | Your weather integration entity (e.g., `weather.forecast_home`). |
-| **`sun_entity`** | `string` | *Recommended* | Used to automatically track the sun and switch between day and night. |
-| **`moon_phase_entity`** | `string` | *Recommended* | Used to show the correct moon phase. |
+| **`weather_entity`** | `string` | — | **Required.** Your weather integration entity (e.g., `weather.forecast_home`). |
+| `sun_entity` | `string` | — | *Recommended.* Tracks the sun to auto-switch between day and night. |
+| `moon_phase_entity` | `string` | — | *Recommended.* Shows the correct moon phase (e.g., `sensor.moon_phase`). |
+
+<br>
 
 <details>
 <summary><strong>Layout & Dimensions</strong></summary>
 
-*Controls the physical shape, size, and display mode of the card on your dashboard.*
+<br>
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `card_style` | `string` | `immersive` | Set to `standalone` for a solid background with text, or `immersive` for a transparent background. |
-| `card_height` | `number\|string` | `110` | Height of the card in pixels (`110` means `110px`). |
-| `square` | `boolean` | `false` | Forces the card into a perfect square. Great for grid layouts. |
-| `full_width` | `boolean` | `false` | Stretches the card edge-to-edge by removing the side margins. |
-| `offset` | `string` | `0px` | Move the card around using CSS margins (e.g., `"-50px 0px 0px 0px"`). |
+| `card_style` | `string` | `immersive` | `standalone` for a solid background with text, or `immersive` for transparent. |
+| `card_height` | `number` · `string` | `200` | Height in pixels. Numbers are treated as px (`110` = `110px`). |
+| `square` | `boolean` | `false` | Forces the card into a perfect square. Useful for grid layouts. |
+| `full_width` | `boolean` | `false` | Stretches the card edge-to-edge by removing side margins. |
+| `offset` | `string` | `0px` | Shifts the card using CSS margin (e.g., `"-50px 0px 0px 0px"`). Useful for layering cards. |
 
 </details>
 
 <details>
-<summary><strong>Visual Styling & Colors</strong></summary>
+<summary><strong>Sun & Moon</strong></summary>
 
-*Dedicated settings for purely aesthetic choices and color themes.*
+<br>
+
+The sun and moon share a single position — the card automatically swaps between them based on time of day.
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `theme` | `string` | `auto` | Force the card to always look dark or light (`dark`, `light`, `night`, `day`). |
-| `moon_style` | `string` | `blue` | *(Immersive Only)* Choose the moon color for the light theme (`blue` or `yellow`). |
-| `css_mask_vertical` | `boolean` | `true` | *(Immersive Only)* Turns off the top/bottom fade effect. |
-| `css_mask_horizontal` | `boolean` | `true` | *(Immersive Only)* Turns off the left/right fade effect. |
+| `sun_moon_size` | `number` | *auto* | Override the sun/moon diameter in pixels. |
+| `sun_moon_x_position` | `number` · `string` | `100` | Horizontal position in px from the left edge. **Negative values** position from the right edge (`-55` = 55px from right). Also accepts `center`. |
+| `sun_moon_y_position` | `number` · `string` | `100` | Vertical position in px from the top. Also accepts `center`. |
 
 </details>
 
 <details>
-<summary><strong>Sun & Moon Adjustments</strong></summary>
+<summary><strong>Visual Styling</strong></summary>
 
-*Adjust the positioning and overall scale of the sun and moon.*
+<br>
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `sun_moon_size` | `number` | `100` | Change the overall size of the sun and moon. |
-| `sun_moon_x_position` | `number` | `100` | Move the sun/moon left or right. |
-| `sun_moon_y_position` | `number` | `100` | Move the sun/moon up or down. |
+| `theme` | `string` | `auto` | Force the card appearance. See [Day / Night Logic](#day--night-logic). Values: `dark`, `light`, `night`, `day`. |
+| `filter` | `string` | — | Apply a visual filter preset to the weather canvas. Options: `darken`, `vivid`, `muted`, `warm`. |
+| `moon_style` | `string` | `blue` | Moon glow color in **immersive light** mode. Options: `blue`, `yellow`, `purple`, `grey`. |
+| `css_mask_vertical` | `boolean` | `true` | *(Immersive only)* Fades the top and bottom edges. Set `false` to disable. |
+| `css_mask_horizontal` | `boolean` | `true` | *(Immersive only)* Fades the left and right edges. Set `false` to disable. |
 
 </details>
 
 <details>
-<summary><strong>Custom Home Images & Status</strong></summary>
+<summary><strong>Custom Images & Status</strong></summary>
 
-*Add your own home images to the card and tie them to status entities (works in both standalone and immersive modes).*
+<br>
+
+Add your own images (e.g., a house model) to the card. Works in both modes.
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `day` | `string` | — | Image to show during the day (e.g., `/local/house-day.png`). |
-| `night` | `string` | — | Image to show at night. Uses the day image if you leave this empty. |
-| `image_scale` | `number` | `100` | Change the image size (percentage of the card height). |
-| `image_alignment` | `string` | `right` | Where to place the image (`center`, `bottom-center`, `top-right`, etc.). |
-| `status_entity` | `string` | — | An entity to watch (like a door sensor or lock). |
-| `status_image_day` | `string` | — | Image to show during the day when the status entity is active. |
-| `status_image_night` | `string` | — | Image to show at night when the status entity is active. |
+| `day` | `string` | — | Image path for daytime (e.g., `/local/house-day.png`). |
+| `night` | `string` | — | Image path for nighttime. Falls back to the day image if empty. |
+| `image_scale` | `number` | `100` | Image size as a percentage of card height. |
+| `image_alignment` | `string` | `top-right` | Image placement. Options: `center`, `top-right`, `top-left`, `top-center`, `bottom`, `bottom-center`, `bottom-left`, `bottom-right`. |
+| `status_entity` | `string` | — | Entity to watch (e.g., a door sensor). See [Smart Status Entity](#smart-status-entity). |
+| `status_image_day` | `string` | — | Day image to show when the status entity is active. |
+| `status_image_night` | `string` | — | Night image to show when the status entity is active. |
 
 </details>
 
 <details>
-<summary><strong>Text Settings (Standalone Only)</strong></summary>
+<summary><strong>Text Settings</strong></summary>
 
-*Settings that only apply when `card_style: standalone` is active.*
+<br>
+
+Text overlays work in **both standalone and immersive** mode. In standalone, text is enabled by default. In immersive, you can use it to add temperature or sensor readouts over the weather layer.
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `top_text_sensor` | `string` | — | Sensor to show at the top (defaults to Temperature). |
-| `bottom_text_sensor` | `string` | — | Sensor to show at the bottom (defaults to Wind Speed). |
-| `bottom_text_icon` | `string` | *Auto* | Force a specific icon to show next to the bottom text. |
-| `disable_text` | `boolean` | `false` | Hides all text completely. |
+| `top_text_sensor` | `string` | — | Entity to display as the large top text. Defaults to temperature from the weather entity. |
+| `bottom_text_sensor` | `string` | — | Entity to display as the bottom detail line. Defaults to wind speed. |
+| `bottom_text_icon` | `string` | *auto* | Force a specific icon next to the bottom text (e.g., `mdi:water-percent`). |
+| `disable_text` | `boolean` | `false` | Hides all text. |
+| `disable_bottom_text` | `boolean` | `false` | Hides only the bottom detail line. |
 | `disable_bottom_icon` | `boolean` | `false` | Hides only the icon next to the bottom text. |
+
+<br>
+
+**Text positioning** — by default, text auto-positions opposite the sun/moon. You can override this:
+
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `text_position` | `string` | *auto* | Where to place the text. Simple: `left`, `right`, `center`. Compound: `top-left`, `bottom-right`, `center-top`, etc. |
+| `text_alignment` | `string` | `spread` | Vertical distribution when using a simple `text_position`. Values: `spread`, `top`, `center`, `bottom`. |
+
+> [!TIP]
+> **Compound values** like `top-left` or `bottom-center` set both horizontal and vertical position in one go. The order doesn't matter — `top-left` and `left-top` both work. If you also set `text_alignment`, it overrides the vertical component.
+
+<br>
 
 </details>
 
 <details>
 <summary><strong>Logic & Interactivity</strong></summary>
 
-*Smart behaviors, mode switching, and click actions.*
+<br>
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `theme_entity` | `string` | — | An entity that triggers night mode (e.g., a custom toggle). |
-| `tap_action` | `object` | — | Standard Home Assistant click actions. |
+| `theme_entity` | `string` | — | Entity whose state controls the card's appearance. See [Day / Night Logic](#day--night-logic). |
+| `tap_action` | `object` | — | Standard Home Assistant [tap action](https://www.home-assistant.io/dashboards/actions/). |
 
 </details>
 
 <br>
 
 > [!TIP]
-> **Play Weather God**<br>
-> To test out how different weather visuals look, you can manually override the weather at any time by navigating to the **Developer Tools > States** tab in Home Assistant.
-
----
-
-### STYLING THE CARD
-
-In addition to the **[settings detailed above](#configuration)**, you can use these CSS variables within your theme or via `card-mod` to fine-tune the appearance. These are primarily used when `card_style: standalone` is active.
-
-| Variable | Default | Description |
-| :--- | :--- | :--- |
-| `--awc-text-day` | `#333333` | **Day Mode:** Color of all text and icons. |
-| `--awc-text-night` | `#FFFFFF` | **Night Mode:** Color of all text and icons. |
-| `--awc-card-border-radius` | `12px` | Corner radius of the card container. |
-| `--awc-card-padding` | `16px` | Padding around the internal text elements. |
-| `--awc-top-font-size` | `52px` | Font size of the temperature text. |
-| `--awc-bottom-font-size` | `26px` | Font size of the bottom text. |
-| `--awc-icon-size` | `1.1em` | Scaling factor for the bottom status icon. |
+> **Play Weather God** — To preview different weather visuals, go to **Developer Tools → States** in Home Assistant and manually change your weather entity's state.
 
 <br>
 
----
 
-### DAY / NIGHT LOGIC
 
-The card determines whether to render a day or night scene using a 4-level priority chain. It checks each level in order and uses the first match.
+<br>
 
-| Priority | Source | Config Option | Logic |
-| :---: | :--- | :--- | :--- |
-| **1** | **Manual Override** | `theme` | Directly forces the look. Set to `dark`/`night` for a dark card or `light`/`day` for a light card. |
-| **2** | **Theme Entity** | `theme_entity` | Tracks a specific entity (e.g., a "Dark Mode" toggle). Activates dark mode if the state is `dark`, `night`, `evening`, `on`, `true`, or `below_horizon`. |
-| **3** | **Sun Entity** | `sun_entity` | Automatically switches based on the sun's position. Uses `below_horizon` to trigger the dark theme. |
-| **4** | **System Setting** | — | The final fallback. It simply matches your global Home Assistant dark mode toggle in the sidebar. |
+## Day / Night Logic
+
+The card controls two things independently:
+
+| | What it controls | Example |
+| :--- | :--- | :--- |
+| **Time** | Sun or moon? Stars or no stars? | *"Show the moon and stars"* |
+| **Color scheme** | Dark or light backgrounds and particle colors? | *"Use dark cloud colors"* |
+
+**For most setups, just set `sun_entity: sun.sun`** and both follow the real sun automatically. The split only matters when you want to mix them, like showing a moon on a light dashboard background in immersive mode.
+
+<br>
+
+#### How each axis is resolved
+
+The card checks these sources **in order** and uses the first match.
+
+<details>
+<summary><strong>Time axis</strong> — sun or moon?</summary>
+
+<br>
+
+| Priority | Source | Triggers night when… |
+| :---: | :--- | :--- |
+| 1 | `theme: night` or `theme: day` | Forced by config |
+| 2 | `sun_entity` | State is `below_horizon` |
+| 3 | `theme_entity` | State matches a night value* |
+| 4 | *Fallback* | Always day |
+
+</details>
+
+<details>
+<summary><strong>Color scheme axis</strong> — dark or light?</summary>
+
+<br>
+
+| Priority | Source | Triggers dark when… |
+| :---: | :--- | :--- |
+| 1 | `theme: dark` or `theme: light` | Forced by config |
+| 2 | `theme_entity` | State matches a night value* |
+| 3 | `sun_entity` | State is `below_horizon` |
+| 4 | *System* | Home Assistant's dark mode toggle in sidebar |
+
+</details>
+
+<br>
+
+*\* Night values: `dark`, `night`, `evening`, `on`, `true`, `below_horizon`*
+
+<br>
 
 > [!NOTE]
-> **Which setting should you use?**
-> * **`sun_entity`:** Best for most setups. The card will naturally change with the real-world sunrise and sunset.
-> * **`theme_entity`:** Best if your dashboard switches between light and dark mode based on a custom toggle or schedule, rather than the actual sun.
-> * **`theme`:** Best for fixed dashboards. Use this to permanently lock the card to either dark or light mode so it matches a static background.
+> **Which setting should I use?**
+>
+> | Setting | Best for |
+> | :--- | :--- |
+> | `sun_entity` | Most setups. Everything follows the real sunrise and sunset. |
+> | `theme_entity` | Dashboards that switch themes on a schedule or toggle. |
+> | `theme: dark` / `theme: light` | Locking the card to one look permanently. |
+> | `theme: night` / `theme: day` | Forcing only the time axis (moon vs. sun). The color scheme still follows your other settings. |
 
 <br>
 
 ---
 
-### CUSTOM HOUSE IMAGE
+<br>
+
+## Styling
+
+Fine-tune the appearance via CSS variables in your theme or through `card-mod`. Text colors automatically adapt to day/night in both standalone and immersive mode.
+
+<br>
+
+#### Card
+
+| Variable | Default | |
+| :--- | :--- | :--- |
+| `--awc-card-border-radius` | `12px` | Corner radius |
+| `--awc-card-padding` | `16px` | Padding around text |
+| `--awc-canvas-filter` | `none` | Custom CSS filter on the canvas (overrides the `filter` config option) |
+
+<br>
+
+#### Text
+
+| Variable | Default | |
+| :--- | :--- | :--- |
+| `--awc-text-day` | `#333333` | Text color during day |
+| `--awc-text-night` | `#FFFFFF` | Text color during night |
+| `--awc-text-shadow-day` | `0 1px 2px rgba(255,255,255,0.6)` | Day text shadow |
+| `--awc-text-shadow-night` | `0 1px 3px rgba(0,0,0,0.6)` | Night text shadow |
+| `--awc-top-font-size` | `clamp(24px, 11cqw, 52px)` | Temperature size (responsive) |
+| `--awc-top-font-weight` | `600` | Temperature weight |
+| `--awc-bottom-font-size` | `clamp(15px, 5cqmin, 26px)` | Bottom text size (responsive) |
+| `--awc-bottom-font-weight` | `500` | Bottom text weight |
+| `--awc-bottom-opacity` | `0.7` | Bottom text opacity |
+| `--awc-icon-size` | `1.1em` | Bottom icon size |
+| `--awc-text-gap` | `10px` | Vertical space between top and bottom text |
+
+---
+
+<br>
+
+## Custom House Image
 
 To get the immersive look with your own home:
 
-1. **Take a reference photo** from a corner angle to capture depth.
-2. **Generate a 3D model image** using an AI image tool with a prompt like:
-   > Isometric view of a modern minimalist architectural model section from the outside on solid white background. [Describe your floors/rooms]. Materials are matte white and light only. No complex textures, studio lighting, very clean, simplified shapes.
-3. **Remove the background** and save as a transparent PNG.
-4. **Create day and night variants** with adjusted lighting/colors.
-5. **Upload** to `config/www/images/` and reference as `/local/images/my-house-day.png`.
+1. **Take a reference photo** from a corner angle to capture depth
+2. **Generate a 3D model** using an AI image tool with a prompt like:
+   > *Isometric view of a modern minimalist architectural model section from the outside on solid white background. [Describe your floors/rooms]. Materials are matte white and light only. No complex textures, studio lighting, very clean, simplified shapes.*
+3. **Remove the background** and save as a transparent PNG
+4. **Create day and night variants** with adjusted lighting and colors
+5. **Upload** to `config/www/images/` and reference as `/local/images/my-house-day.png`
 
 <br>
 
 ---
 
-### SMART STATUS ENTITY
+<br>
 
-The status feature swaps the displayed image when an entity becomes active. Some examples:
+## Smart Status Entity
+
+The status feature swaps the displayed image when an entity becomes active. The card recognizes these states as active: `on`, `true`, `open`, `unlocked`, `home`, `active`.
 
 | Use case | Example entity | Triggers on |
 | :--- | :--- | :--- |
 | Door / Window | `binary_sensor.front_door` | `open` |
 | Lock | `lock.front_door` | `unlocked` |
 | Toggle | `input_boolean.party_mode` | `on` |
-| Presence | `zone.home` | `active` |
+| Presence | `person.me` | `home` |
 
 <br>
 
 ---
 
-### ADDING BUTTONS
+<br>
 
-To keep this card fast and focused strictly on the weather engine, it does not include built-in buttons. Instead, the floating buttons you see in the example immersive mode screenshots are a visual trick using separate cards layered on top. 
+## Adding Buttons
 
-This is a somewhat advanced dashboard technique. You achieve this look by placing a separate button card (like `custom:paper-buttons-row`) directly before the weather card in your dashboard layout. You then use the `offset` setting on the weather card to pull it up, sliding it underneath the buttons so it acts as a dynamic background. You can find a simplified version of the configuration used in the screenshots in the included `paper-buttons-row-example.yaml` file in the repository.
+The card doesn't include built-in buttons — the floating buttons in the example screenshots are separate cards layered on top.
+
+Place a button card (like `custom:paper-buttons-row`) before the weather card, then use the `offset` setting to pull the weather card up behind it. A simplified example config is included as `paper-buttons-row-example.yaml` in the repository.
 
 <br>
 
 ---
 
-### SUPPORTED WEATHER STATES
+<br>
+
+## Weather States
 
 `sunny` · `clear-night` · `partlycloudy` · `cloudy` · `fog` · `rainy` · `pouring` · `snowy` · `snowy-rainy` · `hail` · `lightning` · `lightning-rainy` · `windy` · `windy-variant` · `exceptional`
 
-Each state sets a unique combination of particle type, count, cloud density, wind speed, and atmosphere. Beyond the core weather, the sky is populated with ambient elements that appear on their own — drifting fog banks, wind-blown leaves, sun rays with heat shimmer, lightning bolts, airplanes, birds in formation, shooting stars, comets, and the rare Aurora Borealis at night. The card also reads `wind_speed` from your weather entity to influence particle behavior in real time.
+Each state produces a unique combination of particle type, cloud density, wind behavior, and atmosphere. The card also reads `wind_speed` from your weather entity to influence particle movement in real-time. If the weather reports `sunny` at night, the card automatically switches to `clear-night` (and vice versa).
+
+Beyond the core weather, ambient details appear randomly — drifting fog banks, sun rays with heat shimmer, lightning bolts, airplanes, birds in formation, shooting stars, comets, and the rare aurora borealis on clear dark nights.
 
 <br>
 
 ---
 
-### PERFORMANCE
+<br>
+
+## Performance
+
+All weather effects are rendered by the browser using HTML5 Canvas — your Home Assistant server only handles normal entity state updates.
+
+The animation targets 30 FPS with resolution capped at 2× device pixel ratio. When the card scrolls out of view or the browser tab is backgrounded, the animation stops completely and canvas memory is released.
+
+> [!IMPORTANT]
+> This card requires **GPU hardware acceleration** in the browser. If you notice high CPU usage, verify that hardware acceleration is enabled in your browser or kiosk settings.
 
 <details>
-  <summary><b>⚠️ Note for Linux/Nvidia users</b></summary>
+<summary>⚠️ Linux / Nvidia users</summary>
 
-  Please verify that <b>Hardware Acceleration</b> is enabled in your browser. Some Linux browsers default to software rendering which forces the CPU to handle animations intended for the GPU.
+Some Linux browsers default to software rendering which forces the CPU to handle animations intended for the GPU. Check your browser's hardware acceleration settings.
 </details>
-
-Rendering of the weather animations is handled entirely by the client browser using HTML5 Canvas. Server impact is limited to standard state updates.
-
-* **Resource Management**
-  Target framerate is capped at 30 FPS and resolution at 2x DPR to limit GPU usage on the client device.
-* **Visibility Control**
-  The animation loop stops completely when the card is not visible or the tab is backgrounded.
-* **Responsive**
-  Native support for Section-based dashboards with debounced resizing.
-
-> [!NOTE]
-> **Hardware Requirement:** This card relies on GPU Hardware Acceleration. If high CPU usage is observed, verify that hardware acceleration is enabled in the browser or kiosk settings. Software-only rendering will significantly degrade performance.
