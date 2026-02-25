@@ -54,7 +54,6 @@ tap_action:
   entity: weather.forecast_home
 ```
 
-> [!TIP]
 > Use `bottom_text_sensor` to replace the default wind speed with any entity. Use `text_position` to manually override where the text appears instead of letting it auto-position opposite the sun/moon.
 
 </details>
@@ -64,7 +63,6 @@ tap_action:
 
 <img width="400" src="https://github.com/user-attachments/assets/5cb58257-4fae-4661-86f9-671b279e3eaf" alt="Grid Layout Example" />
 
-> [!TIP]
 > Setting `square: true` allows the card to fit perfectly within a grid. If you want, you can also get a totally round card by adding `--awc-card-border-radius: 100%` to your Home Assistant theme.
 
 ```yaml
