@@ -152,7 +152,7 @@ buttons:
 <img width="400" alt="Immersive mode" src="https://github.com/user-attachments/assets/fe259cd4-8ba5-4898-9d60-11d1c7758472" />
 
 > [!NOTE]
-> Immersive mode looks best with themes that automatically switch between light and dark. If you use a fixed theme, you can set `theme: dark` or `theme: light` so it matches. [Day / Night Logic](#day--night-logic).
+> Immersive mode looks best with themes that automatically switch between light and dark. If you use a fixed theme, you can set `theme: dark` or `theme: light` so it matches. See [Day / Night Logic](#day--night-logic)
 
 <details>
 <summary><b>Example 1 — Header Card</b></summary>
