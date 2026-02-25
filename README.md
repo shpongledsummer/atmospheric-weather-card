@@ -1,6 +1,6 @@
 ![Contains](https://img.shields.io/badge/contains-★_shooting_stars-333?style=flat-square)
 
-# Atmospheric Weather Card
+## Atmospheric Weather Card
 
 I started this project wanting a visually appealing weather card, but I ended up building a full physics engine. The code generates dynamically moving clouds and rain that never repeat. It also includes random ambient details like wind-blown leaves, airplanes, bird formations, shooting stars, and, if you're lucky, the rare aurora borealis.
 
