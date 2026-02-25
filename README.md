@@ -10,16 +10,16 @@ https://github.com/user-attachments/assets/b7462f32-f193-4b5f-81c6-c6de321b8c42
 
 ## Contents
 
-* [Usage Modes](#usage-modes)
-* [Installation](#installation)
-* [Configuration](#configuration)
-* [Day / Night Logic](#day--night-logic)
-* [Styling](#styling)
-* [Custom House Image](#custom-house-image)
-* [Smart Status Entity](#smart-status-entity)
-* [Adding Buttons](#adding-buttons)
-* [Weather States](#weather-states)
-* [Performance](#performance)
+[Usage Modes](#usage-modes)<br>
+[Installation](#installation)<br>
+[Configuration](#configuration)<br>
+[Day / Night Logic](#day--night-logic)<br>
+[Styling](#styling)<br>
+[Custom House Image](#custom-house-image)<br>
+[Smart Status Entity](#smart-status-entity)<br>
+[Adding Buttons](#adding-buttons)<br>
+[Weather States](#weather-states)<br>
+[Performance](#performance)
 
 <br>
 
