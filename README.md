@@ -25,15 +25,13 @@ https://github.com/user-attachments/assets/b7462f32-f193-4b5f-81c6-c6de321b8c42
 
 ## Usage Modes
 
-The card features two primary modes that change how it renders on your dashboard.
+You can use either `card_style: standalone` for a self-contained card with dynamic weather backgrounds, or `card_style: immersive` so the card has no background at all and blends into your dashboard.
 
 <br>
 
 ### Standalone
 
 <img width="400" alt="Standalone mode" src="https://github.com/user-attachments/assets/00be4670-d259-4690-92ba-e440e71244ef" />
-
-This is a self-contained card featuring weather-aware background gradients.
 
 <details>
 <summary><b>Example 1 — Basic Card</b></summary>
@@ -66,7 +64,8 @@ tap_action:
 
 <img width="400" src="https://github.com/user-attachments/assets/5cb58257-4fae-4661-86f9-671b279e3eaf" alt="Grid Layout Example" />
 
-Setting `square: true` allows the card to fit perfectly within a grid. If you want, you can also get a totally round card by adding `--awc-card-border-radius: 100%` to your Home Assistant theme.
+> [!TIP]
+> Setting `square: true` allows the card to fit perfectly within a grid. If you want, you can also get a totally round card by adding `--awc-card-border-radius: 100%` to your Home Assistant theme.
 
 ```yaml
 type: custom:atmospheric-weather-card
@@ -153,10 +152,6 @@ buttons:
 ### Immersive
 
 <img width="400" alt="Immersive mode" src="https://github.com/user-attachments/assets/fe259cd4-8ba5-4898-9d60-11d1c7758472" />
-
-
-
-This mode uses a transparent background, allowing the card to blend seamlessly into your dashboard.
 
 > [!NOTE]
 > Immersive mode looks best with themes that automatically switch between light and dark. If you use a fixed theme, set `theme: dark` or `theme: light` in the card configuration so it matches. See [Day / Night Logic](#day--night-logic).
