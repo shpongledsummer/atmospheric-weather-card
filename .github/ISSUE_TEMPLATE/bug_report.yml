@@ -1,0 +1,19 @@
+name: Bug Report
+description: Report an issue or visual bug with the weather card
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > [!IMPORTANT]
+        > **Your YAML Configuration is Required**
+        > Because this card is highly visual and supports so many different dashboard layouts, simply describing a bug in words makes it nearly impossible to troubleshoot. 
+        > 
+        > To help me fix your issue quickly, **I need to see exactly how you have it configured**. Please paste your card's full YAML code below.
+  - type: textarea
+    id: yaml-code
+    attributes:
+      label: Your Card's YAML Configuration
+      description: Paste the exact YAML you are using for the weather card in your Home Assistant dashboard.
+      render: yaml
+    validations:
+      required: true
