@@ -1,6 +1,6 @@
 /**
  * ATMOSPHERIC WEATHER CARD
- * Version: 2.6
+ * Version: 2.7
  * * A custom Home Assistant card that renders animated weather effects.
  * * https://github.com/shpongledsummer/atmospheric-weather-card
  */
@@ -529,7 +529,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             #card-root {
                 position: relative; width: 100%; height: 100%;
                 container-type: size;
-                z-index: -1;
+                z-index: var(--awc-stack-order, -1);
                 overflow: hidden; background: transparent;
                 display: block; transform: translateZ(0);
                 will-change: transform, opacity;
@@ -537,7 +537,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                 transition: opacity ${PERFORMANCE_CONFIG.REVEAL_TRANSITION_MS}ms ease-out;
             }
             #card-root.standalone {
-                z-index: 1;
+                z-index: var(--awc-stack-order, 1);
                 border-radius: var(--awc-card-border-radius, var(--ha-card-border-radius, 12px));
             }
             #card-root.revealed { opacity: 1; }
@@ -827,6 +827,12 @@ class AtmosphericWeatherCard extends HTMLElement {
     setConfig(config) {
         this._config = config;
         this._initDOM();
+		
+		if (config.stack_order !== undefined) {
+            this.style.setProperty('--awc-stack-order', config.stack_order);
+        } else {
+            this.style.removeProperty('--awc-stack-order');
+        }
 
         if (config.square) {
             this.style.height = 'auto';
