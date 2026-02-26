@@ -418,7 +418,7 @@ The card evaluates these sources **in exact order** and applies the first match 
 
 ## Styling
 
-You can fine-tune the card's appearance using CSS variables in your theme or via `card-mod`.
+In addition to the [Style Settings](#configuration) detailed above, you can fine-tune the card's appearance using CSS variables in your theme or via `card-mod`.
 
 #### Card Variables
 
