@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report an issue or visual bug with the weather card
+description: Report an issue or visual bug with the card
 body:
   - type: markdown
     attributes:
