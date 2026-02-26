@@ -419,7 +419,8 @@ The card evaluates these sources **in exact order** and applies the first match 
 
 In addition to the [Style Settings](#configuration) detailed above, you can fine-tune the card's appearance using CSS variables in your theme or via `card-mod`.
 
-#### Card Variables
+<details>
+<summary><b>Card Variables</b></summary>
 
 | Variable | Default | Description |
 | :--- | :--- | :--- |
@@ -427,7 +428,10 @@ In addition to the [Style Settings](#configuration) detailed above, you can fine
 | `--awc-card-padding` | `16px` | Padding space around the text. |
 | `--awc-canvas-filter` | `none` | Applies a custom CSS filter to the canvas (this overrides the `filter` config option). |
 
-#### Text Variables
+</details>
+
+<details>
+<summary><b>Text Variables</b></summary>
 
 | Variable | Default | Description |
 | :--- | :--- | :--- |
@@ -442,6 +446,8 @@ In addition to the [Style Settings](#configuration) detailed above, you can fine
 | `--awc-bottom-opacity` | `0.7` | Opacity of the bottom text. |
 | `--awc-icon-size` | `1.1em` | Size of the bottom icon. |
 | `--awc-text-gap` | `10px` | Vertical spacing between the top and bottom text elements. |
+
+</details>
 
 <br>
 
