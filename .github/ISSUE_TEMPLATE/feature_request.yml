@@ -1,0 +1,23 @@
+name: Feature Request
+description: Suggest a new idea or enhancement for the card
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > [!TIP]
+        > **Got a cool idea?**
+        > I am always open to making the Atmospheric Weather Card better. Please describe your idea as clearly as possible!
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Describe your feature idea
+      description: What new visual effect, configuration, or behavior would you like to see?
+    validations:
+      required: true
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Why is this needed?
+      description: How would this feature improve your dashboard or help other users?
+    validations:
+      required: false
