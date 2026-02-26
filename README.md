@@ -419,7 +419,7 @@ The card evaluates these sources **in exact order** and applies the first match 
 > **Which setting should I use?**
 >
 > * **`sun_entity`**: Best for most setups. Everything aligns with the real sunrise and sunset.
-> * **`theme_entity`**: Ideal for dashboards that switch themes based on schedules or toggles.
+> * **`theme_entity`**: This can be used in combination with the `sun_entity` for dashboards that switch themes based on schedules or toggles.
 > * **`theme: dark` / `theme: light`**: Use this to permanently lock the card to one specific color scheme.
 > * **`theme: night` / `theme: day`**: Use this to force the time axis (moon vs. sun) while letting the color scheme follow your other environment settings.
 
