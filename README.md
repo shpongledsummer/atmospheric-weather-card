@@ -280,7 +280,7 @@ tap_action:
 <details>
 <summary><strong>Sun & Moon</strong></summary>
 
-The sun and moon share a single position and the card automatically swaps them based on how you [configure the card.](#day--night-logic).
+The sun and moon share a single position and the card automatically swaps them based on how you [configure the card.](#day--night-logic)
  
 
 | Option | Type | Default | Description |
