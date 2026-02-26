@@ -282,6 +282,7 @@ tap_action:
 | `square` | `boolean` | `false` | Forces the card into a perfect square. Highly useful for grid layouts. |
 | `full_width` | `boolean` | `false` | Stretches the card edge-to-edge by removing side margins. |
 | `offset` | `string` | `0px` | Shifts the card using CSS margin (e.g., `"-50px 0px 0px 0px"`). Useful when layering cards. |
+| `stack_order` | `number` | *auto* | Manually sets the z-index (e.g., `1`, `0`, `-1`). Useful for forcing an immersive card to display in front of cards with solid backgrounds. |
 
 </details>
 
@@ -437,6 +438,7 @@ In addition to the [Style Settings](#configuration) detailed above, you can fine
 | `--awc-card-border-radius` | `12px` | Adjusts the corner radius. |
 | `--awc-card-padding` | `16px` | Padding space around the text. |
 | `--awc-canvas-filter` | `none` | Applies a custom CSS filter to the canvas (this overrides the `filter` config option). |
+| `--awc-stack-order` | `-1` / `1` | Controls the stacking order (z-index) of the card. Defaults to `-1` for immersive and `1` for standalone. |
 
 </details>
 
