@@ -359,7 +359,7 @@ By default, text auto-positions to the side opposite the sun or moon. You can ma
 </details>
 
 > [!TIP]
-> **Play Weather God** — To easily preview different weather visuals, navigate to **Developer Tools → States** in Home Assistant and manually change the [state of your weather entity.](#weather-states)
+> **Play Weather God** — To preview different weather visuals, navigate to **Developer Tools → States** in Home Assistant and manually change the [state of your weather entity.](#weather-states)
 <br>
 
 ## Day / Night Logic
