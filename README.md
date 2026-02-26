@@ -2,7 +2,9 @@
 
 ## Atmospheric Weather Card
 
-I went into this just wanting a pretty weather card, and somehow ended up building a full-blown physics engine. Now it handles dynamically moving clouds and rain, along with little details like passing airplanes, bird formations, shooting stars, and a whole lot more.
+This started out as a quest for a pretty weather card, and somehow ended up as a full-blown animation engine. It features dynamically moving clouds, rain and thunderstorms, along with little details like passing planes, migrating birds, and the occasional shooting star.
+
+<br>
 
 https://github.com/user-attachments/assets/1005c3cb-9422-4d30-b67a-dca154397c7a
 
@@ -32,6 +34,8 @@ You can use either `card_style: standalone` for a self-contained card with dynam
 ### Standalone
 
 <img width="400" alt="Standalone mode" src="https://github.com/user-attachments/assets/00be4670-d259-4690-92ba-e440e71244ef" />
+
+<br>
 
 <details>
 <summary><b>Example 1 — Basic Card</b></summary>
@@ -151,8 +155,7 @@ buttons:
 
 <img width="400" alt="Immersive mode" src="https://github.com/user-attachments/assets/fe259cd4-8ba5-4898-9d60-11d1c7758472" />
 
-> [!NOTE]
-> Immersive mode looks best with themes that automatically switch between light and dark. If you use a fixed theme, you can set `theme: dark` or `theme: light` so it matches. See [Day / Night Logic](#day--night-logic)
+<br>
 
 <details>
 <summary><b>Example 1 — Header Card</b></summary>
@@ -223,6 +226,11 @@ tap_action:
 ```
 
 </details>
+
+<br>
+
+> [!NOTE]
+> Immersive mode looks best with themes that automatically switch between light and dark. If you use a fixed theme, you can set `theme: dark` or `theme: light` so it matches. See [Day / Night Logic](#day--night-logic)
 
 <br>
 
@@ -357,6 +365,8 @@ By default, text auto-positions to the side opposite the sun or moon. You can ma
 | `tap_action` | `object` | — | A standard Home Assistant [tap action](https://www.home-assistant.io/dashboards/actions/). |
 
 </details>
+
+<br>
 
 > [!TIP]
 > **Play Weather God** — To preview different weather visuals, temporarily change the [state of your weather entity](#weather-states) under **Developer Tools → States**.
