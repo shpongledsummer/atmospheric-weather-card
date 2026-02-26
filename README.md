@@ -2,9 +2,9 @@
 
 ## Atmospheric Weather Card
 
-I started this project wanting a visually appealing weather card, but I ended up building a full physics engine. The code generates dynamically moving clouds and rain that never repeat. It also includes random ambient details like wind-blown leaves, airplanes, bird formations, shooting stars, and, if you're lucky, the rare aurora borealis.
+I went into this just wanting a pretty weather card, and somehow ended up building a full-blown physics engine. Now it handles dynamically moving clouds and rain, along with little details like passing airplanes, bird formations, shooting stars, and a whole lot more.
 
-https://github.com/user-attachments/assets/b7462f32-f193-4b5f-81c6-c6de321b8c42
+https://github.com/user-attachments/assets/1005c3cb-9422-4d30-b67a-dca154397c7a
 
 > **AI Disclaimer** — This card was created with the help of AI tools. I would never have had the patience to create these weather effects myself.
 
