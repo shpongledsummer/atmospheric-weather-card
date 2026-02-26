@@ -6,9 +6,7 @@ body:
       value: |
         > [!IMPORTANT]
         > **Your YAML Configuration is Required**
-        > Because this card is highly visual and supports so many different dashboard layouts, simply describing a bug in words makes it nearly impossible to troubleshoot. 
-        > 
-        > To help me fix your issue quickly, **I need to see exactly how you have it configured**. Please paste your card's full YAML code below.
+        > This card has many visual options, so I need to see your exact setup to troubleshoot the issue. Please paste your full YAML configuration below.
   - type: textarea
     id: bug-description
     attributes:
@@ -16,11 +14,41 @@ body:
       description: Clearly describe the issue. What did you expect to happen, and what actually happened?
     validations:
       required: true
+  - type: input
+    id: ha-version
+    attributes:
+      label: Home Assistant Version
+      description: What version of Home Assistant Core are you running? (e.g., 2026.2.1)
+    validations:
+      required: true
+  - type: input
+    id: card-version
+    attributes:
+      label: Card Version
+      description: What version of this weather card are you using?
+    validations:
+      required: true
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser / App
+      description: Where are you seeing this visual bug?
+      options:
+        - Google Chrome
+        - Mozilla Firefox
+        - Apple Safari
+        - Microsoft Edge
+        - Home Assistant Companion App (iOS)
+        - Home Assistant Companion App (Android)
+        - Fully Kiosk Browser
+        - Other
+    validations:
+      required: true
   - type: textarea
     id: yaml-code
     attributes:
       label: Your Card's YAML Configuration
-      description: Paste the exact YAML you are using for the card in your Home Assistant dashboard.
+      description: Paste the exact YAML you are using for the weather card in your Home Assistant dashboard.
       render: yaml
     validations:
       required: true
@@ -28,6 +56,6 @@ body:
     id: additional-context
     attributes:
       label: Additional Information
-      description: Add any other context about the problem here, such as screenshots, browser types, or logs.
+      description: Add any other context about the problem here, such as screenshots, GIFs, or browser console error logs.
     validations:
       required: false
