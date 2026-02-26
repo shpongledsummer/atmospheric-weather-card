@@ -10,10 +10,24 @@ body:
         > 
         > To help me fix your issue quickly, **I need to see exactly how you have it configured**. Please paste your card's full YAML code below.
   - type: textarea
+    id: bug-description
+    attributes:
+      label: Bug Description
+      description: Clearly describe the issue. What did you expect to happen, and what actually happened?
+    validations:
+      required: true
+  - type: textarea
     id: yaml-code
     attributes:
       label: Your Card's YAML Configuration
-      description: Paste the exact YAML you are using for the weather card in your Home Assistant dashboard.
+      description: Paste the exact YAML you are using for the card in your Home Assistant dashboard.
       render: yaml
     validations:
       required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Information
+      description: Add any other context about the problem here, such as screenshots, browser types, or logs.
+    validations:
+      required: false
