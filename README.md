@@ -492,16 +492,12 @@ In addition to core weather conditions, ambient details will appear randomly. Ke
 
 ## Performance
 
-All weather effects are rendered by your browser using HTML5 Canvas—this means your Home Assistant server only handles normal entity state updates without taking on any graphical load.
+To help keep browser CPU and memory usage low, the rendering loop reuses graphics instead of drawing them from scratch every frame. The weather effects are generated once in the background and simply moved across the screen.
 
-The animation targets 30 FPS and caps the resolution at a 2× device pixel ratio. Whenever the card scrolls out of view or the browser tab is sent to the background, the animation pauses entirely and the canvas memory is gracefully released to save resources.
+A few other limits are in place to save resources:
+* Animations pause entirely and clear memory when the card is scrolled out of view.
+* The framerate is capped at 30 FPS.
+* The internal canvas resolution is capped on very high-density displays.
 
 > [!IMPORTANT]
-> This card requires **GPU hardware acceleration** in the browser to function smoothly. If you experience high CPU usage, please verify that hardware acceleration is enabled in your browser or kiosk settings.
-
-<details>
-<summary>⚠️ Linux / Nvidia Users</summary>
-
-Some Linux browsers default to software rendering, which forces the CPU to process animations intended for the GPU. If you are experiencing performance drops on Linux, carefully check your browser's hardware acceleration configuration.
-
-</details>
+> The card relies on **GPU hardware acceleration** in your browser. If you notice high CPU usage (especially on Linux/Nvidia setups where software rendering might be the default), please verify that hardware acceleration is enabled in your browser or kiosk app.
