@@ -1,5 +1,5 @@
 name: Feature Request
-description: Suggest a new idea or enhancement for the card
+description: Suggest a new idea or enhancement
 body:
   - type: markdown
     attributes:
