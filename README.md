@@ -171,6 +171,7 @@ type: custom:atmospheric-weather-card
 weather_entity: weather.forecast_home
 card_style: immersive
 card_height: 150
+stack_order: -1
 sun_moon_size: 35
 text_position: left
 text_alignment: center
@@ -209,6 +210,7 @@ card_style: immersive
 image_scale: 100
 image_alignment: bottom
 disable_text: true
+stack_order: -1
 offset: "-50px 0px 0px 0px"
 sun_moon_x_position: 100
 sun_moon_y_position: 100
