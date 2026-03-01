@@ -2,11 +2,17 @@
 
 ## Atmospheric Weather Card
 
-This started out as a quest for a pretty weather card, and somehow ended up as a full-blown animation engine. It features dynamically moving clouds, rain and thunderstorms, along with little details like passing planes, migrating birds, and the occasional shooting star.
+A dynamic weather card that adapts its visuals to real-time weather, sun position, lunar phases, and other environmental data.
 
 <br>
 
-https://github.com/user-attachments/assets/1005c3cb-9422-4d30-b67a-dca154397c7a
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/03197044-ca08-4b18-b866-5e02eed86b9a" />
+
+<details>
+  <summary>Watch a quick demo of the weather visuals</summary>
+
+  https://github.com/user-attachments/assets/1005c3cb-9422-4d30-b67a-dca154397c7a
+</details>
 
 > **AI Disclaimer** — This card was created with the help of AI tools. I would never have had the patience to create these weather effects myself.
 
@@ -33,7 +39,9 @@ You can use either `card_style: standalone` for a self-contained card with dynam
 
 ### Standalone
 
-<img width="400" alt="Standalone mode" src="https://github.com/user-attachments/assets/00be4670-d259-4690-92ba-e440e71244ef" />
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/9e4b5e02-306b-44ab-b9d9-7a5c9a0d48fc" /><br>
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/46521bda-8538-49b4-a3ae-76899d1905cd" />
+
 
 <br>
 
