@@ -4,17 +4,17 @@
 
 A dynamic weather card that adapts its visuals to real-time weather, sun position, lunar phases, and other environmental data.
 
-<br>
-
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/03197044-ca08-4b18-b866-5e02eed86b9a" />
 
 <details>
-  <summary>Watch a quick demo of the weather visuals</summary>
+  <summary>Watch a demo of the weather visuals</summary>
 
   https://github.com/user-attachments/assets/1005c3cb-9422-4d30-b67a-dca154397c7a
 </details>
 
-> **AI Disclaimer** — This card was created with the help of AI tools. I would never have had the patience to create these weather effects myself.
+<br>
+
+> **AI Disclaimer** — This card was created with the help of AI tools. I never would’ve had the patience to create these effects myself.
 
 ## Contents
 
