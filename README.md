@@ -209,7 +209,7 @@ custom_cards:
 
 ### Immersive
 
-<img width="400" alt="Immersive mode" src="https://github.com/user-attachments/assets/fe259cd4-8ba5-4898-9d60-11d1c7758472" />
+<img width="400" alt="Immersive mode" src="https://github.com/user-attachments/assets/d4ee6971-53b4-462e-87af-83fb5d94e45f" />
 
 <br>
 
