@@ -553,7 +553,7 @@ This card handles two separate aspects of its appearance independently:
 | **Color Scheme** | Dark vs. light backgrounds and particle colors. | *"Use dark cloud colors"* |
 
 > [!NOTE]
-> **For the majority of setups, simply setting `sun_entity: sun.sun` is enough.** Both aspects will automatically follow the real-world sun. The distinction between time and color scheme is only important if you want to mix states, such as displaying a moon on a light dashboard background.
+> For most setups, simply setting `sun_entity: sun.sun` **is enough** and means both aspects will automatically follow the real-world sun. The distinction between time and color scheme is only important if you want to mix states, such as displaying a moon on a light dashboard background.
 
 <br>
 
@@ -678,9 +678,8 @@ In addition to core weather conditions, ambient details will appear randomly. Ke
 
 ## Performance
 
-To help keep browser CPU and memory usage low, the rendering loop reuses graphics instead of drawing them from scratch every frame. The weather effects are generated once in the background and simply moved across the screen.
+To help keep browser CPU and memory usage low, the rendering loop reuses graphics instead of drawing them from scratch every frame. A few other limits are in place to save resources:
 
-A few other limits are in place to save resources:
 * Animations pause entirely and clear memory when the card is scrolled out of view.
 * The framerate is capped at 30 FPS.
 * The internal canvas resolution is capped on very high-density displays.
