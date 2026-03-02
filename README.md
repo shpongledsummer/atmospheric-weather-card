@@ -255,7 +255,8 @@ tap_action:
 
 This example is a bit advanced and shows basically all the features of the card at once. It uses the `custom_cards` feature to overlay the fantastic `custom:paper-buttons-row` directly onto your own house image, complete with dynamic status images and custom-positioned sensors.
 
-To get this working in your setup, make sure you have `paper-buttons-row` installed via HACS, and remember to swap out the entities with your own.
+To get this working in your setup, make sure you have `paper-buttons-row` installed via HACS, and remember to swap out the entities with your own. You can read how to get your own custom house image [here.](#custom-house-image)
+
 
 > This setup (and immersive mode in general) looks best with themes that automatically switch between light and dark. If you use a fixed theme, you can set `theme: dark` or `theme: light` so it matches. See [Day / Night Logic](#day--night-logic)
 
