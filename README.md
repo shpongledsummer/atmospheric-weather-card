@@ -551,11 +551,13 @@ This card handles two separate aspects of its appearance independently:
 | **Time** | Sun vs. moon, stars vs. no stars. | *"Show the moon and stars"* |
 | **Color Scheme** | Dark vs. light backgrounds and particle colors. | *"Use dark cloud colors"* |
 
-**For the majority of setups, simply setting `sun_entity: sun.sun` is enough.** Both aspects will automatically follow the real-world sun. The distinction between time and color scheme is only important if you want to mix states, such as displaying a moon on a light dashboard background in immersive mode.
+> [!NOTE]
+> **For the majority of setups, simply setting `sun_entity: sun.sun` is enough.** Both aspects will automatically follow the real-world sun. The distinction between time and color scheme is only important if you want to mix states, such as displaying a moon on a light dashboard background.
 
 <br>
 
-#### How Each Axis is Resolved
+<details>
+<summary><strong>How Each Axis is Resolved</strong></summary>
 
 The card evaluates these sources **in exact order** and applies the first match it finds.
 
@@ -592,6 +594,7 @@ The card evaluates these sources **in exact order** and applies the first match 
 > * **`theme_entity`**: This can be used in combination with the `sun_entity` for dashboards that switch themes based on schedules or toggles.
 > * **`theme: dark` / `theme: light`**: Use this to permanently lock the card to one specific color scheme.
 > * **`theme: night` / `theme: day`**: Use this to force the time axis (moon vs. sun) while letting the color scheme follow your other environment settings.
+</details>
 
 <br>
 
