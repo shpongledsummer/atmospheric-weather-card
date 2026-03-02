@@ -2,9 +2,11 @@
 
 ## Atmospheric Weather Card
 
-A dynamic weather card that adapts its visuals to real-time weather, sun position, lunar phases, and other environmental data.
+A flexible, detail-oriented weather card for Home Assistant. It creates dynamic visuals that adapt to local conditions (weather, wind speed, sun elevation, lunar phases, etc.). The card features effects ranging from wind-driven rain and drifting fog to sunsets, thunderstorms, and auroras, mixed with little details like planes, birds, and shooting stars.
 
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/03197044-ca08-4b18-b866-5e02eed86b9a" />
+
+You can embed other cards directly into it, run it standalone, or use it as an immersive background with a picture of your own home.
 
 <details>
   <summary>Watch a demo of the weather visuals</summary>
