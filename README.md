@@ -484,7 +484,7 @@ You can add your own images (such as a 3D house model) to the card. This works i
 <details>
 <summary><strong>Custom Cards</strong></summary>
 
-You can embed other Home Assistant cards directly inside this card. This is useful for adding additional details (specific sensors, weather forecasts, graphs etc.).
+You can embed other Home Assistant cards directly inside this card. This is useful for adding additional details like buttons, specific sensors, weather forecasts, graphs etc.
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
