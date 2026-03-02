@@ -670,8 +670,7 @@ You can embed buttons (or any other Home Assistant cards) directly inside this c
 
 The card supports the following weather states: `sunny` · `clear-night` · `partlycloudy` · `cloudy` · `fog` · `rainy` · `pouring` · `snowy` · `snowy-rainy` · `hail` · `lightning` · `lightning-rainy` · `windy` · `windy-variant` · `exceptional`
 
-Each state triggers a unique combination of particle types, cloud densities, wind behaviors, and atmospheric lighting. The card also reads the `wind_speed` directly from your weather entity to dynamically influence particle movement in real-time. If your weather integration reports `sunny` during the night, the card is smart enough to automatically switch to `clear-night` (and vice versa).
-
+Each state triggers a unique combination of particle types, cloud densities, wind behaviors, and atmospheric lighting. The card also reads details like the `wind_speed` or `elevation` to dynamically influence the animations.
 <br>
 
 ## Performance
