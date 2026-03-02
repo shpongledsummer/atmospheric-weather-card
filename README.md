@@ -39,8 +39,8 @@ You can use either `card_style: standalone` for a self-contained card with dynam
 
 ### Standalone
 
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/9e4b5e02-306b-44ab-b9d9-7a5c9a0d48fc" /><br>
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/46521bda-8538-49b4-a3ae-76899d1905cd" />
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/3fb81cef-561e-438a-8856-ad8927bc6f26" />
+
 
 <details>
 <summary><b>Example 1 — Basic Card</b></summary>
@@ -208,6 +208,7 @@ custom_cards:
 
 <img width="400" alt="Immersive mode" src="https://github.com/user-attachments/assets/d4ee6971-53b4-462e-87af-83fb5d94e45f" />
 
+
 <br>
 
 <details>
@@ -253,6 +254,10 @@ tap_action:
 | <img src="https://github.com/user-attachments/assets/11b74980-adb0-456e-a54b-548efbf908de" width="100%" /> | <img src="https://github.com/user-attachments/assets/1d9fb735-c7d5-479f-b4eb-a084d702f678" width="100%" /> |
 
 This example is a bit advanced and shows basically all the features of the card at once. It uses the `custom_cards` feature to overlay the fantastic `custom:paper-buttons-row` directly onto your own house image, complete with dynamic door status images and custom-positioned sensors. To get this working in your setup, just make sure you have `paper-buttons-row` installed via HACS, and remember to swap out the entities and styles with your own.
+
+> [!NOTE]
+> this setup (and immersive mode in general) looks best with themes that automatically switch between light and dark. If you use a fixed theme, you can set `theme: dark` or `theme: light` so it matches. See [Day / Night Logic](#day--night-logic)
+
 
 ```yaml
 type: custom:atmospheric-weather-card
@@ -378,10 +383,6 @@ custom_cards:
 </details>
 <br>
 
-> [!NOTE]
-> Immersive mode looks best with themes that automatically switch between light and dark. If you use a fixed theme, you can set `theme: dark` or `theme: light` so it matches. See [Day / Night Logic](#day--night-logic)
-
-<br>
 
 ## Installation
 
@@ -540,10 +541,6 @@ By default, text auto-positions to the side opposite the sun or moon. You can ma
 
 </details>
 
-<br>
-
-> [!TIP]
-> **Play Weather God** — To preview different weather visuals, temporarily change the [state of your weather entity](#weather-states) under **Developer Tools → States**.
 <br>
 
 ## Day / Night Logic
