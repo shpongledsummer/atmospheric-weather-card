@@ -7,7 +7,7 @@
 A flexible, detail-oriented weather card for Home Assistant. It uses your local weather (and much more) to create live visuals, blending effects like wind gusts and thunderstorms with little details like passing planes, birds and shooting stars. You can run it standalone, embed other cards inside it, or use it as an immersive background.
 
 <details>
-  <summary>Watch a demo</summary>
+  <summary><strong>Watch a demo</strong></summary>
 
   https://github.com/user-attachments/assets/1005c3cb-9422-4d30-b67a-dca154397c7a
 </details>
@@ -561,8 +561,7 @@ This card handles two separate aspects of its appearance independently:
 
 The card evaluates these sources **in exact order** and applies the first match it finds.
 
-<details>
-<summary><strong>Time Axis</strong> — Sun or Moon?</summary>
+<strong>Time Axis</strong> — Sun or Moon?
 
 | Priority | Source | Triggers Night When… |
 | :---: | :--- | :--- |
@@ -571,10 +570,7 @@ The card evaluates these sources **in exact order** and applies the first match 
 | 3 | `theme_entity` | State matches a defined night value.* |
 | 4 | *Fallback* | Always defaults to day. |
 
-</details>
-
-<details>
-<summary><strong>Color Scheme Axis</strong> — Dark or Light?</summary>
+<strong>Color Scheme Axis</strong> — Dark or Light?
 
 | Priority | Source | Triggers Dark When… |
 | :---: | :--- | :--- |
@@ -583,17 +579,19 @@ The card evaluates these sources **in exact order** and applies the first match 
 | 3 | `sun_entity` | State is `below_horizon`. |
 | 4 | *System* | Follows Home Assistant's dark mode toggle in the sidebar. |
 
-</details>
-
 *\* Defined night values include: `dark`, `night`, `evening`, `on`, `true`, `below_horizon`*
 
-> [!NOTE]
-> **Which setting should I use?**
->
-> * **`sun_entity`**: Best for most setups. Everything aligns with the real sunrise and sunset.
-> * **`theme_entity`**: This can be used in combination with the `sun_entity` for dashboards that switch themes based on schedules or toggles.
-> * **`theme: dark` / `theme: light`**: Use this to permanently lock the card to one specific color scheme.
-> * **`theme: night` / `theme: day`**: Use this to force the time axis (moon vs. sun) while letting the color scheme follow your other environment settings.
+</details>
+
+<details>
+<summary><strong>Which setting should I use?</strong></summary> 
+
+* **`sun_entity`**: Best for most setups. Everything aligns with the real sunrise and sunset.
+* **`theme_entity`**: This can be used in combination with the `sun_entity` for dashboards that switch themes based on schedules or toggles.
+* **`theme: dark` / `theme: light`**: Use this to permanently lock the card to one specific color scheme.
+* **`theme: night` / `theme: day`**: Use this to force the time axis (moon vs. sun) while letting the color scheme follow your other environment settings.
+
+</details>
 </details>
 
 <br>
