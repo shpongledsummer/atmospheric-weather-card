@@ -70,7 +70,7 @@ tap_action:
 
 </details>
 
-<details markdown="1">
+<details>
 <summary><b>Example 2 — Square Card</b></summary>
 
 <img width="400" src="https://github.com/user-attachments/assets/5cb58257-4fae-4661-86f9-671b279e3eaf" alt="Grid Layout Example" />
@@ -157,6 +157,54 @@ buttons:
 </details>
 </details>
 
+<details>
+<summary><b>Example 3 — Weather Forecast Card</b></summary>
+
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/dd611b39-b086-4333-ba4c-3e1a691cf180" />
+
+
+Using `custom_cards`, you can embed the standard Home Assistant weather forecast directly into the bottom of the weather card. This example uses a bit of `card_mod` to give the embedded forecast a clean, blurred glass effect that blends nicely with the background.
+
+```yaml
+type: custom:atmospheric-weather-card
+weather_entity: weather.forecast_home
+card_style: standalone
+sun_entity: sun.sun
+card_height: 280
+sun_moon_size: 55
+text_alignment: space-between
+text_position: top-left
+sun_moon_x_position: -55
+sun_moon_y_position: 55
+moon_phase_entity: sensor.moon_phase
+tap_action:
+  action: none
+custom_cards_position: bottom
+custom_cards_css_class: weather-forecast
+custom_cards:
+  - custom_width: 100%
+    custom_height: 150px
+    show_current: false
+    show_forecast: true
+    type: weather-forecast
+    entity: weather.forecast_home
+    forecast_type: daily
+    round_temperature: true
+    tap_action:
+      action: more-info
+      entity: weather.forecast_home
+    card_mod:
+      style: |
+        ha-card {
+          background: rgba(255, 255, 255, 0.08) !important;
+          backdrop-filter: blur(12px) !important;
+          -webkit-backdrop-filter: blur(12px) !important;
+          border: none !important;
+        }
+```
+
+</details>
+
 <br>
 
 ### Immersive
@@ -166,7 +214,7 @@ buttons:
 <br>
 
 <details>
-<summary><b>Example 1 — Header Card</b></summary>
+<summary><b>Example 1 — Simple Header Card</b></summary>
 
 | Day | Night |
 | :---: | :---: |
@@ -201,42 +249,136 @@ tap_action:
 </details>
 
 <details>
-<summary><b>Example 2 — Full Setup</b></summary>
+<summary><strong>Example 2 — Full Setup (Advanced)</strong></summary>
 
 | Day | Night |
 | :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/6d07c654-c791-483a-9351-ce3ec33ff083" width="100%" /> | <img src="https://github.com/user-attachments/assets/f6fa7d65-8777-4746-9878-b32a1960b470" width="100%" /> |
+| <img src="https://github.com/user-attachments/assets/11b74980-adb0-456e-a54b-548efbf908de" width="100%" /> | <img src="https://github.com/user-attachments/assets/1d9fb735-c7d5-479f-b4eb-a084d702f678" width="100%" /> |
 
-This is how I personally use this card: as a dynamic backdrop for the entire top section of my dashboard, combined with a custom house image and overlay buttons. Note that the buttons are separate elements layered on top. See [Adding Buttons](#adding-buttons) and [Custom House Image](#custom-house-image).
+This example is a bit advanced and shows basically all the features of the card at once. It uses the `custom_cards` feature to overlay the fantastic `custom:paper-buttons-row` directly onto your own house image, complete with dynamic door status images and custom-positioned sensors. To get this working in your setup, just make sure you have `paper-buttons-row` installed via HACS, and remember to swap out the entities and styles with your own.
 
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.forecast_home
 full_width: true
-card_height: 200
-card_style: immersive
-image_scale: 100
-image_alignment: bottom
+css_mask_horizontal: false
+css_mask_vertical: false
 disable_text: true
-stack_order: -1
-offset: "-50px 0px 0px 0px"
+sun_moon_size: 50
+card_height: 240
+image_scale: 90
+moon_style: blue
+image_alignment: bottom
+offset: 0px 0px 12px 0px
 sun_moon_x_position: 100
 sun_moon_y_position: 100
+stack_order: 0
 sun_entity: sun.sun
 moon_phase_entity: sensor.moon_phase
-css_mask_horizontal: false
-day: /local/images/dashboard/home-day.png
-night: /local/images/dashboard/home-night.png
+day: /local/house-day.png
+night: /local/house-night.png
 status_entity: binary_sensor.front_door
-status_image_day: /local/images/dashboard/home-day-door-open.png
-status_image_night: /local/images/dashboard/home-night-door-open.png
+status_image_day: /local/house-day-door-open.png
+status_image_night: /local/house-night-door-open.png
 tap_action:
-  action: navigate
-  navigation_path: "#popup_climate"
+  action: none
+custom_cards_position: top-right
+custom_cards:
+  - type: custom:paper-buttons-row
+    custom_width: 100%
+    styles:
+      display: flex
+      justify-content: flex-end
+      flex-wrap: wrap
+      grid-gap: 8px
+      margin: 12px 12px 0px 0px
+    base_config:
+      layout: icon|state
+      tap_action:
+        action: more-info
+      styles:
+        button:
+          padding: 0px 10px
+          height: 34px
+          border-radius: var(--ha-card-border-radius)
+          background-color: rgba(255, 255, 255, 0.3)
+          backdrop-filter: blur(12px)
+          box-shadow: 0 1px 2px rgba(60, 50, 40, 0.15)
+        state:
+          font-weight: 700
+          font-size: 14px
+          color: var(--text-color)
+          white-space: nowrap
+        icon:
+          "--mdc-icon-size": 20px
+          color: var(--text-color)
+          opacity: 0.5
+          padding: 0px
+          margin-right: 4px
+    buttons:
+      - entity: sensor.your_subtext_sensor
+        layout: state
+        state:
+          case: first
+        styles:
+          button:
+            pointer-events: none
+            position: absolute
+            box-shadow: none
+            background-color: transparent
+            backdrop-filter: none
+            bottom: 70px
+            left: 24px
+          state:
+            font-size: 15px
+            text-align: left
+            max-width: 200px
+            white-space: wrap
+            opacity: 0.5
+            align-self: flex-end
+            margin-left: 0px
+      - entity: sensor.time
+        layout: state
+        state:
+          case: first
+          postfix: ""
+        styles:
+          button:
+            pointer-events: none
+            position: absolute
+            box-shadow: none
+            background-color: transparent
+            backdrop-filter: none
+            bottom: 24px
+            left: 24px
+          state:
+            font-size: 42px
+            font-weight: 800
+      - entity: sensor.indoor_temperature
+        icon: mdi:thermometer
+        state:
+          postfix: " °C"
+      - entity: sensor.indoor_humidity
+        icon: mdi:water
+        state:
+          postfix: " %"
+      - entity: sensor.indoor_air_quality
+        icon: mdi:leaf
+        state:
+          case: first
+        styles:
+          button:
+            position: absolute
+            background-color: rgba(59, 123, 69, 0.2)
+            bottom: 30px
+            right: 50px
+          state:
+            color: white
+          icon:
+            color: white
 ```
 
 </details>
-
 <br>
 
 > [!NOTE]
@@ -525,9 +667,7 @@ The status feature dynamically swaps the displayed house/custom image when a mon
 
 ## Adding Buttons
 
-The weather card itself does not include built-in buttons. The floating buttons seen in the example screenshots are separate cards layered over the weather animation.
-
-To replicate this, place a button card (such as `custom:paper-buttons-row`) immediately before the weather card in your dashboard config. Then, use the weather card's `offset` setting to pull the weather background up and directly behind the buttons. A simplified configuration example is included as `paper-buttons-row-example.yaml` in the repository.
+You can embed buttons (or any other Home Assistant cards) directly inside this card using the `custom_cards` feature. To see how to set this up and view the available layout options, check out the **Custom Cards** block in the [Configuration](#configuration) section.
 
 <br>
 
