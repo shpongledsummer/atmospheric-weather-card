@@ -253,7 +253,9 @@ tap_action:
 | :---: | :---: |
 | <img src="https://github.com/user-attachments/assets/11b74980-adb0-456e-a54b-548efbf908de" width="100%" /> | <img src="https://github.com/user-attachments/assets/1d9fb735-c7d5-479f-b4eb-a084d702f678" width="100%" /> |
 
-This example is a bit advanced and shows basically all the features of the card at once. It uses the `custom_cards` feature to overlay the fantastic `custom:paper-buttons-row` directly onto your own house image, complete with dynamic door status images and custom-positioned sensors. To get this working in your setup, just make sure you have `paper-buttons-row` installed via HACS, and remember to swap out the entities and styles with your own.
+This example is a bit advanced and shows basically all the features of the card at once. It uses the `custom_cards` feature to overlay the fantastic `custom:paper-buttons-row` directly onto your own house image, complete with dynamic status images and custom-positioned sensors.
+
+To get this working in your setup, make sure you have `paper-buttons-row` installed via HACS, and remember to swap out the entities with your own.
 
 > This setup (and immersive mode in general) looks best with themes that automatically switch between light and dark. If you use a fixed theme, you can set `theme: dark` or `theme: light` so it matches. See [Day / Night Logic](#day--night-logic)
 
@@ -480,9 +482,9 @@ You can add your own images (such as a 3D house model) to the card. This works i
 </details>
 
 <details>
-<summary><strong>Adding Custom Cards</strong></summary>
+<summary><strong>Custom Cards</strong></summary>
 
-You can embed other Home Assistant cards directly inside this card. This is incredibly useful for adding buttons, native weather forecasts, or small graphs without having to use hacky stacking methods.
+You can embed other Home Assistant cards directly inside this card. This is useful for adding additional details (specific sensors, weather forecasts, graphs etc.).
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -506,8 +508,6 @@ custom_cards:
 <details>
 <summary><strong>Text Settings</strong></summary>
 
-Text overlays work seamlessly in **both standalone and immersive** modes.
-
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `top_text_sensor` | `string` | — | The entity to display as the large top text. Defaults to the temperature from your weather entity. |
@@ -518,7 +518,7 @@ Text overlays work seamlessly in **both standalone and immersive** modes.
 | `disable_bottom_icon` | `boolean` | `false` | Hides only the icon next to the bottom text. |
 
 **Text Positioning**
-By default, text auto-positions to the side opposite the sun or moon. You can manually override this:
+By default, text auto-positions to the side opposite the sun and moon. You can manually override this:
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
