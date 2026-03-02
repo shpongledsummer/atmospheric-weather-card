@@ -157,7 +157,7 @@ buttons:
 <details>
 <summary><b>Example 3 — Weather Forecast Card</b></summary>
 
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/dd611b39-b086-4333-ba4c-3e1a691cf180" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/6a737fa6-6d35-4e15-b41b-d623e266485a" />
 
 
 Using `custom_cards`, you can embed the standard Home Assistant weather forecast directly into the bottom of the weather card. This example uses a bit of `card_mod` to give the embedded forecast a clean, blurred glass effect that blends nicely with the background.
@@ -167,7 +167,7 @@ type: custom:atmospheric-weather-card
 weather_entity: weather.forecast_home
 card_style: standalone
 sun_entity: sun.sun
-card_height: 280
+card_height: 275
 sun_moon_size: 55
 text_alignment: space-between
 text_position: top-left
