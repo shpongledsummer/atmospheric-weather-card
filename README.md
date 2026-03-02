@@ -341,6 +341,30 @@ You can add your own images (such as a 3D house model) to the card. This works i
 </details>
 
 <details>
+<summary><strong>Adding Custom Cards</strong></summary>
+
+You can embed other Home Assistant cards directly inside this card. This is incredibly useful for adding buttons, native weather forecasts, or small graphs without having to use hacky stacking methods.
+
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `custom_cards` | `list` | — | A list of cards to display. You can use standard Home Assistant cards or custom ones. |
+| `custom_cards_position` | `string` | `bottom` | Where to place the container holding your custom cards (e.g., `bottom`, `top`, `bottom-right`). |
+| `custom_cards_css_class` | `string` | — | Assigns a custom CSS class to the container, making it easy to style with `card_mod`. |
+| `custom_width` | `string` | — | *Used directly on the nested cards.* Forces a specific width for an individual card (e.g., `100%`, `50px`). |
+| `custom_height` | `string` | — | *Used directly on the nested cards.* Forces a specific height for an individual card (e.g., `150px`). |
+
+**Basic Example:**
+```yaml
+custom_cards_position: bottom
+custom_cards:
+  - type: weather-forecast
+    custom_width: 100%
+    entity: weather.forecast_home
+```
+
+</details>
+
+<details>
 <summary><strong>Text Settings</strong></summary>
 
 Text overlays work seamlessly in **both standalone and immersive** modes.
