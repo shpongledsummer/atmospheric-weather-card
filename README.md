@@ -672,13 +672,13 @@ The card supports the following weather states: `sunny` · `clear-night` · `par
 
 Each state triggers a unique combination of particle types, cloud densities, wind behaviors, and atmospheric lighting. The card also reads the `wind_speed` directly from your weather entity to dynamically influence particle movement in real-time. If your weather integration reports `sunny` during the night, the card is smart enough to automatically switch to `clear-night` (and vice versa).
 
-In addition to core weather conditions, ambient details will appear randomly. Keep an eye out for drifting fog banks, sun rays with heat shimmer, lightning bolts, airplanes, bird formations, shooting stars, comets, and the rare aurora borealis on clear, dark nights.
-
 <br>
 
 ## Performance
 
-To help keep browser CPU and memory usage low, the rendering loop reuses graphics instead of drawing them from scratch every frame. A few other limits are in place to save resources:
+To help keep browser CPU and memory usage low, the rendering loop reuses graphics instead of drawing them from scratch every frame.
+
+A few other limits are in place to save resources:
 
 * Animations pause entirely and clear memory when the card is scrolled out of view.
 * The framerate is capped at 30 FPS.
