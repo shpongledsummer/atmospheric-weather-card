@@ -39,8 +39,7 @@ You can use either `card_style: standalone` for a self-contained card with dynam
 
 ### Standalone
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/fd5e8d9c-ceea-401e-bda9-9124a361c6b3" />
-
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/0c62ed1b-f4df-4039-ab59-3dcc67ee6af0" />
 
 <details>
 <summary><b>Example 1 — Basic Card</b></summary>
@@ -68,94 +67,106 @@ tap_action:
 </details>
 
 <details>
-<summary><b>Example 2 — Square Card</b></summary>
+<summary><b>Example 2 — Small Weather Forecast</b></summary>
 
-<img width="400" src="https://github.com/user-attachments/assets/5cb58257-4fae-4661-86f9-671b279e3eaf" alt="Grid Layout Example" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/0c62ed1b-f4df-4039-ab59-3dcc67ee6af0" />
 
-> Setting `square: true` allows the card to fit perfectly within a grid. If you want, you can also get a totally round card by adding `--awc-card-border-radius: 100%` to your Home Assistant theme.
+This example combines a `paper-buttons-row` card with a native Home Assistant weather card.
 
 ```yaml
 type: custom:atmospheric-weather-card
-weather_entity: weather.forecast_home
+weather_entity:  weather.forecast_home
 card_style: standalone
-theme: light
-sun_moon_size: 70
-square: true
-text_alignment: center
-text_position: center
 sun_entity: sun.sun
+card_height: 175
+sun_moon_size: 50
 disable_text: true
-sun_moon_x_position: center
-sun_moon_y_position: center
+sun_moon_x_position: 55
+sun_moon_y_position: 55
+moon_phase_entity: sensor.moon_phase
 tap_action:
-  action: more-info
-  entity: weather.forecast_home
-```
-
-<details>
-<summary><b>YAML for the buttons (advanced)</b></summary>
-
-The buttons shown in the screenshot use the `paper-buttons-row` card. The following example demonstrates how to create the buttons within the grid layout.
-
-```yaml
-type: custom:paper-buttons-row
-styles:
-  display: grid
-  grid-template-columns: 1fr
-  grid-template-rows: 1fr 1fr
-  aspect-ratio: 1
-  align-items: stretch
-  gap: 12px
-base_config:
-  layout: icon|name_state
-  styles:
-    button:
-      background-color: var(--ha-card-background)
-      box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08)
-      border-radius: var(--ha-card-border-radius)
-      justify-content: flex-start
-      align-items: center
-      padding: 16px
-    state:
-      font-size: 24px
-      font-weight: 700
-      align-self: flex-start
-      padding: 0px
-    name:
-      font-size: 12px
-      font-weight: 700
-      align-self: flex-start
-      padding: 0px
-      opacity: 0.5
-    icon:
-      border-radius: var(--ha-card-border-radius)
-      background-color: "#F6F5F3"
+  action: none
+custom_cards_position: bottom-right
+custom_cards:
+  - type: custom:paper-buttons-row
+    styles:
       display: flex
-      justify-content: center
-      align-items: center
-      height: 100%
-      aspect-ratio: 1
-      "--mdc-icon-size": 26px
-      color: "#BDBBB8"
-      margin-right: 20px
-buttons:
-  - name: Innen
-    icon: mdi:home-thermometer-outline
-    entity: sensor.your_indoor_temperature_sensor
-    state:
-      postfix: °
-  - name: Außen
-    icon: mdi:cloud-outline
-    entity: sensor.your_outdoor_temperature_sensor
-    state:
-      postfix: °
+      justify-content: flex-start
+      flex-wrap: wrap
+      gap: 8px
+      height: 50px
+      padding: 0px 16px
+      position: absolute
+      bottom: 16px
+      left: 16px
+      border-radius: var(--ha-card-border-radius)
+      background-color: rgba(255, 255, 255, 0.03)
+      backdrop-filter: blur(12px)
+      box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.8)
+    base_config:
+      styles:
+        button:
+          padding: 0px
+        state:
+          font-weight: 700
+          font-size: 18px
+          color: white
+          white-space: nowrap
+        icon:
+          "--mdc-icon-size": 22px
+          color: white
+          opacity: 0.5
+          padding: 0px
+    buttons:
+      - entity:  weather.forecast_home
+        layout: icon
+        icon: mdi:weather-cloudy
+        state_icons:
+          clear-day: mdi:weather-sunny
+          clear-night: mdi:weather-night
+          cloudy: mdi:weather-cloudy
+          fog: mdi:weather-fog
+          hail: mdi:weather-hail
+          lightning: mdi:weather-lightning
+          lightning-rainy: mdi:weather-lightning-rainy
+          partlycloudy: mdi:weather-partly-cloudy
+          pouring: mdi:weather-pouring
+          rainy: mdi:weather-rainy
+          snowy: mdi:weather-snowy
+          snowy-rainy: mdi:weather-snowy-rainy
+          sunny: mdi:weather-sunny
+          windy: mdi:weather-windy
+          windy-variant: mdi:weather-windy-variant
+          exceptional: mdi:weather-sunny
+      - entity:  weather.forecast_home
+        layout: state
+        icon: mdi:weather-cloudy
+        state:
+          attribute: temperature
+          postfix: " °C"
+  - custom_width: 160px
+    show_current: false
+    show_forecast: true
+    type: weather-forecast
+    entity: weather.forecast_home
+    forecast_type: daily
+    round_temperature: true
+    forecast_slots: 3
+    card_mod:
+      style: |
+        ha-card {
+          background: rgba(255, 255, 255, 0.03) !important;
+          backdrop-filter: blur(12px) !important;
+          -webkit-backdrop-filter: blur(12px) !important;
+          border: none !important;
+          box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.8);
+        }
 ```
 
 </details>
-</details>
 
 <details>
-<summary><b>Example 3 — Weather Forecast Card</b></summary>
+<summary><b>Example 3 — Big Weather Forecast</b></summary>
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/6a737fa6-6d35-4e15-b41b-d623e266485a" />
 
