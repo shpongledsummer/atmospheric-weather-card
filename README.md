@@ -39,7 +39,7 @@ You can use either `card_style: standalone` for a self-contained card with dynam
 
 ### Standalone
 
-<img width="1038" height="463" alt="Image" src="https://github.com/user-attachments/assets/b1c317d4-06ef-48d0-beb4-56c9e3436346" /> 
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/b1c317d4-06ef-48d0-beb4-56c9e3436346" /> 
 
 <details>
 <summary><b>Example 1 — Basic Card</b></summary>
@@ -68,7 +68,7 @@ tap_action:
 <details>
 <summary><b>Example 2 — Weather Details Slider</b></summary>
 
-<img width="1037" height="468" alt="Image" src="https://github.com/user-attachments/assets/d9678ce9-6c23-4e70-a3bc-c5aa46468a5d" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/d9678ce9-6c23-4e70-a3bc-c5aa46468a5d" />
 
 This example embeds a `paper-buttons-row` card using the `custom_cards` feature. Because the buttons can be scrolled vertically, it can hold many different sensors and buttons without looking cluttered. It also snaps into place on scroll, and there are a few different approaches included already that you can adapt to your needs.
 
