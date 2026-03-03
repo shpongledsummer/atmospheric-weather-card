@@ -71,16 +71,16 @@ tap_action:
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/d9678ce9-6c23-4e70-a3bc-c5aa46468a5d" />
 
-This example embeds a `paper-buttons-row` card using the `custom_cards` feature. Because the buttons can be scrolled vertically, it can hold many different sensors and buttons without looking cluttered. It also snaps into place on scroll, and there are a few different approaches included already that you can adapt to your needs.
+This example embeds a `paper-buttons-row` card using the `custom_cards` feature. Because the buttons can be scrolled vertically, it can hold a lot of information without looking cluttered. It also snaps into place on scroll, and there are a few different approaches included already that you can adapt to your needs.
 
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.forecast_home
 card_style: standalone
-sun_entity: sun.sun
 card_height: 134
-sun_moon_size: 60
 text_position: left
+sun_entity: sun.sun
+sun_moon_size: 60
 sun_moon_x_position: center
 sun_moon_y_position: center
 moon_phase_entity: sensor.moon_phase
@@ -202,10 +202,10 @@ This example uses the `custom_cards` feature to combine a `paper-buttons-row` ca
 type: custom:atmospheric-weather-card
 weather_entity:  weather.forecast_home
 card_style: standalone
-sun_entity: sun.sun
 card_height: 175
-sun_moon_size: 50
 disable_text: true
+sun_entity: sun.sun
+sun_moon_size: 50
 sun_moon_x_position: 55
 sun_moon_y_position: 55
 moon_phase_entity: sensor.moon_phase
