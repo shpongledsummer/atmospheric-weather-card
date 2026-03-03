@@ -146,7 +146,7 @@ custom_cards:
         state_icons:
           clear-day: mdi:weather-sunny
           clear-night: mdi:weather-night
-          cloudy: mdi:weathecloudy
+          cloudy: mdi:weather-cloudy
           fog: mdi:weather-fog
           hail: mdi:weather-hail
           lightning: mdi:weather-lightning
