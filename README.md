@@ -54,6 +54,7 @@ type: custom:atmospheric-weather-card
 weather_entity: weather.forecast_home
 card_style: standalone
 card_height: 110
+text_position: left
 sun_moon_x_position: -55
 sun_moon_y_position: 55
 sun_entity: sun.sun
@@ -61,8 +62,6 @@ tap_action:
   action: more-info
   entity: weather.forecast_home
 ```
-
-> Use `bottom_text_sensor` to replace the default wind speed with any entity. Use `text_position` to manually override where the text appears instead of letting it auto-position opposite the sun/moon.
 
 </details>
 
