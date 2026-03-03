@@ -58,6 +58,7 @@ text_position: left
 sun_moon_x_position: -55
 sun_moon_y_position: 55
 sun_entity: sun.sun
+moon_phase_entity: sensor.moon_phase
 tap_action:
   action: more-info
   entity: weather.forecast_home
@@ -82,7 +83,7 @@ sun_moon_size: 60
 text_position: left
 sun_moon_x_position: center
 sun_moon_y_position: center
-moon_phase_entity: sensor.mond_phase
+moon_phase_entity: sensor.moon_phase
 tap_action:
   action: more-info
   entity: weather.forecast_home
