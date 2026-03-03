@@ -71,7 +71,7 @@ tap_action:
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/0c62ed1b-f4df-4039-ab59-3dcc67ee6af0" />
 
-This example uses the `custom_cards` feature to combine a `paper-buttons-row` card with a native Home Assistant weather card and a bit of optional `card_mod`.
+This example uses the `custom_cards` feature to combine a `paper-buttons-row` card with a standard Home Assistant weather card. You can also use a bit of `card_mod` to style the forecast.
 
 ```yaml
 type: custom:atmospheric-weather-card
