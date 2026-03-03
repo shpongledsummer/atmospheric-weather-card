@@ -39,7 +39,7 @@ You can use either `card_style: standalone` for a self-contained card with dynam
 
 ### Standalone
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/0c62ed1b-f4df-4039-ab59-3dcc67ee6af0" />
+<img width="1038" height="463" alt="Image" src="https://github.com/user-attachments/assets/b1c317d4-06ef-48d0-beb4-56c9e3436346" /> 
 
 <details>
 <summary><b>Example 1 — Basic Card</b></summary>
@@ -67,7 +67,134 @@ tap_action:
 </details>
 
 <details>
-<summary><b>Example 2 — Weather Forecast</b></summary>
+<summary><b>Example 2 — Weather Details Slider</b></summary>
+
+<img width="1038" height="463" alt="Image" src="https://github.com/user-attachments/assets/b1c317d4-06ef-48d0-beb4-56c9e3436346" /> 
+
+This example embeds a `paper-buttons-row` card using the `custom_cards` feature. Because the buttons can be scrolled vertically, it can hold many different sensors and buttons without looking cluttered. It also snaps into place on scroll, and there are a few different approaches included already that you can adapt to your needs.
+
+```yaml
+
+
+        type: custom:atmospheric-weather-card
+weather_entity: weather.forecast_home
+card_style: standalone
+sun_entity: sun.sun
+card_height: 134
+sun_moon_size: 60
+text_position: left
+sun_moon_x_position: center
+sun_moon_y_position: center
+moon_phase_entity: sensor.mond_phase
+tap_action:
+  action: more-info
+  entity: weather.forecast_home
+custom_cards_position: top-right
+custom_cards:
+  - type: custom:paper-buttons-row
+    custom_width: 120px
+    styles:
+      display: grid
+      grid-template-columns: 1fr
+      max-height: 102px
+      overflow-y: auto
+      box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.65)
+      backdrop-filter: blur(8px)
+      scrollbar-width: none
+      border-radius: 24px
+      scroll-padding-block-start: 0px
+      overscroll-behavior-y: contain
+      scroll-snap-type: y mandatory
+    base_config:
+      layout: icon|state
+      styles:
+        button:
+          padding: 0px 10px
+          height: 50px
+          border-bottom: 2px solid rgba(255, 255, 255, 0.15)
+          scroll-snap-align: start
+          background-color: rgba(255, 255, 255, 0.01)
+        state:
+          font-weight: 700
+          font-size: 16px
+          color: white
+          white-space: nowrap
+        icon:
+          "--mdc-icon-size": 18px
+          color: white
+          opacity: 0.5
+          padding: 0px
+          margin-right: 4px
+    buttons:
+      - entity: weather.forecast_home
+        state_text:
+          clear-day: Sonne!
+          clear-night: Klar
+          cloudy: Wolkig
+          fog: Nebel
+          hail: Hagel
+          lightning: Blitz
+          lightning-rainy: Gewitter
+          partlycloudy: Heiter
+          pouring: Schauer
+          rainy: Regen
+          snowy: Schnee
+          snowy-rainy: Schneeregen
+          sunny: Sonne
+          windy: Wind
+          windy-variant: Böen
+          exceptional: Sonne!
+        state_icons:
+          clear-day: mdi:weather-sunny
+          clear-night: mdi:weather-night
+          cloudy: mdi:weathecloudy
+          fog: mdi:weather-fog
+          hail: mdi:weather-hail
+          lightning: mdi:weather-lightning
+          lightning-rainy: mdi:weather-lightning-rainy
+          partlycloudy: mdi:weather-partly-cloudy
+          pouring: mdi:weather-pouring
+          rainy: mdi:weather-rainy
+          snowy: mdi:weather-snowy
+          snowy-rainy: mdi:weather-snowy-rainy
+          sunny: mdi:weather-sunny
+          windy: mdi:weather-windy
+          windy-variant: mdi:weather-windy-variant
+          exceptional: mdi:weather-sunny
+        icon: mdi:weather-cloudy
+        state:
+          case: first
+      - entity: sun.sun
+        icon: |
+          {% if is_state('sun.sun', 'above_horizon') %}
+            mdi:weather-sunset
+          {% else %}
+            mdi:weather-sunset-up
+          {% endif %}
+        state: >
+          {% set next_setting = as_timestamp(state_attr('sun.sun',
+          'next_setting')) %} {% set next_rising =
+          as_timestamp(state_attr('sun.sun', 'next_rising')) %} {% set
+          next_event = next_setting if next_setting < next_rising else
+          next_rising %} {% set mins = ((next_event - as_timestamp(now())) / 60)
+          | int %} {% if mins >= 60 %}
+            > {{ (mins / 60) | int }} Std
+          {% else %}
+            in {{ mins }} Min
+          {% endif %}
+      - entity: sensor.your_humidity_sensor
+        icon: mdi:water
+        state:
+          postfix: " %"
+        styles:
+          button:
+            border: none
+```
+
+</details>
+
+<details>
+<summary><b>Example 3 — Small Weather Forecast</b></summary>
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/0c62ed1b-f4df-4039-ab59-3dcc67ee6af0" />
 
@@ -166,7 +293,7 @@ custom_cards:
 </details>
 
 <details>
-<summary><b>Example 3 — Big Weather Forecast</b></summary>
+<summary><b>Example 4 — Big Weather Forecast</b></summary>
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/6a737fa6-6d35-4e15-b41b-d623e266485a" />
 
