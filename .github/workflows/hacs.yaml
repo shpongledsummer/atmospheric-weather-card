@@ -1,0 +1,16 @@
+name: HACS
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 0 * * *"
+jobs:
+  hacs:
+    runs-on: ubuntu-latest
+    name: HACS
+    steps:
+      - uses: actions/checkout@v4
+      - name: HACS validation
+        uses: hacs/action@main
+        with:
+          category: plugin
