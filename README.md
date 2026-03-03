@@ -73,9 +73,7 @@ tap_action:
 This example embeds a `paper-buttons-row` card using the `custom_cards` feature. Because the buttons can be scrolled vertically, it can hold many different sensors and buttons without looking cluttered. It also snaps into place on scroll, and there are a few different approaches included already that you can adapt to your needs.
 
 ```yaml
-
-
-        type: custom:atmospheric-weather-card
+type: custom:atmospheric-weather-card
 weather_entity: weather.forecast_home
 card_style: standalone
 sun_entity: sun.sun
