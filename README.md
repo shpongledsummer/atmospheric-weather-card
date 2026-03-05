@@ -957,6 +957,27 @@ In addition to the [Style Settings](#configuration) detailed above, you can fine
 
 </details>
 
+<details>
+  <summary><b>Card Mod Example</b></summary>
+
+  This example shows how you can apply styles to the card using `card_mod`.
+
+  ```yaml
+  type: custom:atmospheric-weather-card
+  weather_entity: weather.your_weather_entity
+  # (... rest of your cards config)
+  card_mod:
+    style: |
+      :host {
+        --awc-text-day: #ffffff; # change to your liking
+        --awc-text-night: #ffffff;
+        --awc-text-shadow-day: 0 1px 2px rgba(0, 0, 0, 0.15);
+        --awc-text-shadow-night: 0 1px 2px rgba(0, 0, 0, 0.8);
+      }
+  ```
+</details>
+
+
 <br>
 
 ## Custom House Image
