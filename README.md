@@ -39,7 +39,8 @@ You can use either `card_style: standalone` for a self-contained card with dynam
 
 ### Standalone
 
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/ddeabba7-1c24-4703-ba48-79c4bd2a7636" />
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/6535137e-253f-4afa-bd9f-ff1c514b406f" />
+
 
 <details>
 <summary><b>Example 1 — Basic Card</b></summary>
