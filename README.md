@@ -41,9 +41,10 @@ You can use either `card_style: standalone` for a self-contained card with dynam
 
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/6535137e-253f-4afa-bd9f-ff1c514b406f" />
 
-
 <details>
 <summary><b>Example 1 — Basic Card (Default)</b></summary>
+
+<br>
 
 | Day | Night |
 | :---: | :---: |
@@ -69,6 +70,8 @@ tap_action:
 
 <details>
 <summary><b>Example 2 — Simple Weather Forecast</b></summary>
+
+<br>
 
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/cd689f80-08bb-4ff2-8ec8-29797797c992" />
 
@@ -112,6 +115,8 @@ custom_cards:
 
 <details>
 <summary><b>Example 3 — Big Weather Forecast</b></summary>
+
+<br>
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/6a737fa6-6d35-4e15-b41b-d623e266485a" />
 
@@ -159,6 +164,8 @@ custom_cards:
 
 <details>
 <summary><b>Example 4 — Details Slider (Advanced)</b></summary>
+
+<br>
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/d9678ce9-6c23-4e70-a3bc-c5aa46468a5d" />
 
@@ -285,7 +292,11 @@ custom_cards:
 <details>
 <summary><b>Example 5 — Forecast Slider (Advanced)</b></summary>
 
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/ddeabba7-1c24-4703-ba48-79c4bd2a7636" />
+<br>
+
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/ddeabba7-1c24-4703-ba48-79c4bd2a7636" /><br>
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/090d989c-254d-4db0-b56c-5eb11c4162ca" />
+
 
 This example uses the `custom_cards` feature to create a scrollable weather forecast card with animated SVG icons.
 
@@ -539,6 +550,8 @@ custom_cards:
 <details>
 <summary><b>Example 1 — Simple Header Card</b></summary>
 
+<br>
+
 | Day | Night |
 | :---: | :---: |
 | <img src="https://github.com/user-attachments/assets/a4b69e07-f1e9-4ac4-8f51-f4c4130b959d" width="100%"> | <img src="https://github.com/user-attachments/assets/2b34d41f-28c7-483b-8f08-98e7a197b129" width="100%"> |
@@ -573,6 +586,8 @@ tap_action:
 
 <details>
 <summary><strong>Example 2 — Full Setup (Advanced)</strong></summary>
+
+<br>
 
 | Day | Night |
 | :---: | :---: |
