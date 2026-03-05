@@ -45,7 +45,7 @@ You can use either `card_style: standalone` for a self-contained card with dynam
 
 
 <details>
-<summary><b>Example 1 — Basic Card</b></summary>
+<summary><b>Example 1 — Basic Card (Default)</b></summary>
 
 | Day | Night |
 | :---: | :---: |
@@ -70,7 +70,97 @@ tap_action:
 </details>
 
 <details>
-<summary><b>Example 2 — Vertical Details Slider</b></summary>
+<summary><b>Example 2 — Simple Weather Forecast</b></summary>
+
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/cd689f80-08bb-4ff2-8ec8-29797797c992" />
+
+This example uses the `custom_cards` feature to embed a standard Home Assistant weather card. You can also use a bit of `card_mod` to style the forecast.
+
+```yaml
+type: custom:atmospheric-weather-card
+weather_entity:  weather.your_weather_entity
+card_style: standalone
+card_height: 175
+text_position: left
+sun_entity: sun.sun
+sun_moon_size: 50
+sun_moon_x_position: 100
+sun_moon_y_position: center
+moon_phase_entity: sensor.moon_phase
+tap_action:
+  action: none
+custom_cards_position: top-right
+custom_cards:
+  - custom_width: 160px
+    show_current: false
+    show_forecast: true
+    type: weather-forecast
+    entity: weather.meteo
+    forecast_type: daily
+    round_temperature: true
+    forecast_slots: 3
+    card_mod:
+      style: |
+        ha-card {
+          background: rgba(255, 255, 255, 0.03) !important;
+          backdrop-filter: blur(12px) !important;
+          -webkit-backdrop-filter: blur(12px) !important;
+          border: none !important;
+          box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+        }
+```
+
+</details>
+
+<details>
+<summary><b>Example 3 — Big Weather Forecast</b></summary>
+
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/6a737fa6-6d35-4e15-b41b-d623e266485a" />
+
+Using `custom_cards`, you can embed a standard Home Assistant weather forecast directly into the bottom of the weather card. This example uses a bit of `card_mod` to give the embedded forecast a clean, blurred glass effect that blends nicely with the background.
+
+```yaml
+type: custom:atmospheric-weather-card
+weather_entity: weather.your_weather_entity
+card_style: standalone
+sun_entity: sun.sun
+card_height: 275
+sun_moon_size: 55
+text_alignment: space-between
+text_position: top-left
+sun_moon_x_position: -55
+sun_moon_y_position: 55
+moon_phase_entity: sensor.moon_phase
+tap_action:
+  action: none
+custom_cards_position: bottom
+custom_cards_css_class: weather-forecast
+custom_cards:
+  - custom_width: 100%
+    custom_height: 150px
+    show_current: false
+    show_forecast: true
+    type: weather-forecast
+    entity: weather.your_weather_entity
+    forecast_type: daily
+    round_temperature: true
+    tap_action:
+      action: more-info
+      entity: weather.your_weather_entity
+    card_mod:
+      style: |
+        ha-card {
+          background: rgba(255, 255, 255, 0.08) !important;
+          backdrop-filter: blur(12px) !important;
+          -webkit-backdrop-filter: blur(12px) !important;
+          border: none !important;
+        }
+```
+
+</details>
+
+<details>
+<summary><b>Example 4 — Details Slider (Advanced)</b></summary>
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/d9678ce9-6c23-4e70-a3bc-c5aa46468a5d" />
 
@@ -192,13 +282,10 @@ custom_cards:
             border: none
 ```
 
-
-
-
 </details>
 
 <details>
-<summary><b>Example 3 — Weather Forecast Slider</b></summary>
+<summary><b>Example 5 — Forecast Slider (Advanced)</b></summary>
 
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/ddeabba7-1c24-4703-ba48-79c4bd2a7636" />
 
@@ -440,151 +527,7 @@ custom_cards:
 
 </details>
 
-<details>
-<summary><b>Example 4 — Small Weather Forecast</b></summary>
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/0c62ed1b-f4df-4039-ab59-3dcc67ee6af0" />
-
-This example uses the `custom_cards` feature to combine a `paper-buttons-row` card with a standard Home Assistant weather card. You can also use a bit of `card_mod` to style the forecast.
-
-```yaml
-type: custom:atmospheric-weather-card
-weather_entity:  weather.your_weather_entity
-card_style: standalone
-card_height: 175
-disable_text: true
-sun_entity: sun.sun
-sun_moon_size: 50
-sun_moon_x_position: 55
-sun_moon_y_position: 55
-moon_phase_entity: sensor.moon_phase
-tap_action:
-  action: none
-custom_cards_position: bottom-right
-custom_cards:
-  - type: custom:paper-buttons-row
-    styles:
-      display: flex
-      justify-content: flex-start
-      flex-wrap: wrap
-      gap: 8px
-      height: 50px
-      padding: 0px 16px
-      position: absolute
-      bottom: 16px
-      left: 16px
-      border-radius: var(--ha-card-border-radius)
-      background-color: rgba(255, 255, 255, 0.03)
-      backdrop-filter: blur(12px)
-      box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.8)
-    base_config:
-      styles:
-        button:
-          padding: 0px
-        state:
-          font-weight: 700
-          font-size: 18px
-          color: white
-          white-space: nowrap
-        icon:
-          "--mdc-icon-size": 22px
-          color: white
-          opacity: 0.5
-          padding: 0px
-    buttons:
-      - entity:  weather.your_weather_entity
-        layout: icon
-        icon: mdi:weather-cloudy
-        state_icons:
-          clear-day: mdi:weather-sunny
-          clear-night: mdi:weather-night
-          cloudy: mdi:weather-cloudy
-          fog: mdi:weather-fog
-          hail: mdi:weather-hail
-          lightning: mdi:weather-lightning
-          lightning-rainy: mdi:weather-lightning-rainy
-          partlycloudy: mdi:weather-partly-cloudy
-          pouring: mdi:weather-pouring
-          rainy: mdi:weather-rainy
-          snowy: mdi:weather-snowy
-          snowy-rainy: mdi:weather-snowy-rainy
-          sunny: mdi:weather-sunny
-          windy: mdi:weather-windy
-          windy-variant: mdi:weather-windy-variant
-          exceptional: mdi:weather-sunny
-      - entity:  weather.your_weather_entity
-        layout: state
-        icon: mdi:weather-cloudy
-        state:
-          attribute: temperature
-          postfix: " °C"
-  - custom_width: 160px
-    show_current: false
-    show_forecast: true
-    type: weather-forecast
-    entity: weather.your_weather_entity
-    forecast_type: daily
-    round_temperature: true
-    forecast_slots: 3
-    card_mod:
-      style: |
-        ha-card {
-          background: rgba(255, 255, 255, 0.03) !important;
-          backdrop-filter: blur(12px) !important;
-          -webkit-backdrop-filter: blur(12px) !important;
-          border: none !important;
-          box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.8);
-        }
-```
-
-</details>
-
-<details>
-<summary><b>Example 5 — Big Weather Forecast</b></summary>
-
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/6a737fa6-6d35-4e15-b41b-d623e266485a" />
-
-Using `custom_cards`, you can embed a standard Home Assistant weather forecast directly into the bottom of the weather card. This example uses a bit of `card_mod` to give the embedded forecast a clean, blurred glass effect that blends nicely with the background.
-
-```yaml
-type: custom:atmospheric-weather-card
-weather_entity: weather.your_weather_entity
-card_style: standalone
-sun_entity: sun.sun
-card_height: 275
-sun_moon_size: 55
-text_alignment: space-between
-text_position: top-left
-sun_moon_x_position: -55
-sun_moon_y_position: 55
-moon_phase_entity: sensor.moon_phase
-tap_action:
-  action: none
-custom_cards_position: bottom
-custom_cards_css_class: weather-forecast
-custom_cards:
-  - custom_width: 100%
-    custom_height: 150px
-    show_current: false
-    show_forecast: true
-    type: weather-forecast
-    entity: weather.your_weather_entity
-    forecast_type: daily
-    round_temperature: true
-    tap_action:
-      action: more-info
-      entity: weather.your_weather_entity
-    card_mod:
-      style: |
-        ha-card {
-          background: rgba(255, 255, 255, 0.08) !important;
-          backdrop-filter: blur(12px) !important;
-          -webkit-backdrop-filter: blur(12px) !important;
-          border: none !important;
-        }
-```
-
-</details>
 
 <br>
 
