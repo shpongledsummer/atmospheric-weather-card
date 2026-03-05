@@ -39,7 +39,7 @@ You can use either `card_style: standalone` for a self-contained card with dynam
 
 ### Standalone
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/b1c317d4-06ef-48d0-beb4-56c9e3436346" /> 
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/ddeabba7-1c24-4703-ba48-79c4bd2a7636" />
 
 <details>
 <summary><b>Example 1 — Basic Card</b></summary>
@@ -51,7 +51,7 @@ You can use either `card_style: standalone` for a self-contained card with dynam
 
 ```yaml
 type: custom:atmospheric-weather-card
-weather_entity: weather.forecast_home
+weather_entity: weather.your_weather_entity
 card_style: standalone
 card_height: 110
 text_position: left
@@ -61,13 +61,13 @@ sun_entity: sun.sun
 moon_phase_entity: sensor.moon_phase
 tap_action:
   action: more-info
-  entity: weather.forecast_home
+  entity: weather.your_weather_entity
 ```
 
 </details>
 
 <details>
-<summary><b>Example 2 — Weather Details Slider</b></summary>
+<summary><b>Example 2 — Vertical Details Slider</b></summary>
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/d9678ce9-6c23-4e70-a3bc-c5aa46468a5d" />
 
@@ -75,7 +75,7 @@ This example embeds a `paper-buttons-row` card using the `custom_cards` feature.
 
 ```yaml
 type: custom:atmospheric-weather-card
-weather_entity: weather.forecast_home
+weather_entity: weather.your_weather_entity
 card_style: standalone
 card_height: 134
 text_position: left
@@ -86,7 +86,7 @@ sun_moon_y_position: center
 moon_phase_entity: sensor.moon_phase
 tap_action:
   action: more-info
-  entity: weather.forecast_home
+  entity: weather.your_weather_entity
 custom_cards_position: top-right
 custom_cards:
   - type: custom:paper-buttons-row
@@ -124,7 +124,7 @@ custom_cards:
           padding: 0px
           margin-right: 4px
     buttons:
-      - entity: weather.forecast_home
+      - entity: weather.your_weather_entity
         state_text:
           clear-day: Sonne!
           clear-night: Klar
@@ -189,10 +189,256 @@ custom_cards:
             border: none
 ```
 
+
+
+
 </details>
 
 <details>
-<summary><b>Example 3 — Small Weather Forecast</b></summary>
+<summary><b>Example 3 — Weather Forecast Slider</b></summary>
+
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/ddeabba7-1c24-4703-ba48-79c4bd2a7636" />
+
+This example creates a scrollable weather forecast with animated SVG icons. 
+
+> **Note:** This takes a bit of work to set up, so it's not the best choice if you want something quick and easy. The upside is that you can completely change how it looks and what data it shows.
+
+<br>
+
+### 1. Create the Weather Forecast Sensor
+
+Since weather forecasts aren't directly available as sensor states, you must first create a custom trigger template sensor to store this data in its attributes. Just swap in your own weather entity—the rest works as-is. 
+
+<details>
+<summary><b>YAML for the weather forecast sensor</b></summary>
+
+```yaml
+template:
+
+  # AWC Weather Forecast Sensor
+  - trigger:
+      - trigger: time_pattern
+        hours: "/1"
+      - trigger: homeassistant
+        event: start
+    action:
+      - action: weather.get_forecasts
+        data:
+          type: daily
+        target:
+          entity_id: weather.your_weather_entity
+        response_variable: response
+    sensor:
+      - name: "Weather Forecast"
+        unique_id: weather_forecast
+        state: "{{ now().isoformat() }}"
+        attributes:
+          day_1_datetime: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[0].datetime if f | length > 0 else 'unknown' }}
+          day_1_condition: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[0].condition if f | length > 0 else 'unknown' }}
+          day_1_temperature: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[0].temperature if f | length > 0 else 'unknown' }}
+          day_1_templow: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[0].templow if f | length > 0 else 'unknown' }}
+          day_2_datetime: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[1].datetime if f | length > 1 else 'unknown' }}
+          day_2_condition: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[1].condition if f | length > 1 else 'unknown' }}
+          day_2_temperature: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[1].temperature if f | length > 1 else 'unknown' }}
+          day_2_templow: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[1].templow if f | length > 1 else 'unknown' }}
+          day_3_datetime: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[2].datetime if f | length > 2 else 'unknown' }}
+          day_3_condition: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[2].condition if f | length > 2 else 'unknown' }}
+          day_3_temperature: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[2].temperature if f | length > 2 else 'unknown' }}
+          day_3_templow: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[2].templow if f | length > 2 else 'unknown' }}
+          day_4_datetime: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[3].datetime if f | length > 3 else 'unknown' }}
+          day_4_condition: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[3].condition if f | length > 3 else 'unknown' }}
+          day_4_temperature: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[3].temperature if f | length > 3 else 'unknown' }}
+          day_4_templow: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[3].templow if f | length > 3 else 'unknown' }}
+          day_5_datetime: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[4].datetime if f | length > 4 else 'unknown' }}
+          day_5_condition: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[4].condition if f | length > 4 else 'unknown' }}
+          day_5_temperature: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[4].temperature if f | length > 4 else 'unknown' }}
+          day_5_templow: >
+            {% set f = response.get('weather.your_weather_entity', {}).get('forecast', []) %}
+            {{ f[4].templow if f | length > 4 else 'unknown' }}
+```
+
+</details>
+
+If you haven't made a template sensor before, you can read about how to do it in the [Home Assistant documentation](https://www.home-assistant.io/integrations/template/).
+
+### 2. Set Up the Weather Icons
+
+Get an SVG weather icon set, such as the [basmilius/weather-icons](https://github.com/basmilius/weather-icons) pack. You will need to manually rename each icon to match the exact names of the [Home Assistant weather states](#weather-states) (like `cloudy.svg`). Yes, it is tedious! Once that is done, put all the icons into a folder named `weather_icons` inside your Home Assistant `www` directory.
+
+### 3. Add the Card
+
+Finally, add the card to your dashboard. Make sure you have `paper-buttons-row` installed and replace the weather entity with your own. If you want, you can translate the text in the templates to your language.
+
+<details>
+<summary><b>YAML for the weather card</b></summary>
+  
+```yaml
+type: custom:atmospheric-weather-card
+weather_entity: weather.your_weather_entity
+card_style: standalone
+sun_entity: sun.sun
+card_height: 132px
+sun_moon_size: 60
+text_position: left
+sun_moon_x_position: center
+sun_moon_y_position: center
+moon_phase_entity: sensor.moon_phase
+tap_action:
+  action: more-info
+  entity: weather.your_weather_entity
+custom_cards_position: top-right
+custom_cards:
+  - type: custom:paper-buttons-row
+    custom_width: 122px
+    styles:
+      border-radius: var(--ha-card-border-radius)
+      justify-content: flex-start
+      overflow-x: auto
+      height: 100px
+      box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.65)
+      backdrop-filter: blur(8px)
+      scrollbar-width: none
+      scroll-padding-block-start: 0px
+      overscroll-behavior-x: contain
+      scroll-snap-type: x mandatory
+    base_config:
+      entity: sensor.weather_forecast
+      layout: icon_name_state
+      styles:
+        button:
+          pointer-events: none
+          min-width: 60px
+          height: 100%
+          padding: 0px
+          align-items: center
+          scroll-snap-align: start
+          border-right: 2px solid rgba(255, 255, 255, 0.15)
+        icon:
+          width: 40px
+          height: 40px
+          "--mdc-icon-size": 0px
+          filter: drop-shadow(0px 3px 6px rgba(0,0,0,0.5))
+        name:
+          font-size: 14px
+          font-weight: 500
+          color: var(--primary-text-color)
+          padding: 0px 0px 2px 0px
+          opacity: 0.5
+          white-space: nowrap
+          max-width: 40px
+          overflow: hidden
+          text-overflow: ellipsis
+        state:
+          font-size: 16px
+          font-weight: 700
+          color: var(--primary-text-color)
+          padding: 0px
+          white-space: nowrap
+          max-width: 40px
+          overflow: hidden
+          text-overflow: ellipsis
+    buttons:
+      - image: >-
+          /local/weather_icons/{{ state_attr(config.entity,
+          'day_1_condition') }}.svg
+        name: >-
+          {% set days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] %} {% set d =
+          state_attr(config.entity, 'day_1_datetime') %} {{ days[as_timestamp(d)
+          | timestamp_custom('%w') | int] }}
+        state: >-
+          {{ state_attr(config.entity, 'day_1_temperature') | string | round(0)
+          | replace('.', ',') }}°
+      - image: >-
+          /local/weather_icons/{{ state_attr(config.entity,
+          'day_2_condition') }}.svg
+        name: >-
+          {% set days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] %} {% set d =
+          state_attr(config.entity, 'day_2_datetime') %} {{ days[as_timestamp(d)
+          | timestamp_custom('%w') | int] }}
+        state: >-
+          {{ state_attr(config.entity, 'day_2_temperature') | string | round(0)
+          | replace('.', ',') }}°
+      - image: >-
+          /local/weather_icons/{{ state_attr(config.entity,
+          'day_3_condition') }}.svg
+        name: >-
+          {% set days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] %} {% set d =
+          state_attr(config.entity, 'day_3_datetime') %} {{ days[as_timestamp(d)
+          | timestamp_custom('%w') | int] }}
+        state: >-
+          {{ state_attr(config.entity, 'day_3_temperature') | string | round(0)
+          | replace('.', ',') }}°
+      - image: >-
+          /local/weather_icons/{{ state_attr(config.entity,
+          'day_4_condition') }}.svg
+        name: >-
+          {% set days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] %} {% set d =
+          state_attr(config.entity, 'day_4_datetime') %} {{ days[as_timestamp(d)
+          | timestamp_custom('%w') | int] }}
+        state: >-
+          {{ state_attr(config.entity, 'day_4_temperature') | string | round(0)
+          | replace('.', ',') }}°
+      - image: >-
+          /local/weather_icons/{{ state_attr(config.entity,
+          'day_5_condition') }}.svg
+        name: >-
+          {% set days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] %} {% set d =
+          state_attr(config.entity, 'day_5_datetime') %} {{ days[as_timestamp(d)
+          | timestamp_custom('%w') | int] }}
+        state: >-
+          {{ state_attr(config.entity, 'day_5_temperature') | string | round(0)
+          | replace('.', ',') }}°
+        styles:
+          button:
+            border: none
+```
+
+</details>
+
+<br>
+
+</details>
+
+<details>
+<summary><b>Example 4 — Small Weather Forecast</b></summary>
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/0c62ed1b-f4df-4039-ab59-3dcc67ee6af0" />
 
@@ -200,7 +446,7 @@ This example uses the `custom_cards` feature to combine a `paper-buttons-row` ca
 
 ```yaml
 type: custom:atmospheric-weather-card
-weather_entity:  weather.forecast_home
+weather_entity:  weather.your_weather_entity
 card_style: standalone
 card_height: 175
 disable_text: true
@@ -243,7 +489,7 @@ custom_cards:
           opacity: 0.5
           padding: 0px
     buttons:
-      - entity:  weather.forecast_home
+      - entity:  weather.your_weather_entity
         layout: icon
         icon: mdi:weather-cloudy
         state_icons:
@@ -263,7 +509,7 @@ custom_cards:
           windy: mdi:weather-windy
           windy-variant: mdi:weather-windy-variant
           exceptional: mdi:weather-sunny
-      - entity:  weather.forecast_home
+      - entity:  weather.your_weather_entity
         layout: state
         icon: mdi:weather-cloudy
         state:
@@ -273,7 +519,7 @@ custom_cards:
     show_current: false
     show_forecast: true
     type: weather-forecast
-    entity: weather.forecast_home
+    entity: weather.your_weather_entity
     forecast_type: daily
     round_temperature: true
     forecast_slots: 3
@@ -291,7 +537,7 @@ custom_cards:
 </details>
 
 <details>
-<summary><b>Example 4 — Big Weather Forecast</b></summary>
+<summary><b>Example 5 — Big Weather Forecast</b></summary>
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/6a737fa6-6d35-4e15-b41b-d623e266485a" />
 
@@ -299,7 +545,7 @@ Using `custom_cards`, you can embed a standard Home Assistant weather forecast d
 
 ```yaml
 type: custom:atmospheric-weather-card
-weather_entity: weather.forecast_home
+weather_entity: weather.your_weather_entity
 card_style: standalone
 sun_entity: sun.sun
 card_height: 275
@@ -319,12 +565,12 @@ custom_cards:
     show_current: false
     show_forecast: true
     type: weather-forecast
-    entity: weather.forecast_home
+    entity: weather.your_weather_entity
     forecast_type: daily
     round_temperature: true
     tap_action:
       action: more-info
-      entity: weather.forecast_home
+      entity: weather.your_weather_entity
     card_mod:
       style: |
         ha-card {
@@ -357,7 +603,7 @@ custom_cards:
 
 
 type: custom:atmospheric-weather-card
-weather_entity: weather.forecast_home
+weather_entity: weather.your_weather_entity
 card_style: immersive
 card_height: 150
 stack_order: 1
@@ -398,7 +644,7 @@ To get this working in your setup, make sure you have `paper-buttons-row` instal
 
 ```yaml
 type: custom:atmospheric-weather-card
-weather_entity: weather.forecast_home
+weather_entity: weather.your_weather_entity
 full_width: true
 css_mask_horizontal: false
 css_mask_vertical: false
@@ -555,7 +801,7 @@ custom_cards:
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| **`weather_entity`** | `string` | — | **Required.** Your weather integration entity (e.g., `weather.forecast_home`). |
+| **`weather_entity`** | `string` | — | **Required.** Your weather integration entity (e.g., `weather.your_weather_entity`). |
 | `sun_entity` | `string` | — | *Recommended.* Tracks the sun to auto-switch between day and night. |
 | `moon_phase_entity` | `string` | — | *Recommended.* Displays the correct moon phase (e.g., `sensor.moon_phase`). |
 
@@ -636,7 +882,7 @@ custom_cards_position: bottom
 custom_cards:
   - type: weather-forecast
     custom_width: 100%
-    entity: weather.forecast_home
+    entity: weather.your_weather_entity
 ```
 
 </details>
