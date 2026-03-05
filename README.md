@@ -202,7 +202,7 @@ custom_cards:
 
 This example uses the `custom_cards` feature to create a scrollable weather forecast card with animated SVG icons.
 
-**Note:** This takes some extra effort to set up and honestly isn't the most elegant approach, so it's not ideal if you want something quick and easy. The tradeoff is a nice looking card that gives you complete control over the design and the data it displays.
+> **Note:** This takes some extra effort to set up and honestly isn't the most elegant approach, so it's not ideal if you want something quick and easy. The tradeoff is a nice looking card that gives you complete control over the design and the data it displays.
 
 <br>
 
