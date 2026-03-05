@@ -200,15 +200,15 @@ custom_cards:
 
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/ddeabba7-1c24-4703-ba48-79c4bd2a7636" />
 
-This example creates a scrollable weather forecast with animated SVG icons. 
+This example uses the `custom_cards` feature to create a scrollable weather forecast card with animated SVG icons.
 
-> **Note:** This takes a bit of work to set up, so it's not the best choice if you want something quick and easy. The upside is that you can completely change how it looks and what data it shows.
+**Note:** This takes some extra effort to set up and honestly isn't the most elegant approach, so it's not ideal if you want something quick and easy. The tradeoff is a nice looking card that gives you complete control over the design and the data it displays.
 
 <br>
 
 ### 1. Create the Weather Forecast Sensor
 
-Since weather forecasts aren't directly available as sensor states, you must first create a custom trigger template sensor to store this data in its attributes. Just swap in your own weather entity—the rest works as-is. 
+Since weather forecasts aren't directly available as sensor states, you need to create a custom trigger template sensor to store this data in its attributes. Just swap in your own weather entity, the rest works as-is. The sensor will update itself once every hour.
 
 <details>
 <summary><b>YAML for the weather forecast sensor</b></summary>
