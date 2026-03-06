@@ -893,7 +893,7 @@ This card handles two separate aspects of its appearance independently:
 | **Color Scheme** | Dark vs. light backgrounds and particle colors. | *"Use dark cloud colors"* |
 
 > [!NOTE]
-> For most setups, simply setting `sun_entity: sun.sun` **is enough** and means both aspects will automatically follow the real-world sun. The distinction between time and color scheme is only important if you want to mix states, such as displaying a moon on a light dashboard background.
+> For most setups, simply setting `sun_entity: sun.sun` **is enough** and means both aspects will automatically follow the real-world sun. The distinction between time and color scheme is only important if you want to mix states, such as displaying the sun on a dark dashboard background.
 
 <br>
 
