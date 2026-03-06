@@ -725,6 +725,10 @@ custom_cards:
 </details>
 <br>
 
+> [!IMPORTANT]
+> If you keep your dashboard in dark mode or light mode all the time, remember to set `theme: dark` or `theme: light`. This makes sure the card colors match the rest of your dashboard.
+
+<br>
 
 ## Installation
 
