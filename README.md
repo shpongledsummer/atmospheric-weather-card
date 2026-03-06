@@ -96,7 +96,7 @@ custom_cards:
     show_current: false
     show_forecast: true
     type: weather-forecast
-    entity: weather.meteo
+    entity: weather.your_weather_entity
     forecast_type: daily
     round_temperature: true
     forecast_slots: 3
