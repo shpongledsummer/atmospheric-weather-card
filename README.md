@@ -120,7 +120,7 @@ custom_cards:
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/6a737fa6-6d35-4e15-b41b-d623e266485a" />
 
-Using `custom_cards`, you can embed a standard Home Assistant weather forecast directly into the bottom of the weather card. This example uses a bit of `card_mod` to give the embedded forecast a clean, blurred glass effect that blends nicely with the background.
+This is similar to Example 2, but it's larger and shows more days in the forecast.
 
 ```yaml
 type: custom:atmospheric-weather-card
