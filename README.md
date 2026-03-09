@@ -576,7 +576,7 @@ custom_cards:
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | **`weather_entity`** | `string` | — | **Required.** Your weather integration entity (e.g., `weather.your_weather_entity`). |
-| `sun_entity` | `string` | — | *Recommended.* Tracks the sun to auto-switch between day and night. |
+| `sun_entity` | `string` | — | **Required.** Tracks the sun to auto-switch between day and night. Without this, the card will default to permanent day. |
 | `moon_phase_entity` | `string` | — | *Recommended.* Displays the correct moon phase (e.g., `sensor.moon_phase`). |
 
 <details>
