@@ -864,9 +864,9 @@ class AtmosphericWeatherCard extends HTMLElement {
             #card-root.standalone.scheme-day.weather-partly { --bg-a2:0.10; --bg-s2:45%; --bg-s3:75%; --bg-c1:#66A5D9; --bg-c2:#9BCBEE; --bg-c3:#E6F4FB; }
             #card-root.standalone.scheme-day.weather-overcast{--bg-hl:235, 240, 245;--bg-a1:0.35;--bg-a2:0.08;--bg-s2:50%;--bg-s3:80%;--bg-c1:#8FB4D5;--bg-c2:#C2D6E0;--bg-c3:#EDF4FB;}
 			#card-root.standalone.scheme-day.weather-rainy { --bg-hl:208,223,238; --bg-a1:0.45; --bg-a2:0.10; --bg-s2:45%; --bg-s3:75%; --bg-c1:#F2F7F9; --bg-c2:#DDE9EE; --bg-c3:#C7D4DF; }
-            #card-root.standalone.scheme-day.weather-pouring { --bg-hl:170,185,200; --bg-a1:0.35; --bg-a2:0.08; --bg-s2:45%; --bg-s3:75%; --bg-c1:#BDCBD5; --bg-c2:#A3B4C0; --bg-c3:#8B9CA8; }
+			#card-root.standalone.scheme-day.weather-pouring { --bg-hl:194,204,215; --bg-a1:0.38; --bg-a2:0.08; --bg-s2:45%; --bg-s3:75%; --bg-c1:#D2DCE2; --bg-c2:#B8C7D1; --bg-c3:#A1AFBA; }
 			#card-root.standalone.scheme-day.weather-storm { --bg-hl:180,195,210; --bg-a1:0.40; --bg-a2:0.08; --bg-s2:45%; --bg-s3:75%; --bg-c1:#92A5B0; --bg-c2:#B3C5CE; --bg-c3:#DDEBEE; }
-            #card-root.standalone.scheme-day.weather-snow { --bg-hl:240,245,250; --bg-a1:0.45; --bg-a2:0.15; --bg-s2:45%; --bg-s3:75%; --bg-c1:#B5C8DA; --bg-c2:#D8E5F0; --bg-c3:#F2F7FB; }
+			#card-root.standalone.scheme-day.weather-snow { --bg-hl:240,245,250; --bg-a1:0.45; --bg-a2:0.15; --bg-s2:45%; --bg-s3:75%; --bg-c1:#B5C8DA; --bg-c2:#D8E5F0; --bg-c3:#F2F7FB; }
             #card-root.standalone.scheme-day.weather-fog { --bg-hl:245,250,255; --bg-a1:0.70; --bg-a2:0.25; --bg-s2:50%; --bg-s3:85%; --bg-c1:#D9E3ED; --bg-c2:#EDF2F7; --bg-c3:#FDFEFF; }
 			
 			/* Night backgrounds — same template, dark palette */
@@ -2960,38 +2960,51 @@ class AtmosphericWeatherCard extends HTMLElement {
     _drawSunClouds(ctx, w, h, effectiveWind) {
         const fadeOpacity = this._layerFadeProgress.clouds;
         if (fadeOpacity <= 0) return;
-        const dpr = this._cachedDimensions.dpr;
+        
+        const warm = this._renderState.sunCloudWarm;
+        const len = this._sunClouds.length;
 
-        for (let i = 0; i < this._sunClouds.length; i++) {
+        for (let i = 0; i < len; i++) {
             const cloud = this._sunClouds[i];
-            cloud.driftPhase += 0.008;
-            cloud.breathPhase += cloud.breathSpeed;
-            const driftX = Math.sin(cloud.driftPhase) * 12;
-            const driftY = Math.cos(cloud.driftPhase * 0.7) * 4;
-            cloud.x = cloud.baseX + driftX + effectiveWind * 0.3;
-            cloud.y = cloud.baseY + driftY;
-            if (cloud.x > cloud.baseX + 60) cloud.x = cloud.baseX + 60;
-            if (cloud.x < cloud.baseX - 60) cloud.x = cloud.baseX - 60;
-            const breathScale = 1 + Math.sin(cloud.breathPhase) * 0.02;
 
-            ctx.translate(cloud.x, cloud.y);
-            ctx.scale(cloud.scale * breathScale, cloud.scale * 0.55 * breathScale);
-
-            const puffs = cloud.puffs;
-            const len = puffs.length;
-            const warm = this._renderState.sunCloudWarm;
-
-            for (let j = 0; j < len; j++) {
-                const puff = puffs[j];
-
-                // Cache gradient at full opacity; fadeOpacity via globalAlpha
-                // for transition compatibility. Wiped by _initParticles.
-                if (!puff._g) {
+            // --- STEP 1: LAZY INIT SUN CLOUD SPRITE ---
+            // Bake all puffs for this cloud into its own canvas exactly once.
+            if (!cloud._bakedCanvas) {
+                const puffs = cloud.puffs;
+                let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+                
+                // Find bounding box of all unscaled puffs
+                for (let j = 0; j < puffs.length; j++) {
+                    const p = puffs[j];
+                    if (p.offsetX - p.rad < minX) minX = p.offsetX - p.rad;
+                    if (p.offsetX + p.rad > maxX) maxX = p.offsetX + p.rad;
+                    if (p.offsetY - p.rad < minY) minY = p.offsetY - p.rad;
+                    if (p.offsetY + p.rad > maxY) maxY = p.offsetY + p.rad;
+                }
+                
+                const pad = 4;
+                minX -= pad; minY -= pad; maxX += pad; maxY += pad;
+                const bakeW = Math.ceil(maxX - minX);
+                const bakeH = Math.ceil(maxY - minY);
+                
+                const oc = document.createElement('canvas');
+                oc.width = bakeW;
+                oc.height = bakeH;
+                const oCtx = oc.getContext('2d', { willReadFrequently: false });
+                
+                for (let j = 0; j < puffs.length; j++) {
+                    const puff = puffs[j];
                     const baseOp = cloud.opacity * puff.shade;
-                    const grad = ctx.createRadialGradient(
-                        puff.offsetX - puff.rad * 0.35, puff.offsetY - puff.rad * 0.45, 0,
-                        puff.offsetX, puff.offsetY, puff.rad
+                    
+                    // Shift coordinates to be relative to the new baked canvas
+                    const drawX = puff.offsetX - minX;
+                    const drawY = puff.offsetY - minY;
+                    
+                    const grad = oCtx.createRadialGradient(
+                        drawX - puff.rad * 0.35, drawY - puff.rad * 0.45, 0,
+                        drawX, drawY, puff.rad
                     );
+                    
                     if (warm) {
                         grad.addColorStop(0, `rgba(255,255,250,${baseOp})`);
                         grad.addColorStop(0.3, `rgba(255,245,225,${baseOp * 0.9})`);
@@ -3005,17 +3018,51 @@ class AtmosphericWeatherCard extends HTMLElement {
                         grad.addColorStop(0.85, `rgba(180,190,212,${baseOp * 0.5})`);
                         grad.addColorStop(1, 'rgba(165,178,200,0)');
                     }
-                    puff._g = grad;
+                    
+                    oCtx.fillStyle = grad;
+                    // Uses your existing module-level helper
+                    fillCircle(oCtx, drawX, drawY, puff.rad);
                 }
-
-                ctx.globalAlpha = fadeOpacity;
-                ctx.fillStyle = puff._g;
-                fillCircle(ctx, puff.offsetX, puff.offsetY, puff.rad);
-                ctx.globalAlpha = 1;
+                
+                cloud._bakedCanvas = oc;
+                cloud._bakeOffX = minX;
+                cloud._bakeOffY = minY;
+                cloud._bakeW = bakeW;
+                cloud._bakeH = bakeH;
             }
 
-            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            // --- STEP 2: LOOP & DRAW (ZERO MATRIX MATH) ---
+            cloud.driftPhase += 0.008;
+            cloud.breathPhase += cloud.breathSpeed;
+            const driftX = Math.sin(cloud.driftPhase) * 12;
+            const driftY = Math.cos(cloud.driftPhase * 0.7) * 4;
+            
+            cloud.x = cloud.baseX + driftX + effectiveWind * 0.3;
+            cloud.y = cloud.baseY + driftY;
+            
+            if (cloud.x > cloud.baseX + 60) cloud.x = cloud.baseX + 60;
+            if (cloud.x < cloud.baseX - 60) cloud.x = cloud.baseX - 60;
+            
+            const breathScale = 1 + Math.sin(cloud.breathPhase) * 0.02;
+            
+            // Calculate exact physical dimensions utilizing your vertical 0.55 squash
+            const scaleX = cloud.scale * breathScale;
+            const scaleY = cloud.scale * 0.55 * breathScale;
+            
+            // Shift the drawing position by the bounding-box offset, multiplied by scale
+            const drawX = cloud.x + (cloud._bakeOffX * scaleX);
+            const drawY = cloud.y + (cloud._bakeOffY * scaleY);
+            const drawW = cloud._bakeW * scaleX;
+            const drawH = cloud._bakeH * scaleY;
+
+            ctx.globalAlpha = fadeOpacity;
+            
+            // Single draw call handles position, stretching, and squashing natively
+            ctx.drawImage(cloud._bakedCanvas, drawX, drawY, drawW, drawH);
         }
+        
+        // State fence
+        ctx.globalAlpha = 1;
     }
 
     _drawSunGlow(ctx, w, h) {
@@ -3380,6 +3427,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         const isTimeNight = this._isTimeNight;
         const globalOpacity = rs.cloudGlobalOp;
         const dpr = this._cachedDimensions.dpr;
+		const textureDpr = Math.min(1.0, dpr);
 
         // --- NEW: Create the single Texture Atlas ---
         if (!this._cloudAtlas) {
@@ -3410,7 +3458,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                 this._bakeCloud(
                     list[i], cp, isLightBg, isThemeDark, isTimeNight,
                     cp.highlightOffsetBase, cp.hOffset, cp.rainyOpacityMul,
-                    globalOpacity, cp.ambient, dpr, packer // Pass the packer along
+                    globalOpacity, cp.ambient, textureDpr, packer
                 );
             }
         };
@@ -3468,19 +3516,27 @@ class AtmosphericWeatherCard extends HTMLElement {
         const len = this._rain.length;
         const dpr = this._cachedDimensions.dpr;
 
-        // Gradient lies on the negative X-axis. 
-        // 0 is the head (bottom) of the drop, -1 is the tail (top) of the drop.
-        if (!this._rainGrad || this._rainGradRgb !== rgbBase) {
-            const g = ctx.createLinearGradient(0, 0, -1, 0);
-            g.addColorStop(0,   `rgba(${rgbBase}, 0.85)`); // Head (opaque water bead)
-            g.addColorStop(0.5, `rgba(${rgbBase}, 0.2)`);  // Mid body
-            g.addColorStop(1,   `rgba(${rgbBase}, 0)`);    // Tail (motion blur fade)
-            this._rainGrad = g;
-            this._rainGradRgb = rgbBase;
+        // --- STEP 1: LAZY INIT RAIN SPRITE ---
+        // Bakes your exact gradient into a 64x4 pixel image once.
+        if (!this._rainTex || this._rainTexRgb !== rgbBase) {
+            this._rainTexRgb = rgbBase;
+            const rc = document.createElement('canvas');
+            rc.width = 64; 
+            rc.height = 4;
+            const rCtx = rc.getContext('2d', { willReadFrequently: false });
+            
+            // Gradient from right (head) to left (tail)
+            const g = rCtx.createLinearGradient(64, 0, 0, 0);
+            g.addColorStop(0,   `rgba(${rgbBase}, 0.85)`); // Head
+            g.addColorStop(0.5, `rgba(${rgbBase}, 0.2)`);  // Mid
+            g.addColorStop(1,   `rgba(${rgbBase}, 0)`);    // Tail
+            
+            rCtx.fillStyle = g;
+            rCtx.fillRect(0, 0, 64, 4);
+            this._rainTex = rc;
         }
 
-        const rainGrad = this._rainGrad;
-
+        // --- STEP 2: LOOP & DRAW ---
         for (let i = 0; i < len; i++) {
             const pt = this._rain[i];
             pt.turbulence += 0.025;
@@ -3504,35 +3560,26 @@ class AtmosphericWeatherCard extends HTMLElement {
             const finalOp = (pt.z * baseOp) * fadeOpacity * pt.op;
 
             if (finalOp < 0.02) continue;
+            
             const dropLen = pt.len * (1.0 + (this._windSpeed * 0.3));
             const width = Math.max(0.6, pt.z * 1.2); 
 
-            // 1. Move origin exactly to the HEAD of the drop
+            // 1. Move to the head of the drop
             ctx.translate(pt.x, pt.y);
             
-            // 2.  Rotate X-axis to point perfectly along the velocity vector
+            // 2. Point along the velocity vector
             ctx.rotate(Math.atan2(moveY, moveX)); 
             
-            // 3. Stretch the X-axis to the physical length of the drop
-            ctx.scale(dropLen, 1);
-            
             ctx.globalAlpha = finalOp;
-            ctx.lineWidth = width;
-            ctx.lineCap = 'butt'; // Keeps tips from turning into laser blobs
             
-            ctx.strokeStyle = rainGrad;
-            ctx.beginPath();
-            // 4. Draw backwards from the head (0,0) to the tail (-1,0)
-            ctx.moveTo(0, 0);
-            ctx.lineTo(-1, 0);
-            ctx.stroke();
+            // 3. ZERO VECTOR MATH. Draw the sprite stretched to dropLen.
+            // Drawn backwards (-dropLen) to match your velocity logic perfectly.
+            ctx.drawImage(this._rainTex, -dropLen, -width / 2, dropLen, width);
             
-            // Reset transform (replaces save/restore)
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         }
-        // State fence: reset properties mutated per-raindrop
+        
         ctx.globalAlpha = 1;
-        ctx.lineCap = 'butt';
     }
 
     _drawSnow(ctx, w, h, effectiveWind) {
@@ -3540,8 +3587,47 @@ class AtmosphericWeatherCard extends HTMLElement {
         if (fadeOpacity <= 0) return;
         const len = this._snow.length;
         const isLight = this._isLightBackground;
-        const dpr = this._cachedDimensions.dpr;
+        
+        // --- STEP 1: LAZY INIT MASTER SPRITES ---
+        // Runs once, or when theme changes. Creates tiny 32px and 16px textures.
+        if (!this._snowTexFg || this._snowTexLight !== isLight) {
+            this._snowTexLight = isLight;
+            
+            // Foreground Flake (32x32)
+            const sf = document.createElement('canvas');
+            sf.width = 32; sf.height = 32;
+            const sfCtx = sf.getContext('2d', { willReadFrequently: false });
+            const sg = sfCtx.createRadialGradient(16, 16, 0, 16, 16, 16);
+            if (isLight) {
+                sg.addColorStop(0, 'rgba(255,255,255,1)');
+                sg.addColorStop(0.5, 'rgba(255,255,255,0.786)');
+                sg.addColorStop(1, 'rgba(255,255,255,0)');
+            } else {
+                sg.addColorStop(0, 'rgba(255,255,255,1)');
+                sg.addColorStop(0.5, 'rgba(255,255,255,0.55)');
+                sg.addColorStop(1, 'rgba(255,255,255,0)');
+            }
+            sfCtx.fillStyle = sg;
+            sfCtx.beginPath(); sfCtx.arc(16, 16, 16, 0, Math.PI * 2); sfCtx.fill();
+            this._snowTexFg = sf;
 
+            // Background Flake (16x16)
+            const sb = document.createElement('canvas');
+            sb.width = 16; sb.height = 16;
+            const sbCtx = sb.getContext('2d', { willReadFrequently: false });
+            if (isLight) {
+                const sbg = sbCtx.createRadialGradient(8, 8, 0, 8, 8, 8);
+                sbg.addColorStop(0, 'rgba(255,255,255,1)');
+                sbg.addColorStop(1, 'rgba(255,255,255,0)');
+                sbCtx.fillStyle = sbg;
+            } else {
+                sbCtx.fillStyle = 'rgba(255,255,255,1)'; // Solid dot for dark theme
+            }
+            sbCtx.beginPath(); sbCtx.arc(8, 8, 8, 0, Math.PI * 2); sbCtx.fill();
+            this._snowTexBg = sb;
+        }
+
+        // --- STEP 2: LOOP & DRAW ---
         for (let i = 0; i < len; i++) {
             const pt = this._snow[i];
             pt.wobblePhase += pt.wobbleSpeed;
@@ -3564,57 +3650,26 @@ class AtmosphericWeatherCard extends HTMLElement {
             const drawSize = pt.size * shimmer;
 
             if (pt.z > 0.7) {
-                // Foreground flakes: cached gradient at (0,0) radius 1.
-                // Scale handles size, globalAlpha handles opacity.
-                if (!pt._g) {
-                    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
-                    if (isLight) {
-                        g.addColorStop(0,   'rgba(255,255,255,1)');
-                        g.addColorStop(0.5, 'rgba(255,255,255,0.786)');
-                        g.addColorStop(1,   'rgba(255,255,255,0)');
-                        pt._gMul = 1.4;  // opacity multiplier
-                        pt._gRad = 0.9;  // radius factor
-                    } else {
-                        g.addColorStop(0,   'rgba(255,255,255,1)');
-                        g.addColorStop(0.5, 'rgba(255,255,255,0.55)');
-                        g.addColorStop(1,   'rgba(255,255,255,0)');
-                        pt._gMul = 1.0;
-                        pt._gRad = 1.5;
-                    }
-                    pt._g = g;
-                }
-                const r = drawSize * pt._gRad;
-                ctx.translate(pt.x, pt.y);
-                ctx.scale(r, r);
-                ctx.globalAlpha = Math.min(1, finalOpacity * pt._gMul);
-                ctx.fillStyle = pt._g;
-                fillCircle(ctx, 0, 0, 1);
-                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                // Foreground flakes
+                const gMul = isLight ? 1.4 : 1.0;
+                const gRad = isLight ? 0.9 : 1.5;
+                const r = drawSize * gRad;
+                
+                ctx.globalAlpha = Math.min(1, finalOpacity * gMul);
+                // Zero matrix thrashing. Just blit the cached image.
+                ctx.drawImage(this._snowTexFg, pt.x - r, pt.y - r, r * 2, r * 2);
+                
             } else {
-                // Background flakes: tiny soft dots
+                // Background flakes
                 const smallR = drawSize * 0.75;
-                if (isLight) {
-                    if (!pt._g) {
-                        const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
-                        g.addColorStop(0, 'rgba(255,255,255,1)');
-                        g.addColorStop(1, 'rgba(255,255,255,0)');
-                        pt._g = g;
-                    }
-                    ctx.translate(pt.x, pt.y);
-                    ctx.scale(smallR, smallR);
-                    ctx.globalAlpha = Math.min(1, finalOpacity * 1.3);
-                    ctx.fillStyle = pt._g;
-                    fillCircle(ctx, 0, 0, 1);
-                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-                } else {
-                    ctx.globalAlpha = Math.min(1, finalOpacity * 0.8);
-                    ctx.fillStyle = 'rgb(255,255,255)';
-                    fillCircle(ctx, pt.x, pt.y, smallR);
-                    ctx.globalAlpha = 1;
-                }
+                const alphaOp = isLight ? 1.3 : 0.8;
+                
+                ctx.globalAlpha = Math.min(1, finalOpacity * alphaOp);
+                ctx.drawImage(this._snowTexBg, pt.x - smallR, pt.y - smallR, smallR * 2, smallR * 2);
             }
         }
-        // State fence: reset globalAlpha potentially left < 1 by foreground flakes
+        
+        // State fence: reset globalAlpha potentially left < 1
         ctx.globalAlpha = 1;
     }
 
@@ -3625,6 +3680,51 @@ class AtmosphericWeatherCard extends HTMLElement {
         const isLight = this._isLightBackground;
         const dpr = this._cachedDimensions.dpr;
 
+        // --- STEP 1: LAZY INIT HAIL SPRITE ---
+        // Bake the complex 6-sided gradient polygon and highlight into a single 32x32 sprite.
+        if (!this._hailTex || this._hailTexLight !== isLight) {
+            this._hailTexLight = isLight;
+            const hc = document.createElement('canvas');
+            hc.width = 32; 
+            hc.height = 32;
+            const hcCtx = hc.getContext('2d', { willReadFrequently: false });
+            
+            const center = 16;
+            const size = 14;
+            
+            const iceGradient = hcCtx.createRadialGradient(center, center - size * 0.3, 0, center, center, size);
+            if (isLight) {
+                iceGradient.addColorStop(0, 'rgba(240,250,255,1)');
+                iceGradient.addColorStop(0.5, 'rgba(210,230,250,0.85)');
+                iceGradient.addColorStop(1, 'rgba(170,200,240,0.5)');
+            } else {
+                iceGradient.addColorStop(0, 'rgba(255,255,255,1)');
+                iceGradient.addColorStop(0.5, 'rgba(230,245,255,0.85)');
+                iceGradient.addColorStop(1, 'rgba(200,225,250,0.5)');
+            }
+            
+            hcCtx.fillStyle = iceGradient;
+            hcCtx.beginPath();
+            for (let j = 0; j < 6; j++) {
+                const angle = (Math.PI * 2 * j) / 6;
+                const x = center + Math.cos(angle) * size;
+                const y = center + Math.sin(angle) * size;
+                if (j === 0) hcCtx.moveTo(x, y);
+                else hcCtx.lineTo(x, y);
+            }
+            hcCtx.closePath();
+            hcCtx.fill();
+            
+            // Highlight spot
+            hcCtx.fillStyle = 'rgba(255,255,255,0.6)';
+            hcCtx.beginPath();
+            hcCtx.arc(center - size * 0.3, center - size * 0.3, size * 0.3, 0, Math.PI * 2);
+            hcCtx.fill();
+            
+            this._hailTex = hc;
+        }
+
+        // --- STEP 2: LOOP & DRAW ---
         for (let i = 0; i < len; i++) {
             const pt = this._hail[i];
             pt.turbulence += 0.035;
@@ -3638,48 +3738,23 @@ class AtmosphericWeatherCard extends HTMLElement {
                 pt.x = Math.random() * w;
             }
 
+            // Calculate opacity natively
+            const baseOp = pt.z > 1.1 ? pt.op * 1.1 : pt.op * 0.75;
+            ctx.globalAlpha = baseOp * fadeOpacity;
+
+            // Matrix transforms are needed for the spinning effect, 
+            // but the heavy vector drawing is bypassed.
             ctx.translate(pt.x, pt.y);
             ctx.rotate(pt.rotation);
-
-            // Cache gradient; theme-fixed colors. Wiped by _initParticles.
-            if (!pt._g) {
-                const iceGradient = ctx.createRadialGradient(0, -pt.size * 0.3, 0, 0, 0, pt.size);
-                const baseOp = pt.z > 1.1 ? pt.op * 1.1 : pt.op * 0.75;
-                if (isLight) {
-                    iceGradient.addColorStop(0, `rgba(240,250,255,${baseOp})`);
-                    iceGradient.addColorStop(0.5, `rgba(210,230,250,${baseOp * 0.85})`);
-                    iceGradient.addColorStop(1, `rgba(170,200,240,${baseOp * 0.5})`);
-                } else {
-                    iceGradient.addColorStop(0, `rgba(255,255,255,${baseOp})`);
-                    iceGradient.addColorStop(0.5, `rgba(230,245,255,${baseOp * 0.85})`);
-                    iceGradient.addColorStop(1, `rgba(200,225,250,${baseOp * 0.5})`);
-                }
-                pt._g = iceGradient;
-            }
-
-            ctx.globalAlpha = fadeOpacity;
-            ctx.fillStyle = pt._g;
-            ctx.beginPath();
-            for (let j = 0; j < 6; j++) {
-                const angle = (TWO_PI * j) / 6;
-                const x = Math.cos(angle) * pt.size;
-                const y = Math.sin(angle) * pt.size;
-                if (j === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            }
-            ctx.closePath();
-            ctx.fill();
-
-            if (pt.z > 1.05) {
-                const highlightOp = (pt.z > 1.1 ? pt.op * 1.1 : pt.op * 0.75) * 0.4;
-                ctx.globalAlpha = highlightOp * fadeOpacity;
-                ctx.fillStyle = 'rgb(255,255,255)';
-                fillCircle(ctx, -pt.size * 0.3, -pt.size * 0.3, pt.size * 0.3);
-            }
-
-            ctx.globalAlpha = 1;
+            
+            // Draw the baked hexagon centered
+            ctx.drawImage(this._hailTex, -pt.size, -pt.size, pt.size * 2, pt.size * 2);
+            
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         }
+        
+        // State fence
+        ctx.globalAlpha = 1;
     }
 
     _drawLightning(ctx, w, h) {
@@ -4316,9 +4391,40 @@ class AtmosphericWeatherCard extends HTMLElement {
         const len = Math.min(this._windVapor.length, activeCount);
         const cp = this._renderState.cp;
         const gustVal = this._windGust * windIntensity;
+        const isDark = this._isThemeDark;
+
+        // --- STEP 1: LAZY INIT VAPOR SPRITE ---
+        const colorKey = isDark ? `${cp.litR},${cp.litG},${cp.litB}` : '255,255,255';
+        
+        if (!this._vaporTex || this._vaporTexColor !== colorKey || this._vaporTexDark !== isDark) {
+            this._vaporTexColor = colorKey;
+            this._vaporTexDark = isDark;
+            
+            const vc = document.createElement('canvas');
+            vc.width = 64;
+            vc.height = 64;
+            const vCtx = vc.getContext('2d', { willReadFrequently: false });
+            
+            const peakAlpha = isDark ? 0.26 : 0.58;
+            
+            // Bake the exact gradient you designed into a 64x64 circle
+            const grad = vCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+            grad.addColorStop(0,   `rgba(${colorKey}, ${peakAlpha})`); 
+            grad.addColorStop(0.1, `rgba(${colorKey}, ${peakAlpha * 0.7})`); 
+            grad.addColorStop(0.4, `rgba(${colorKey}, ${peakAlpha * 0.2})`); 
+            grad.addColorStop(1,   `rgba(${colorKey}, 0)`);
+            
+            vCtx.fillStyle = grad;
+            vCtx.beginPath();
+            vCtx.arc(32, 32, 32, 0, Math.PI * 2);
+            vCtx.fill();
+            
+            this._vaporTex = vc;
+        }
 
         ctx.globalCompositeOperation = 'source-over';
 
+        // --- STEP 2: LOOP & DRAW (ZERO MATRIX MATH) ---
         for (let i = 0; i < len; i++) {
             const v = this._windVapor[i];
             
@@ -4336,37 +4442,11 @@ class AtmosphericWeatherCard extends HTMLElement {
             if (v.x > w + v.w) v.x = -v.w;
             if (v.x < -v.w * 1.5) v.x = w + v.w;
 
-            if (!v._g) {
-                let color, peakAlpha;
-
-                if (this._isThemeDark) {
-                    color = `${cp.litR},${cp.litG},${cp.litB}`;
-                    peakAlpha = 0.26; 
-                } else {
-                    color = '255,255,255';
-                    peakAlpha = 0.58;
-                }
-
-                const halfW = v.w / 2;
-                const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, halfW);
-                
-                grad.addColorStop(0,   `rgba(${color}, ${peakAlpha})`); 
-                grad.addColorStop(0.1, `rgba(${color}, ${peakAlpha * 0.7})`); 
-                grad.addColorStop(0.4, `rgba(${color}, ${peakAlpha * 0.2})`); 
-                grad.addColorStop(1,   `rgba(${color}, 0)`);
-                
-                v._g = grad;
-                
-                v._baseOp = this._isThemeDark 
-                    ? (0.48 + v.tier * 0.24) 
-                    : (0.66 + v.tier * 0.22);
-            }
-
+            // Calculate base opacity cleanly every frame to support fast theme switching
+            const baseOp = isDark ? (0.48 + v.tier * 0.24) : (0.66 + v.tier * 0.22);
             const gustOpBump = Math.max(0, gustVal) * 0.2;
             
-            // FIXED: Shape Morphing. 
-            // When calm, they are shorter and thicker (accent clouds).
-            // When windy, they stretch horizontally and squash vertically (streaks).
+            // Shape Morphing
             const baseStretch = 0.6 + (1.4 * windIntensity);
             const gustStretch = baseStretch + Math.max(0, gustVal) * 0.3;
             
@@ -4374,17 +4454,20 @@ class AtmosphericWeatherCard extends HTMLElement {
             const windySquash = 0.5;
             const dynamicSquash = calmSquash - ((calmSquash - windySquash) * windIntensity);
 
-            ctx.translate(v.x, v.y + undulation);
-            ctx.scale(gustStretch, v.squash * dynamicSquash);
+            // Calculate exact physical dimensions utilizing your stretch/squash logic
+            const drawW = v.w * gustStretch;
+            const drawH = v.w * v.squash * dynamicSquash;
             
-            // Opacity is now ALWAYS fully visible regardless of wind
-            ctx.globalAlpha = Math.min(1.0, (v._baseOp + gustOpBump) * fadeOpacity);
-            ctx.fillStyle = v._g;
+            // Center the sprite exactly where the old translate + fillCircle would have put it
+            const drawX = v.x - (drawW / 2);
+            const drawY = (v.y + undulation) - (drawH / 2);
+
+            ctx.globalAlpha = Math.min(1.0, (baseOp + gustOpBump) * fadeOpacity);
             
-            fillCircle(ctx, 0, 0, v.w / 2);
-            
-            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            // Natively stretch and draw the sprite
+            ctx.drawImage(this._vaporTex, drawX, drawY, drawW, drawH);
         }
+        
         ctx.globalAlpha = 1;
         ctx.globalCompositeOperation = 'source-over';
     }
@@ -4393,15 +4476,32 @@ class AtmosphericWeatherCard extends HTMLElement {
         if (!this._renderState.showSun) return;
         const fadeOpacity = this._layerFadeProgress.effects;
 
+        // --- STEP 1: LAZY INIT MOTE SPRITE ---
+        const isLight = this._isLightBackground;
+        if (!this._moteTex || this._moteTexLight !== isLight) {
+            this._moteTexLight = isLight;
+            
+            const mc = document.createElement('canvas');
+            mc.width = 16;
+            mc.height = 16;
+            const mCtx = mc.getContext('2d', { willReadFrequently: false });
+            
+            // Theme-aware mote color baked directly into the sprite
+            mCtx.fillStyle = isLight ? 'rgb(255, 248, 225)' : 'rgb(255, 250, 220)';
+            mCtx.beginPath();
+            mCtx.arc(8, 8, 8, 0, Math.PI * 2);
+            mCtx.fill();
+            
+            this._moteTex = mc;
+        }
+
         ctx.save();
         ctx.globalCompositeOperation = this._isThemeDark ? 'lighter' : 'source-over';
 
         const len = this._dustMotes.length;
-        // Theme-aware mote color: warm cream (light bg source-over, dark bg lighter)
-        const moteColorRgb = this._isLightBackground ? 'rgb(255, 248, 225)' : 'rgb(255, 250, 220)';
-        const opacityMult = this._isLightBackground ? 1.6 : 2.0;
-        ctx.fillStyle = moteColorRgb;
+        const opacityMult = isLight ? 1.6 : 2.0;
 
+        // --- STEP 2: LOOP & DRAW (ZERO VECTOR MATH) ---
         for (let i = 0; i < len; i++) {
             const mote = this._dustMotes[i];
             mote.phase += 0.015;
@@ -4415,9 +4515,10 @@ class AtmosphericWeatherCard extends HTMLElement {
 
             const twinkle = Math.sin(mote.phase * 2) * 0.3 + 0.7;
             ctx.globalAlpha = mote.opacity * twinkle * fadeOpacity * opacityMult;
-            fillCircle(ctx, mote.x, mote.y, mote.size);
+            
+            // Draw the baked sprite, natively scaled to match mote.size
+            ctx.drawImage(this._moteTex, mote.x - mote.size, mote.y - mote.size, mote.size * 2, mote.size * 2);
         }
-        ctx.globalAlpha = 1;
 
         ctx.restore();
     }
