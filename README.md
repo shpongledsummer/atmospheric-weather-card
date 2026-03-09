@@ -857,7 +857,8 @@ custom_cards:
 | :--- | :--- | :--- | :--- |
 | `top_text_sensor` | `string` | — | The entity to display as the large top text. Defaults to the temperature from your weather entity. |
 | `bottom_text_sensor` | `string` | — | The entity to display as the bottom detail line. Defaults to wind speed. |
-| `bottom_text_icon` | `string` | *auto* | Forces a specific icon next to the bottom text (e.g., `mdi:water-percent`). |
+| `bottom_text_icon` | `string` | *auto* | Forces a specific icon next to the bottom text. Accepts any `mdi:` icon (e.g., `mdi:water-percent`) or the keyword `weather` to automatically show the icon matching the current weather state. Can be combined with `bottom_text_icon_path` to use custom image files instead. |
+| `bottom_text_icon_path` | `string` | — | A directory path to custom icon images (e.g., `/local/weather_icons/`). When set, the value of `bottom_text_icon` resolves to an image file instead of an MDI icon. For example, `bottom_text_icon: weather` with `bottom_text_icon_path: /local/weather_icons/` loads `/local/weather_icons/rainy.svg` for rainy weather. Defaults to `.svg` if no extension is included. |
 | `disable_text` | `boolean` | `false` | Hides all text overlays entirely. |
 | `disable_bottom_text` | `boolean` | `false` | Hides only the bottom detail line. |
 | `disable_bottom_icon` | `boolean` | `false` | Hides only the icon next to the bottom text. |
@@ -954,6 +955,10 @@ In addition to the [Style Settings](#configuration) detailed above, you can fine
 | `--awc-card-padding` | `16px` | Padding space around the text. |
 | `--awc-canvas-filter` | `none` | Applies a custom CSS filter to the canvas (this overrides the `filter` config option). |
 | `--awc-stack-order` | `-1` / `1` | Controls the stacking order (z-index) of the card. Defaults to `-1` for immersive and `1` for standalone. |
+| `--awc-custom-cards-direction` | `row` | Flex direction of the custom cards container. |
+| `--awc-custom-cards-gap` | `8px` | Gap between items in the custom cards container. |
+| `--awc-custom-cards-justify` | `flex-start` | Horizontal justification of the custom cards container. |
+| `--awc-custom-cards-align` | `flex-start` | Vertical alignment of the custom cards container. |
 
 </details>
 
@@ -973,6 +978,8 @@ In addition to the [Style Settings](#configuration) detailed above, you can fine
 | `--awc-bottom-opacity` | `0.7` | Opacity of the bottom text. |
 | `--awc-icon-size` | `1.1em` | Size of the bottom icon. |
 | `--awc-text-gap` | `10px` | Vertical spacing between the top and bottom text elements. |
+| `--awc-text-side-offset` | `4px` | Extra horizontal inset added to the text padding. |
+| `--awc-icon-drop-shadow` | `drop-shadow(0px 3px 6px rgba(0,0,0,0.3))` | Drop shadow filter applied to custom image icons set via `bottom_text_icon_path`. |
 
 </details>
 
