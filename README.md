@@ -550,10 +550,16 @@ custom_cards:
 </details>
 <br>
 
-> [!IMPORTANT]
-> If you keep your dashboard in dark mode or light mode all the time, remember to set `theme: dark` or `theme: light`. This makes sure the card colors match the rest of your dashboard.
+
+> [!TIP]
+> <details>
+> <summary>How to get the font used in the examples?</summary>
+> 
+> The examples use the **Montserrat** font, which you can download or embed directly from [Google Fonts](https://fonts.google.com/specimen/Montserrat).
+> </details>
 
 <br>
+
 
 ## Installation
 
@@ -592,6 +598,10 @@ custom_cards:
 | **`weather_entity`** | `string` | — | **Required.** Your weather integration entity (e.g., `weather.your_weather_entity`). |
 | `sun_entity` | `string` | — | **Required.** Tracks the sun to auto-switch between day and night. Without this, the card will default to permanent day. |
 | `moon_phase_entity` | `string` | — | *Recommended.* Displays the correct moon phase (e.g., `sensor.moon_phase`). |
+
+> If you keep your dashboard in dark mode or light mode all the time, remember to set `theme: dark` or `theme: light`. This makes sure the card colors match the rest of your dashboard.
+
+<br>
 
 <details>
 <summary><strong>Layout & Dimensions</strong></summary>
@@ -710,15 +720,6 @@ By default, text auto-positions to the side opposite the sun and moon. You can m
 | `tap_action` | `object` | — | A standard Home Assistant [tap action](https://www.home-assistant.io/dashboards/actions/). |
 
 </details>
-
-<br>
-
-> [!TIP]
-> <details>
-> <summary>How to get the font used in the examples?</summary>
-> 
-> The examples use the **Montserrat** font, which you can download or embed directly from [Google Fonts](https://fonts.google.com/specimen/Montserrat).
-> </details>
 
 <br>
 
