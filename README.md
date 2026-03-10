@@ -42,7 +42,7 @@ You can use either `card_style: standalone` for a self-contained card with dynam
 > <br>
 > The focus of this card is on weather visuals, and to keep it somewhat lightweight, the card is not packed full of features and instead relies on an embedded custom cards approach. 
 >
-> This means you can (obviously) embed any Home Assistant weather forecast card. Alternatively, there is a companion card built specifically for this to sit in a scrollable row, which you can find [here](https://github.com/shpongledsummer/minimal-forecast-card). 
+> There is also a companion card built specifically for this to sit in a scrollable row, which you can find [here](https://github.com/shpongledsummer/minimal-forecast-card). 
 >
 > You can read more about the embedding cards feature [here](#configuration).
 > </details>
