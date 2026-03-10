@@ -713,6 +713,15 @@ By default, text auto-positions to the side opposite the sun and moon. You can m
 
 <br>
 
+> [!TIP]
+> <details>
+> <summary>How to get the font used in the examples?</summary>
+> 
+> The examples use the **Montserrat** font, which you can download or embed directly from [Google Fonts](https://fonts.google.com/specimen/Montserrat).
+> </details>
+
+<br>
+
 ## Day / Night Logic
 
 This card handles two separate aspects of its appearance independently:
