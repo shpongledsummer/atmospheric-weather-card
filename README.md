@@ -36,8 +36,9 @@ A flexible, detail-oriented weather card for Home Assistant. It uses your local 
 You can use either `card_style: standalone` for a self-contained card with dynamic weather backgrounds, or `card_style: immersive` so the card has no background at all and blends into your dashboard.
 
 > [!TIP]
+> You can embed any Home Assistant card if you need specific features (extra details, a forecast, graph, buttons, etc.).
 > <details>
-> <summary>You can embed any Home Assistant card if you need specific features (extra details, a forecast, graph, buttons, etc.).</summary>
+> <summary><strong>Read more</strong></summary>
 > <br>
 > The focus of this card is on weather visuals, and to keep it somewhat lightweight, the card is not packed full of features and instead relies on an embedded custom cards approach. 
 >
