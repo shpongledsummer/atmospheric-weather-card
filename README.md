@@ -599,6 +599,7 @@ custom_cards:
 | `sun_entity` | `string` | — | **Required.** Tracks the sun to auto-switch between day and night. Without this, the card will default to permanent day. |
 | `moon_phase_entity` | `string` | — | *Recommended.* Displays the correct moon phase (e.g., `sensor.moon_phase`). |
 
+> [!IMPORTANT]
 > If you keep your dashboard in dark mode or light mode all the time, remember to set `theme: dark` or `theme: light`. This makes sure the card colors match the rest of your dashboard.
 
 <br>
@@ -869,7 +870,7 @@ The status feature dynamically swaps the displayed house/custom image when a mon
 
 ## Adding Buttons
 
-You can embed buttons (or any other Home Assistant cards) directly inside this card using the `custom_cards` feature. To see how to set this up and view the available layout options, check out the **Custom Cards** block in the [Configuration](#configuration) section.
+You can embed buttons (or any other Home Assistant card) directly inside this card using the `custom_cards` feature. To see how to set this up and view the available layout options, check out the **Custom Cards** block in the [Configuration](#configuration) section.
 
 <br>
 
