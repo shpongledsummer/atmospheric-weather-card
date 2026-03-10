@@ -35,6 +35,17 @@ A flexible, detail-oriented weather card for Home Assistant. It uses your local 
 
 You can use either `card_style: standalone` for a self-contained card with dynamic weather backgrounds, or `card_style: immersive` so the card has no background at all and blends into your dashboard.
 
+> [!TIP]
+> <details>
+> <summary>You can embed any Home Assistant card if you need specific features (extra details, a forecast, graph, buttons, etc.).</summary>
+> <br>
+> The focus of this card is on weather visuals, and to keep it somewhat lightweight, the card is not packed full of features and instead relies on an embedded custom cards approach. 
+>
+> This means you can (obviously) embed any Home Assistant weather forecast card. Alternatively, there is a companion card built specifically for this to sit in a scrollable row, which you can find [here](https://github.com/shpongledsummer/minimal-forecast-card). 
+>
+> You can read more about the embedding cards feature [here](#configuration).
+> </details>
+
 <br>
 
 ### Standalone
@@ -126,7 +137,7 @@ custom_cards:
 <br>
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/c8d5c4cb-d78a-44ae-9d77-9b3bf0bbe127" />
 
-This example use thes `custom_cards` feature to embed the Minimal Forecast Card (found [here](https://github.com/shpongledsummer/minimal-forecast-card)) in a horizontal scroll.
+This example use the `custom_cards` feature to embed the Minimal Forecast Card (found [here](https://github.com/shpongledsummer/minimal-forecast-card)) in a horizontal scroll.
 
 ```yaml
 type: custom:atmospheric-weather-card
