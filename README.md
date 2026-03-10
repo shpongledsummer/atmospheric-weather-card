@@ -553,7 +553,7 @@ custom_cards:
 
 > [!TIP]
 > <details>
-> <summary>How to get the font used in the examples?</summary>
+> <summary>How to get the font?</summary>
 > 
 > The examples use the **Montserrat** font, which you can download or embed directly from [Google Fonts](https://fonts.google.com/specimen/Montserrat).
 > </details>
