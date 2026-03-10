@@ -186,48 +186,47 @@ custom_cards:
 
 <br>
 
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/1ae5ea52-6581-4547-b302-df9521cde258" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/5063407d-2ae1-4ed2-9beb-f41f587e5d0f" />
 
-
-This is similar to Example 2, but it's larger and uses a horizontal scroll to display a daily forecast. To use this, install the companion forecast card found [here](https://github.com/shpongledsummer/minimal-forecast-card)).
+This is similar to Example 3, but it's larger and uses a horizontal scroll to display a daily forecast. To use this, install the companion forecast card found [here](https://github.com/shpongledsummer/minimal-forecast-card)).
 
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
 card_style: standalone
+card_height: 260
 sun_entity: sun.sun
-card_height: 275 # Customize based on your specific card padding
-sun_moon_size: 55
-text_alignment: space-between
 text_position: top-left
+theme: auto
+sun_moon_size: 60
 sun_moon_x_position: -55
 sun_moon_y_position: 55
 moon_phase_entity: sensor.moon_phase
+bottom_text_sensor: sensor.your_weather_description
+bottom_text_icon: weather
 tap_action:
   action: none
 custom_cards_position: bottom
 custom_cards:
-  - type: custom:minimal-forecast-card
-    custom_width: 100%
+  - custom_width: 100%
+    type: custom:minimal-forecast-card
     entity: weather.your_weather_entity
     forecast_type: daily
     items_to_show: 7
-    visible: 5
-    style: clean
-    sparkline_color: rgba(245, 158, 39, 0.2)
-    sparkline_width: 3
-    dividers: true
-    divider_color: rgba(255,255,255,0.3)
+    visible: 4
+    divider_color: rgba(255, 255, 255, 0.1)
+    divider_inset: 0px
     divider_width: 3px
-    divider_inset: 5%
-    item_spacing: 8px
-    inner_spacing: 8px
-    item_height: 140px
-    direction: horizontal
+    hide_min_temp: false
+    item_spacing: 3px
+    inner_spacing: 6px
+    item_padding: 10px 0px
     embedded: true
+    style: clean
+    font_size: 13px
     sparkline: true
-    font_size: 14px
-    icon_size: 36px
+    sparkline_color: rgba(213, 184, 82, 0.2)
+    icon_size: 44px
     custom_icon_path: /local/weather-icons/
 ```
 
