@@ -687,7 +687,7 @@ custom_cards:
 </details>
 
 <details>
-<summary><strong>Text Settings</strong></summary>
+<summary><strong>Text & Icon Settings</strong></summary>
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
