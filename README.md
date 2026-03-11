@@ -15,7 +15,7 @@ A flexible, detail-oriented weather card for Home Assistant. It uses your local 
 
 <br>
 
-> **AI Disclaimer** — This card was created with the help of AI tools. I never would’ve had the patience to create these effects myself.
+> **A note on AI:** I've been pretty skeptical of projects that use AI tools because they usually end up as a mess. This project is basically a personal challenge to figure out why that is, and to see what happens when AI is forced to act strictly as an amplifier for things you are already good at.
 
 ## Contents
 
