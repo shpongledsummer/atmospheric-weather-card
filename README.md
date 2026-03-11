@@ -85,7 +85,7 @@ weather_entity: weather.your_weather_entity
 card_style: standalone
 card_height: 136
 text_position: left
-swap_texts: true
+swap_texts: false
 bottom_text_sensor: weather.your_weather_entity
 bottom_text_icon: weather
 sun_entity: sun.sun
@@ -138,6 +138,7 @@ weather_entity: weather.your_weather_entity
 card_style: standalone
 card_height: 142
 text_position: left
+swap_texts: false
 sun_entity: sun.sun
 sun_moon_size: 50
 sun_moon_x_position: 100
