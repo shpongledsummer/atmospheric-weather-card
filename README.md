@@ -117,8 +117,8 @@ custom_cards:
     card_shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.15)
     direction: vertical
     font_size: 16px
-    icon_size: 32px
-    custom_icon_path: /local/weather-icons/
+    icon_size: 22px
+    custom_icon_path: /local/weather-icons/ # for your own custom SVG icons (delete this if you want regular icons)
 ```
 
 </details>
@@ -159,15 +159,15 @@ custom_cards:
     visible: 3
     hide_min_temp: true
     item_spacing: 8px
-    inner_spacing: 6px
+    inner_spacing: 10px
     item_height: 110px
     item_shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.15)
     embedded: true
     style: glass
     font_size: 13px
     sparkline: false
-    icon_size: 36px
-    custom_icon_path: /local/weather-icons/
+    icon_size: 26px
+    custom_icon_path: /local/weather-icons/ # for your own custom SVG icons (delete this if you want regular icons)
 ```
 </details>
 
@@ -220,7 +220,7 @@ custom_cards:
     sparkline: true
     sparkline_color: rgba(213, 184, 82, 0.2)
     icon_size: 44px
-    custom_icon_path: /local/weather-icons/
+    custom_icon_path: /local/weather-icons/ # for your own custom SVG icons (delete this if you want regular icons)
 ```
 
 </details>
