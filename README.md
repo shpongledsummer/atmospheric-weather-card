@@ -2,8 +2,7 @@
 
 ## Atmospheric Weather Card
 
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/03197044-ca08-4b18-b866-5e02eed86b9a" /><br>
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/23e696e6-3c64-49fe-bced-276416a5423d" />
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/03197044-ca08-4b18-b866-5e02eed86b9a" />
 
 A flexible, detail-oriented weather card for Home Assistant. It uses your local weather (and much more) to create live visuals, blending effects like wind gusts and thunderstorms with little details like passing planes, birds and shooting stars. You can run it standalone, embed other cards inside it, or use it as an immersive background.
 
