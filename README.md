@@ -687,7 +687,7 @@ custom_cards:
 | `top_text_sensor` | `string` | — | The entity to display as the large top text. Defaults to the temperature from your weather entity. |
 | `bottom_text_sensor` | `string` | — | The entity to display as the bottom detail line. Defaults to wind speed. |
 | `bottom_text_icon` | `string` | *auto* | Forces a specific icon next to the bottom text. Accepts any `mdi:` icon (e.g., `mdi:water-percent`) or the keyword `weather` to automatically show the icon matching the current weather state. Can be combined with `bottom_text_icon_path` to use custom image files instead. |
-| `bottom_text_icon_path` | `string` | — | A directory path to custom icon images (e.g., `/local/weather_icons/`). When set, the value of `bottom_text_icon` resolves to an image file instead of an MDI icon. For example, `bottom_text_icon: weather` with `bottom_text_icon_path: /local/weather_icons/` loads `/local/weather_icons/rainy.svg` for rainy weather. Defaults to `.svg` if no extension is included. |
+| `bottom_text_icon_path` | `string` | — | A directory path to custom icon images (e.g., `/local/weather_icons/`). When set, the value of `bottom_text_icon` resolves to an image file instead of an MDI icon. For example, `bottom_text_icon: weather` with `bottom_text_icon_path: /local/weather_icons/` loads `/local/weather_icons/rainy.svg` for rainy weather. You can find the icons from the examples [here](https://github.com/basmilius/weather-icons). |
 | `disable_text` | `boolean` | `false` | Hides all text overlays entirely. |
 | `disable_bottom_text` | `boolean` | `false` | Hides only the bottom detail line. |
 | `disable_bottom_icon` | `boolean` | `false` | Hides only the icon next to the bottom text. |
