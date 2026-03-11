@@ -1,6 +1,6 @@
 /**
  * ATMOSPHERIC WEATHER CARD
- * Version: 3.2
+ * Version: 3.3
  * * A custom Home Assistant card that renders animated weather effects.
  * * https://github.com/shpongledsummer/atmospheric-weather-card
  */
@@ -229,7 +229,7 @@ const FLASH_COLORS = Object.freeze({
 // Cached constant: avoids TWO_PI multiplication on every arc call
 const TWO_PI = Math.PI * 2;
 
-// Hot-path canvas helper: replaces repeated beginPath+arc+fill boilerplate.
+// Hot-path canvas helper for circular fills.
 // Module-level function avoids `this` property lookup on every call.
 function fillCircle(ctx, x, y, r) {
     ctx.beginPath();
@@ -287,8 +287,7 @@ function hslToRgb(h, s, l) {
 }
 
 /**
- * Pre-computed contrail offsets — replaces [3, -3].forEach(offset => { ... })
- * in _drawPlanes to eliminate per-frame array + closure allocation.
+ * Pre-computed contrail offsets
  */
 const CONTRAIL_OFFSETS = Object.freeze([3, -3]);
 
@@ -306,7 +305,7 @@ const LIGHT_BAD_BOOST_TYPES = Object.freeze(new Set([
     'rain', 'rainy', 'hail', 'snowy-rainy', 'fog'
 ]));
 
-// Cloud palette lookup table: replaces 60-line if/else chain in _computeCloudPalette.
+// Cloud palette lookup table
 // Each entry: [litR,litG,litB, midR,midG,midB, shadowR,shadowG,shadowB, ambient, hlBase, hOff]
 const CLOUD_PALETTES = Object.freeze({
     darkNight:    Object.freeze([215,225,240,  55, 68, 95,  10, 16, 30,  0.75, 0.65, 0.05]),
@@ -319,7 +318,7 @@ const CLOUD_PALETTES = Object.freeze({
     lightDefault: Object.freeze([255,255,255, 210,218,228, 163,175,200,  1.00, 0.75, 0.15])
 });
 
-// Cloud type distribution arrays — pre-built, replaces per-iteration object + .split(',')
+// Pre-built cloud type distribution arrays
 const CLOUD_TYPE_POOL = Object.freeze({
     fair:     Object.freeze(['cumulus','cumulus','cumulus','cumulus','organic','organic','organic','stratus','stratus','stratus']),
     clear:    Object.freeze(['cumulus','cumulus','cumulus','cumulus','organic','organic','organic','stratus','stratus','stratus']),
@@ -360,7 +359,6 @@ class CloudShapeGenerator {
         const puffs = [];
         const seededRandom = this._seededRandom(seed);
         const s = baseUnit / 100;
-        // Using your ORIGINAL exact numbers so the cloud density stays perfect
         const puffCount = isStorm ? 20 : 18;
         const baseWidth = (isStorm ? 110 : 105) * s;
         const baseHeight = (isStorm ? 60 : 42) * s;
@@ -369,11 +367,10 @@ class CloudShapeGenerator {
             const angle = (i / puffCount) * TWO_PI + seededRandom() * 0.5;
             const distFromCenter = seededRandom() * 0.6 + 0.2;
             
-            // Changed from const to let so we can warp the math for storms
             let dx = Math.cos(angle) * (baseWidth / 2) * distFromCenter;
             let dy = Math.sin(angle) * (baseHeight / 2) * distFromCenter * 0.6;
 
-            // TARGETED FIX: Warp the perfect ellipse into an anvil shape for storms ONLY
+            // Warp the base ellipse into an anvil shape for storms
             if (isStorm) {
                 if (dy > 0) {
                     dy *= 0.4; // Flatten the heavy bottom base
@@ -383,7 +380,6 @@ class CloudShapeGenerator {
             }
 
             const centerDist = Math.sqrt(dx * dx + dy * dy) / (baseWidth / 2);
-            // Your ORIGINAL exact radius numbers
             const baseRad = (isStorm ? 55 : 36) * s;
             const radVariation = (isStorm ? 20 : 14) * s;
             const rad = baseRad + seededRandom() * radVariation - centerDist * 15 * s;
@@ -900,6 +896,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                 gap: var(--awc-text-gap, 10px);
                 overflow: hidden;
             }
+			
             #card-root #text-wrapper { display: flex; }
             #temp-text, #bottom-text {
                 pointer-events: none;
@@ -932,6 +929,18 @@ class AtmosphericWeatherCard extends HTMLElement {
                 flex-shrink: 0;
 				filter: var(--awc-icon-drop-shadow, drop-shadow(0px 3px 6px rgba(0, 0, 0, 0.3)));
             }
+			
+			#text-wrapper.swap-texts #temp-text { order: 2; }
+            #text-wrapper.swap-texts #bottom-text { order: 1; }
+			
+			/* --- SPLIT LAYOUTS --- */
+            #text-wrapper.split-top, 
+            #text-wrapper.split-bottom {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            #text-wrapper.split-top { align-items: flex-start; }
+            #text-wrapper.split-bottom { align-items: flex-end; }
 
             /* --- CUSTOM CARDS WRAPPER --- */
             #custom-cards-wrapper {
@@ -1356,7 +1365,7 @@ class AtmosphericWeatherCard extends HTMLElement {
     // ========================================================================
     // UNIFIED STATE AXIS RESOLUTION
     // ========================================================================
-    // Replaces three WET methods with a single pass. Returns { isTimeNight, isThemeDark, isImageNight }.
+    // Unified axis resolution. Returns { isTimeNight, isThemeDark, isImageNight }.
     // Axes share entity reads but differ in priority:
     //   Time:  mode → sun → theme → false
     //   Theme: mode → theme → sun → sysDark
@@ -1748,48 +1757,58 @@ class AtmosphericWeatherCard extends HTMLElement {
 
         const textPos = (this._config.text_position || '').toLowerCase().trim();
         const textAlign = (this._config.text_alignment || '').toLowerCase().trim();
+        const swapTexts = this._config.swap_texts === true;
 
-        const textSig = `${textPos}|${textAlign}`;
+        const textSig = `${textPos}|${textAlign}|${swapTexts}`;
 
         const hMap = { left: 'text-left', right: 'text-right', center: 'text-hcenter' };
         const vMap = { top: 'align-top', center: 'align-center', bottom: 'align-bottom' };
-        const allPosClasses = ['text-left', 'text-right', 'text-hcenter', 'align-spread', 'align-top', 'align-center', 'align-bottom'];
-
+        
+        const allPosClasses = ['text-left', 'text-right', 'text-hcenter', 'align-spread', 'align-top', 'align-center', 'align-bottom', 'swap-texts', 'split-top', 'split-bottom'];
+		
         if (textPos) {
             if (this._prevTextPosition !== textSig) {
                 this._prevTextPosition = textSig;
                 const w = this._elements.textWrapper;
                 w.classList.remove(...allPosClasses);
+                
+                w.classList.toggle('swap-texts', swapTexts);
 
-                // Parse compound "vertical-horizontal" or single value
-                let posH, posV;
-                const parts = textPos.split('-');
-                if (parts.length === 2 && vMap[parts[0]] && hMap[parts[1]]) {
-                    posV = parts[0];
-                    posH = parts[1];
-                } else if (parts.length === 2 && hMap[parts[0]] && vMap[parts[1]]) {
-                    // Allow reversed order e.g. "left-top"
-                    posH = parts[0];
-                    posV = parts[1];
+                if (textPos === 'split-top' || textPos === 'split-bottom') {
+                    // Bypass standard parsing for split layouts
+                    w.classList.add(textPos);
                 } else {
-                    // Single value: horizontal only
-                    posH = textPos;
+                    // Parse compound "vertical-horizontal" or single value
+                    let posH, posV;
+                    const parts = textPos.split('-');
+                    if (parts.length === 2 && vMap[parts[0]] && hMap[parts[1]]) {
+                        posV = parts[0];
+                        posH = parts[1];
+                    } else if (parts.length === 2 && hMap[parts[0]] && vMap[parts[1]]) {
+                        // Allow reversed order e.g. "left-top"
+                        posH = parts[0];
+                        posV = parts[1];
+                    } else {
+                        // Single value: horizontal only
+                        posH = textPos;
+                    }
+
+                    // text_alignment overrides vertical component if explicitly set
+                    const resolvedV = vMap[textAlign] || vMap[posV] || 'align-spread';
+                    const resolvedH = hMap[posH];
+
+                    if (resolvedH) w.classList.add(resolvedH);
+                    w.classList.add(resolvedV);
                 }
-
-                // text_alignment overrides vertical component if explicitly set
-                const resolvedV = vMap[textAlign] || vMap[posV] || 'align-spread';
-                const resolvedH = hMap[posH];
-
-                if (resolvedH) w.classList.add(resolvedH);
-                w.classList.add(resolvedV);
             }
         } else {
             // Default auto behavior: text opposite the sun/moon position
             if (this._prevTextPosition !== textSig) {
                 this._prevTextPosition = textSig;
                 const w = this._elements.textWrapper;
-                w.classList.remove('align-spread', 'align-top', 'align-center', 'align-bottom');
+                w.classList.remove('align-spread', 'align-top', 'align-center', 'align-bottom', 'swap-texts');
                 w.classList.add(vMap[textAlign] || 'align-spread');
+                w.classList.toggle('swap-texts', swapTexts);
             }
             const sunPos = parseInt(this._config.sun_moon_x_position, 10);
             const isSunLeft = !isNaN(sunPos) ? sunPos >= 0 : true;
@@ -2466,7 +2485,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         // Instead of evenly-spaced anchors (which produce a grid), define a small
         // number of attraction centers.  Clouds are distributed around them with
         // Gaussian-like spread, naturally forming dense banks separated by open sky.
-        // FIX: Dynamic cluster count based on total clouds to ensure full sky coverage
+        // Scale cluster count dynamically to ensure full sky coverage
         const clusterCount = Math.max(3, Math.floor(totalClouds / 4)); 
 
         const clusters = [];
@@ -2475,7 +2494,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             clusters.push({
                 x: baseX + (Math.random() - 0.5) * w * 0.4,
                 y: h * (0.11 + Math.random() * (heightLimit - 0.16)),
-                // FIX: Massively widen the spread so clusters bleed into each other naturally
+                // Wide spread allows clusters to bleed into each other naturally
                 spreadX: w * (0.20 + Math.random() * 0.30),
                 spreadY: h * (0.08 + Math.random() * 0.12),
                 weight: 0.5 + Math.random()
@@ -2710,7 +2729,7 @@ class AtmosphericWeatherCard extends HTMLElement {
     _initNightClouds(w, h) {
         for (let i = 0; i < 4; i++) {
             const seed = Math.random() * 10000;
-            // Swapped to stratus to eliminate the "bubbly" circular clumps
+            // Stratus type creates smooth, flat night clouds
             const puffs = CloudShapeGenerator.generateMixedPuffs(seed, 'stratus');
             
             this._clouds.push({
@@ -2783,7 +2802,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             });
         }
 
-        // Night: wispy shapes instead of organic blobs (organic + 0.55 squash = "turd")
+        // Night: Use wispy shapes for a softer, diffuse aesthetic
         const accCount = isExceptional ? 1 : (isNight ? 2 : 3);
         for (let i = 0; i < accCount; i++) {
             this._celestialClouds.push({
@@ -3289,7 +3308,7 @@ class AtmosphericWeatherCard extends HTMLElement {
      * by _drawClouds as a single drawImage() call per cloud, eliminating the
      * per-puff gradient iteration on 99%+ of frames.
      *
-     * Egg fix: cloud._hStretch / cloud._vCompress are applied to puff POSITIONS
+     * Shape scaling: cloud._hStretch / cloud._vCompress are applied to puff POSITIONS
      * (flattening the overall silhouette) while each puff is rendered as an
      * ellipse using its own .squash property (or a circle when squash ≈ 1.0).
      * _drawClouds then uses a UNIFORM ctx.scale so puffs stay un-distorted.
@@ -3335,7 +3354,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         const physW = Math.ceil(bakeW * dpr);
         const physH = Math.ceil(bakeH * dpr);
 
-        // --- NEW: Texture Atlas Packing Logic ---
+        // --- Texture Atlas Packing Logic ---
         // If this cloud hits the edge of the atlas, wrap to the next row
         if (packer.x + physW + 2 > packer.maxWidth) {
             packer.x = 0;
@@ -3440,7 +3459,7 @@ class AtmosphericWeatherCard extends HTMLElement {
 
         oc.restore(); // Restore context out of this cloud's translation
 
-        // --- NEW: Save Atlas coordinates to the cloud object ---
+        // Record Atlas coordinates for the render loop
         cloud._bakedCanvas  = this._cloudAtlas; // All clouds share the master atlas
         cloud._atlasX       = atlasX;           // Where in the atlas it lives
         cloud._atlasY       = atlasY;
@@ -3468,7 +3487,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         const dpr = this._cachedDimensions.dpr;
 		const textureDpr = Math.min(1.0, dpr);
 
-        // --- NEW: Create the single Texture Atlas ---
+        // --- Initialize Master Texture Atlas ---
         if (!this._cloudAtlas) {
             try {
                 // 2048x2048 is universally safe for all mobile/desktop GPUs
@@ -3533,7 +3552,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                 ctx.scale(drawScale, drawScale);
                 ctx.globalAlpha = fadeOpacity;
                 
-                // NEW: 9-argument drawImage (slices the exact cloud out of the master atlas)
+                // Slice the exact cloud bounding box from the master atlas
                 ctx.drawImage(
                     cloud._bakedCanvas, 
                     cloud._atlasX, cloud._atlasY, cloud._atlasW, cloud._atlasH, // Source coordinates
@@ -3695,7 +3714,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                 const r = drawSize * gRad;
                 
                 ctx.globalAlpha = Math.min(1, finalOpacity * gMul);
-                // Zero matrix thrashing. Just blit the cached image.
+                // Blit the cached foreground flake
                 ctx.drawImage(this._snowTexFg, pt.x - r, pt.y - r, r * 2, r * 2);
                 
             } else {
@@ -4009,7 +4028,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         const fadeOpacity = this._layerFadeProgress.stars;
         const dpr = this._cachedDimensions.dpr;
 
-        if (Math.random() < 0.0014 && this._shootingStars.length < LIMITS.MAX_SHOOTING_STARS) {
+        if (Math.random() < 0.00154 && this._shootingStars.length < LIMITS.MAX_SHOOTING_STARS) {
             let spawnX;
             if (Math.random() < 0.70) {
                 spawnX = Math.random() * (w * 0.6);
@@ -4091,7 +4110,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         const badWeather = this._renderState.isBadWeatherForComets;
         const dpr = this._cachedDimensions.dpr;
 
-        if (this._isNight && !badWeather && this._comets.length === 0 && Math.random() < 0.00025) {
+        if (this._isNight && !badWeather && this._comets.length === 0 && Math.random() < 0.000225) {
             const startX = Math.random() < 0.5 ? -60 : w + 60;
             const dir = startX < 0 ? 1 : -1;
             const speed = 2.2 + Math.random() * 1.3;
@@ -4215,7 +4234,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             if (plane.gapTimer > 0) {
                 plane.gapTimer--;
             } else if (Math.random() < 0.005) {
-                plane.gapTimer = 5 + Math.random() * 10;
+                plane.gapTimer = 8 + Math.random() * 14;
             }
 
             const wi = plane.histHead;
@@ -4233,8 +4252,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             }
 
             if (plane.histLen > 2) {
-                // FIXED: Drastically lowered alpha floor for undeniable 20%+ transparency
-                const baseOp = this._isThemeDark ? 0.12 : 0.25;
+                const baseOp = this._isThemeDark ? 0.10 : 0.20;
                 const trailColor = this._isThemeDark ? 'rgb(210,220,240)' : 'rgb(255,255,255)';
                 const histLen = plane.histLen;
 
@@ -4297,7 +4315,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             }
 
             ctx.globalAlpha = 0.9;
-            ctx.strokeStyle = this._isThemeDark ? 'rgb(100, 110, 120)' : 'rgb(80, 85, 95)';
+            ctx.strokeStyle = this._isThemeDark ? 'rgb(125, 135, 145)' : 'rgb(105, 110, 120)';
             ctx.lineWidth = 1.5;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
@@ -4444,7 +4462,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         const windNorm = Math.min(1.0, Math.max(0, windKmh / 50));
         const windIntensity = windNorm * windNorm;
 
-        // FIXED: Speed drops to a very slow "cloud drift" (0.02) when calm
+        // Base speed ensures gentle cloud drift even at 0km/h
         const speedScale = 0.02 + (1.48 * windIntensity);
         
         let activeCount;
