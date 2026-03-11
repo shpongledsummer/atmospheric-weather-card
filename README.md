@@ -704,10 +704,10 @@ By default, text auto-positions to the side opposite the sun and moon. You can m
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `text_position` | `string` | *auto* | Where to place the text. Simple values: `left`, `right`, `center`. Compound values: `top-left`, `bottom-right`, `center-top`, etc. |
+| `text_position` | `string` | *auto* | Where to place the text. Simple values: `left`, `right`, `center`. Compound values: `top-left`, `bottom-right`, etc. **Split values:** `split-top`, `split-bottom` (anchors text to opposite corners). |
 | `text_alignment` | `string` | `spread` | Controls vertical distribution when using a simple `text_position`. Values: `spread`, `top`, `center`, `bottom`. |
+| `swap_texts` | `boolean` | `false` | Inverts the rendering order of the top and bottom text elements. Combine this with the split layout options for total control over corner placement. |
 
-> [!TIP]
 > **Compound values** like `top-left` or `bottom-center` configure both horizontal and vertical positions simultaneously. The order of the words doesn't matter (e.g., `top-left` and `left-top` work exactly the same). If you set `text_alignment` alongside a compound value, it will override the vertical component of the compound setting.
 
 </details>
