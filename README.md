@@ -75,7 +75,7 @@ tap_action:
 
 <br>
 
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/80a1a500-33f1-495b-ad4f-3973e4b2deb7" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/cfd16ab0-d639-4d55-92c6-6a74b717ef0e" />
 
 This example shows how to use the `custom_cards` feature to embed the Minimal Forecast Card (the little sister to this project, found [here](https://github.com/shpongledsummer/minimal-forecast-card)) in a vertical scroll. You can customize it however you'd like.
 
@@ -85,6 +85,9 @@ weather_entity: weather.your_weather_entity
 card_style: standalone
 card_height: 136
 text_position: left
+swap_texts: true
+bottom_text_sensor: weather.your_weather_entity
+bottom_text_icon: weather
 sun_entity: sun.sun
 sun_moon_size: 50
 sun_moon_x_position: 100
