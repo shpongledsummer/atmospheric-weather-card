@@ -15,7 +15,7 @@ A flexible, detail-oriented weather card for Home Assistant. It uses your local 
 
 <br>
 
-> **A note on AI:** I've been pretty skeptical of projects that use AI tools because they usually end up as a mess. This project is basically a personal challenge to figure out why that is, and to see what happens when AI is forced to act strictly as an amplifier for things you are already good at.
+> **A note on AI:** I've been pretty skeptical of projects that use AI tools because they often end up as a mess. This project is basically a personal challenge to figure out why that is, and to see what happens when AI is forced to act strictly as an amplifier for things you are already good at.
 
 ## Contents
 
@@ -35,18 +35,6 @@ A flexible, detail-oriented weather card for Home Assistant. It uses your local 
 ## Usage Modes
 
 You can use either `card_style: standalone` for a self-contained card with dynamic weather backgrounds, or `card_style: immersive` so the card has no background at all and blends into your dashboard.
-
-> [!TIP]
-> You can embed any Home Assistant card if you need specific features (extra details, a forecast, graph, buttons, etc.).
-> <details>
-> <summary><strong>Read more</strong></summary>
-> <br>
-> The focus of this card is on weather visuals, and to keep it somewhat lightweight, the card is not packed full of features and instead relies on an embedded custom cards approach. 
->
-> There is also a companion card built specifically for this to sit in a scrollable row, which you can find [here](https://github.com/shpongledsummer/minimal-forecast-card). 
->
-> You can read more about the embedding cards feature [here](#configuration).
-> </details>
 
 <br>
 
@@ -552,10 +540,16 @@ custom_cards:
 
 
 > [!TIP]
-> <details>
-> <summary>How to get the font?</summary>
+> You can embed any Home Assistant card if you need specific features (extra details, a forecast, graph, buttons, etc.).
 > 
-> The examples use the **Montserrat** font, which you can download or embed directly from [Google Fonts](https://fonts.google.com/specimen/Montserrat).
+> <details>
+> <summary><strong>Customizing Fonts, Icons & More</strong></summary>
+> <br>
+> 
+> * **Custom Fonts:** The examples use the **Montserrat** font, which you can download or embed directly from [Google Fonts](https://fonts.google.com/specimen/Montserrat).
+> * **Custom Icons:** You can replace the default icons with your own custom SVG weather icons. See the [Text & Icon Settings](#configuration) for instructions.
+> * **Embedded Cards:** To keep this card somewhat lightweight and focused on weather visuals, it relies on an embedded custom cards approach. You can read more about this feature [here](#configuration). 
+> * **Companion Card:** There is also a companion card built specifically to sit in a scrollable row alongside this one, which you can find [here](https://github.com/shpongledsummer/minimal-forecast-card).
 > </details>
 
 <br>
