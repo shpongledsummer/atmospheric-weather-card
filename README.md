@@ -83,7 +83,7 @@ This example shows how to use the `custom_cards` feature to embed the Minimal Fo
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
 card_style: standalone
-card_height: 175 # Customize based on your specific card padding
+card_height: 136
 text_position: left
 sun_entity: sun.sun
 sun_moon_size: 50
@@ -133,7 +133,7 @@ This example use the `custom_cards` feature to embed the Minimal Forecast Card (
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
 card_style: standalone
-card_height: 142 # Customize based on your specific card padding
+card_height: 142
 text_position: left
 sun_entity: sun.sun
 sun_moon_size: 50
