@@ -726,8 +726,20 @@ This card handles two separate aspects of its appearance independently:
 | **Time** | Sun vs. moon, stars vs. no stars. | *"Show the moon and stars"* |
 | **Color Scheme** | Dark vs. light backgrounds and particle colors. | *"Use dark cloud colors"* |
 
-> [!NOTE]
-> For most setups, simply setting `sun_entity: sun.sun` **is enough** and means both aspects will automatically follow the real-world sun. The distinction between time and color scheme is only important if you want to mix states, such as displaying the sun on a dark dashboard background.
+<br>
+
+### Which setting should I use?
+
+**The Base Requirement**
+* **`sun_entity`**: This aligns the timeline with your actual sunrise and sunset. Without it, the card just defaults to a constant "day" state.
+
+**Optional Add-ons** *(Use these alongside `sun_entity` to customize behavior)*
+
+* **`theme: dark` / `theme: light`**: Add this if your dashboard is permanently set to dark or light mode. It locks the card to that specific color scheme.
+* **`theme_entity`**: Add this if your dashboard dynamically switches themes based on schedules or toggles. *(Note: This is a very rare setup, I'm not even sure if anyone else uses this approach. Unless you specifically built your dashboard to do this, you can skip this setting!)*
+* **`theme: night` / `theme: day`**: Add this to force the time axis (permanently showing moon or sun) while letting the color scheme follow your global environment settings. *(Note: This is an unusual edge case, included mostly for the sake of completeness.)*
+
+</details>
 
 <br>
 
@@ -756,17 +768,6 @@ The card evaluates these sources **in exact order** and applies the first match 
 
 *\* Defined night values include: `dark`, `night`, `evening`, `on`, `true`, `below_horizon`*
 
-</details>
-
-<details>
-<summary><strong>Which setting should I use?</strong></summary> 
-
-* **`sun_entity`**: Best for most setups. Everything aligns with the real sunrise and sunset.
-* **`theme_entity`**: This can be used in combination with the `sun_entity` for dashboards that switch themes based on schedules or toggles.
-* **`theme: dark` / `theme: light`**: Use this to permanently lock the card to one specific color scheme.
-* **`theme: night` / `theme: day`**: Use this to force the time axis (moon vs. sun) while letting the color scheme follow your other environment settings.
-
-</details>
 </details>
 
 <br>
