@@ -1,6 +1,6 @@
 /**
  * ATMOSPHERIC WEATHER CARD
- * Version: 3.1
+ * Version: 3.2
  * * A custom Home Assistant card that renders animated weather effects.
  * * https://github.com/shpongledsummer/atmospheric-weather-card
  */
@@ -45,8 +45,8 @@ const FALLBACK_WEATHER = Object.freeze({
  *   atmosphere     — CSS background mood + dust mote logic.
  *   cloud/scale    — Cloud count and size multiplier.
  *   wind           — Base wind speed multiplier.
- *   sunCloudWarm   — Sun-visible flag (warm palette sun clouds).
- *   sunClouds      — Overcast sun cloud layer (cool palette, no disc).
+ *   sunCloudWarm   — Sun-visible flag (warm palette celestial accent clouds).
+ *   sunClouds      — Overcast celestial cloud layer (cool palette day, silver-blue night).
  *   dark/thunder   — Storm darkening + lightning spawning.
  *   foggy          — Fog bank layer.
  *   windVapor      — Volumetric wind vapor streaks.
@@ -117,7 +117,7 @@ const LIMITS = Object.freeze({
 const PARTICLE_ARRAYS = Object.freeze([
     '_rain', '_snow', '_hail', '_clouds', '_fgClouds', '_stars',
     '_bolts', '_fogBanks', '_windVapor', '_shootingStars',
-    '_planes', '_birds', '_comets', '_dustMotes', '_sunClouds'
+    '_planes', '_birds', '_comets', '_dustMotes', '_celestialClouds'
 ]);
 
 // ============================================================================
@@ -1462,8 +1462,11 @@ class AtmosphericWeatherCard extends HTMLElement {
         // --- Cloud global opacity ---
         const cloudGlobalOp = isDark ? 0.64 : 0.85;
 
-        // --- Sun cloud palette: warm (sun-lit) vs cool (overcast accent) ---
-        const sunCloudWarm = !!(p?.sunCloudWarm);
+        // --- Celestial cloud palette: warm (sun-lit), cool (overcast day), darkDay, moon ---
+        let celestialCloudPalette;
+        if (isNight) celestialCloudPalette = 'moon';
+        else if (isDark) celestialCloudPalette = 'darkDay';
+        else celestialCloudPalette = p?.sunCloudWarm ? 'warm' : 'cool';
 
         // Invalidate cached gradients; lazily rebuilt on next frame
         this._sunBodyGradDark = this._sunBodyGradDarkR = null;
@@ -1480,7 +1483,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             rainRgb,
             cloudGlobalOp,
             starMode,
-            sunCloudWarm,
+            celestialCloudPalette,
             cp  // cloud palette
         };
     }
@@ -2285,8 +2288,12 @@ class AtmosphericWeatherCard extends HTMLElement {
             this._initNightClouds(w, h);
         }
 
-        if ((p.sunCloudWarm || p.sunClouds) && !this._isNight && this._isLightBackground) {
-            this._initSunClouds(w, h);
+        // Celestial accent clouds: daytime when flagged, OR any non-severe night
+        // (moon-lit wisps enhance rain/cloud/snow moods; skip thunder/hail)
+        const wantsCelestialClouds = p.sunCloudWarm || p.sunClouds
+            || (this._isNight && !p.thunder && p.type !== 'hail');
+        if (wantsCelestialClouds) {
+            this._initCelestialClouds(w, h);
         }
 
         const starCount = (this._renderState && this._renderState.starMode !== 'hidden') ? (p.stars || 0) : 0;
@@ -2467,7 +2474,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             const baseX = w * ((c + 0.5) / clusterCount);
             clusters.push({
                 x: baseX + (Math.random() - 0.5) * w * 0.4,
-                y: h * (0.05 + Math.random() * (heightLimit - 0.1)),
+                y: h * (0.11 + Math.random() * (heightLimit - 0.16)),
                 // FIX: Massively widen the spread so clusters bleed into each other naturally
                 spreadX: w * (0.20 + Math.random() * 0.30),
                 spreadY: h * (0.08 + Math.random() * 0.12),
@@ -2495,7 +2502,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             const seed = Math.random() * 10000;
             this._clouds.push({
                 x: Math.random() * w,
-                y: Math.random() * (h * heightLimit * 0.6),
+                y: h * (0.08 + Math.random() * (heightLimit * 0.6 - 0.08)),
                 scale: (0.45 + Math.random() * 0.35) * configScale * 1.8,
                 speed: 0.002 + Math.random() * 0.002,
                 puffs: CloudShapeGenerator.generateMixedPuffs(seed, 'stratus', baseUnit),
@@ -2610,10 +2617,10 @@ class AtmosphericWeatherCard extends HTMLElement {
             // ── Type-dependent vertical band ──
             let yMin, yMax;
             switch (type) {
-                case 'cirrus':  yMin = 0.02; yMax = 0.15; break;
-                case 'stratus': yMin = 0.04; yMax = 0.30; break;
-                case 'cumulus': yMin = 0.08; yMax = heightLimit - 0.08; break;
-                default:        yMin = 0.06; yMax = heightLimit - 0.05; break;
+                case 'cirrus':  yMin = 0.08; yMax = 0.20; break;
+                case 'stratus': yMin = 0.10; yMax = 0.35; break;
+                case 'cumulus': yMin = 0.14; yMax = heightLimit - 0.08; break;
+                default:        yMin = 0.12; yMax = heightLimit - 0.05; break;
             }
 
             // Y from type range, biased slightly toward cluster center
@@ -2625,7 +2632,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                 const clamped = Math.max(h * yMin, Math.min(h * yMax, clusterBias));
                 yPos = typeY * 0.6 + clamped * 0.4;
             }
-            yPos = Math.max(h * 0.02, yPos);
+            yPos = Math.max(h * 0.08, yPos);
 
             this._clouds.push({
                 x: xPos,
@@ -2725,76 +2732,92 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
     }
 
-    _initSunClouds(w, h) {
+    _initCelestialClouds(w, h) {
         const celestial = this._getCelestialPosition(w, h);
-        const sunX = celestial.x;
-        const sunY = celestial.y;
+        const cx = celestial.x;
+        const cy = celestial.y;
         const isExceptional = (this._params.cloud || 0) === 0;
+        const isNight = this._isNight;
 
-        this._sunClouds.push({
-            x: sunX,
-            y: sunY,
-            scale: 1.8,
-            speed: 0.002,
-            puffs: CloudShapeGenerator.generateWispyPuffs(Math.random() * 10000),
-            opacity: 0.15,
-            seed: Math.random(),
-            breathPhase: 0,
-            breathSpeed: 0.001,
-            baseX: sunX,
-            baseY: sunY,
-            driftPhase: 0
-        });
+        // Night: subtler presence — fewer clouds, lower opacity, no centered halo
+        // Light theme night needs higher opacity (dark palette on lighter background)
+        const opMul = isNight ? (this._isThemeDark ? 0.35 : 0.55) : 1.0;
 
-        for (let i = 0; i < (isExceptional ? 2 : 7); i++) {
-            const spreadX = (i - 3) * 22 + (Math.random() - 0.5) * 15;
-            const spreadY = 25 + Math.random() * 20;
-            this._sunClouds.push({
-                x: sunX + spreadX,
-                y: sunY + spreadY,
+        // Centered halo cloud only for daytime (sun glow absorbs it naturally;
+        // the moon is too small and its own glow is rendered by _drawMoon)
+        if (!isNight) {
+            this._celestialClouds.push({
+                x: cx,
+                y: cy,
+                scale: 1.8,
+                speed: 0.002,
+                puffs: CloudShapeGenerator.generateWispyPuffs(Math.random() * 10000),
+                opacity: 0.15,
+                seed: Math.random(),
+                breathPhase: 0,
+                breathSpeed: 0.001,
+                baseX: cx,
+                baseY: cy,
+                driftPhase: 0
+            });
+        }
+
+        const enhCount = isExceptional ? 2 : (isNight ? 3 : 7);
+        const enhSpreadMul = isNight ? 1.6 : 1.0;
+        for (let i = 0; i < enhCount; i++) {
+            const spreadX = (i - 3) * 22 * enhSpreadMul + (Math.random() - 0.5) * 15;
+            const spreadY = (isNight ? 18 : 25) + Math.random() * 20;
+            this._celestialClouds.push({
+                x: cx + spreadX,
+                y: cy + spreadY,
                 scale: 0.55 + Math.random() * 0.3,
                 speed: 0.005,
                 puffs: CloudShapeGenerator.generateSunEnhancementPuffs(Math.random() * 10000),
-                opacity: 0.6 + Math.random() * 0.2,
+                opacity: (0.6 + Math.random() * 0.2) * opMul,
                 seed: Math.random(),
                 breathPhase: Math.random() * TWO_PI,
                 breathSpeed: 0.003,
-                baseX: sunX + spreadX,
-                baseY: sunY + spreadY,
+                baseX: cx + spreadX,
+                baseY: cy + spreadY,
                 driftPhase: Math.random() * TWO_PI
             });
         }
 
-        for (let i = 0; i < (isExceptional ? 1 : 3); i++) {
-            this._sunClouds.push({
-                x: sunX + (Math.random() - 0.5) * 50,
-                y: sunY + 15 + (Math.random() - 0.5) * 12,
-                scale: 0.7,
+        // Night: wispy shapes instead of organic blobs (organic + 0.55 squash = "turd")
+        const accCount = isExceptional ? 1 : (isNight ? 2 : 3);
+        for (let i = 0; i < accCount; i++) {
+            this._celestialClouds.push({
+                x: cx + (Math.random() - 0.5) * 50,
+                y: cy + 15 + (Math.random() - 0.5) * 12,
+                scale: isNight ? 0.5 : 0.7,
                 speed: 0.008,
-                puffs: CloudShapeGenerator.generateOrganicPuffs(false, Math.random() * 10000),
-                opacity: 0.25,
+                puffs: isNight
+                    ? CloudShapeGenerator.generateWispyPuffs(Math.random() * 10000)
+                    : CloudShapeGenerator.generateOrganicPuffs(false, Math.random() * 10000),
+                opacity: 0.25 * opMul,
                 seed: Math.random(),
                 breathPhase: Math.random() * TWO_PI,
                 breathSpeed: 0.004,
-                baseX: sunX,
-                baseY: sunY + 15,
+                baseX: cx,
+                baseY: cy + 15,
                 driftPhase: i * 2
             });
         }
 
-        for (let i = 0; i < (isExceptional ? 0 : 4); i++) {
-            this._sunClouds.push({
-                x: sunX + (Math.random() - 0.5) * 90,
-                y: sunY - 25 - Math.random() * 25,
+        const wispCount = isExceptional ? 0 : (isNight ? 2 : 4);
+        for (let i = 0; i < wispCount; i++) {
+            this._celestialClouds.push({
+                x: cx + (Math.random() - 0.5) * 90,
+                y: cy - 25 - Math.random() * 25,
                 scale: 0.35,
                 speed: 0.01,
                 puffs: CloudShapeGenerator.generateWispyPuffs(Math.random() * 10000),
-                opacity: 0.3,
+                opacity: 0.3 * opMul,
                 seed: Math.random(),
                 breathPhase: Math.random() * TWO_PI,
                 breathSpeed: 0.002,
-                baseX: sunX + (Math.random() - 0.5) * 90,
-                baseY: sunY - 25 - Math.random() * 25,
+                baseX: cx + (Math.random() - 0.5) * 90,
+                baseY: cy - 25 - Math.random() * 25,
                 driftPhase: Math.random() * TWO_PI
             });
         }
@@ -2957,17 +2980,17 @@ class AtmosphericWeatherCard extends HTMLElement {
     // RENDERING — DRAWING HELPERS
     // ========================================================================
 
-    _drawSunClouds(ctx, w, h, effectiveWind) {
+    _drawCelestialClouds(ctx, w, h, effectiveWind) {
         const fadeOpacity = this._layerFadeProgress.clouds;
         if (fadeOpacity <= 0) return;
         
-        const warm = this._renderState.sunCloudWarm;
-        const len = this._sunClouds.length;
+        const palette = this._renderState.celestialCloudPalette;
+        const len = this._celestialClouds.length;
 
         for (let i = 0; i < len; i++) {
-            const cloud = this._sunClouds[i];
+            const cloud = this._celestialClouds[i];
 
-            // --- STEP 1: LAZY INIT SUN CLOUD SPRITE ---
+            // --- STEP 1: LAZY INIT CELESTIAL CLOUD SPRITE ---
             // Bake all puffs for this cloud into its own canvas exactly once.
             if (!cloud._bakedCanvas) {
                 const puffs = cloud.puffs;
@@ -3005,12 +3028,28 @@ class AtmosphericWeatherCard extends HTMLElement {
                         drawX, drawY, puff.rad
                     );
                     
-                    if (warm) {
+                    if (palette === 'warm') {
                         grad.addColorStop(0, `rgba(255,255,250,${baseOp})`);
                         grad.addColorStop(0.3, `rgba(255,245,225,${baseOp * 0.9})`);
                         grad.addColorStop(0.6, `rgba(250,235,200,${baseOp * 0.75})`);
                         grad.addColorStop(0.85, `rgba(240,220,180,${baseOp * 0.5})`);
                         grad.addColorStop(1, 'rgba(235,210,160,0)');
+                    } else if (palette === 'moon') {
+                        // Silver-blue lit edge with fast falloff into night sky.
+                        // Matches darkNight cloud palette mood (lit: 215,225,240 / shadow: 10,16,30).
+                        grad.addColorStop(0, `rgba(195,210,235,${baseOp * 0.9})`);
+                        grad.addColorStop(0.25, `rgba(140,160,195,${baseOp * 0.5})`);
+                        grad.addColorStop(0.5, `rgba(80,95,130,${baseOp * 0.2})`);
+                        grad.addColorStop(0.75, `rgba(40,50,75,${baseOp * 0.05})`);
+                        grad.addColorStop(1, 'rgba(20,28,50,0)');
+                    } else if (palette === 'darkDay') {
+                        // Forced dark mode daytime — blue-silver accent matching darkDay
+                        // cloud palette (lit: 228,238,255 / mid: 125,138,172).
+                        grad.addColorStop(0, `rgba(220,230,250,${baseOp * 0.85})`);
+                        grad.addColorStop(0.3, `rgba(160,175,210,${baseOp * 0.6})`);
+                        grad.addColorStop(0.6, `rgba(100,115,155,${baseOp * 0.35})`);
+                        grad.addColorStop(0.85, `rgba(50,60,85,${baseOp * 0.12})`);
+                        grad.addColorStop(1, 'rgba(30,38,58,0)');
                     } else {
                         grad.addColorStop(0, `rgba(240,243,250,${baseOp})`);
                         grad.addColorStop(0.3, `rgba(220,225,238,${baseOp * 0.9})`);
@@ -4021,21 +4060,24 @@ class AtmosphericWeatherCard extends HTMLElement {
             ctx.lineWidth = s.size * 0.8;
             ctx.strokeStyle = tailColorRgb;
 
-            // Ring buffer reverse traversal. Invariants:
-            //   - j ∈ [0, tailLen-2]: draws tailLen-1 line segments
-            //   - idx1 = newest-j, idx2 = newest-j-1 (both within written region)
-            //   - Double-modulo ensures non-negative index for any head/j combination
-            //     even if loop bounds are later modified. JS % preserves sign, so
-            //     ((v % n) + n) % n is the canonical safe wrap.
-            for (let j = 0; j < s.tailLen - 1; j++) {
-                const idx1 = (((s.tailHead - 1 - j) % TRAIL_CAP_SHOOTING_STAR) + TRAIL_CAP_SHOOTING_STAR) % TRAIL_CAP_SHOOTING_STAR;
-                const idx2 = (((s.tailHead - 2 - j) % TRAIL_CAP_SHOOTING_STAR) + TRAIL_CAP_SHOOTING_STAR) % TRAIL_CAP_SHOOTING_STAR;
-                const p1x = s.tailBuf[idx1 * 2], p1y = s.tailBuf[idx1 * 2 + 1];
-                const p2x = s.tailBuf[idx2 * 2], p2y = s.tailBuf[idx2 * 2 + 1];
-                ctx.globalAlpha = opacity * (1 - j / s.tailLen);
+            // Alpha-banded shooting star tail: 4 bands (22 segments → 4 strokes).
+            // Linear alpha fade approximated at band midpoints.
+            const tailSegs = s.tailLen - 1;
+            for (let band = 0; band < 4; band++) {
+                const jStart = (band * tailSegs / 4) | 0;
+                const jEnd = ((band + 1) * tailSegs / 4) | 0;
+                if (jStart >= jEnd) continue;
+
+                const midJ = (jStart + jEnd) * 0.5;
+                ctx.globalAlpha = opacity * (1 - midJ / s.tailLen);
+
                 ctx.beginPath();
-                ctx.moveTo(p1x, p1y);
-                ctx.lineTo(p2x, p2y);
+                for (let j = jStart; j <= jEnd; j++) {
+                    const idx = (((s.tailHead - 1 - j) % TRAIL_CAP_SHOOTING_STAR) + TRAIL_CAP_SHOOTING_STAR) % TRAIL_CAP_SHOOTING_STAR;
+                    const px = s.tailBuf[idx * 2], py = s.tailBuf[idx * 2 + 1];
+                    if (j === jStart) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
                 ctx.stroke();
             }
         }
@@ -4126,18 +4168,26 @@ class AtmosphericWeatherCard extends HTMLElement {
             ctx.lineCap = 'round';
             ctx.strokeStyle = isInkMode ? 'rgb(65,80,100)' : 'rgb(160,210,255)';
 
-            // Ring buffer reverse traversal — same invariants as shooting stars
-            for (let j = 0; j < c.tailLen - 1; j++) {
-                const idx1 = (((c.tailHead - 1 - j) % TRAIL_CAP_COMET) + TRAIL_CAP_COMET) % TRAIL_CAP_COMET;
-                const idx2 = (((c.tailHead - 2 - j) % TRAIL_CAP_COMET) + TRAIL_CAP_COMET) % TRAIL_CAP_COMET;
-                const p1x = c.tailBuf[idx1 * 2], p1y = c.tailBuf[idx1 * 2 + 1];
-                const p2x = c.tailBuf[idx2 * 2], p2y = c.tailBuf[idx2 * 2 + 1];
-                const progress = j / c.tailLen;
-                ctx.lineWidth = c.size * (1 - progress * 0.8);
-                ctx.globalAlpha = opacity * (1 - progress) * 0.6;
+            // Alpha-banded comet tail: batch segments into 8 bands.
+            // Both lineWidth and alpha use band-midpoint values.
+            // lineWidth step ≈0.2px, alpha step ≈0.01 — sub-perceptual.
+            const tailSegs = c.tailLen - 1;
+            for (let band = 0; band < 8; band++) {
+                const jStart = (band * tailSegs / 8) | 0;
+                const jEnd = ((band + 1) * tailSegs / 8) | 0;
+                if (jStart >= jEnd) continue;
+
+                const midP = (jStart + jEnd) * 0.5 / c.tailLen;
+                ctx.lineWidth = c.size * (1 - midP * 0.8);
+                ctx.globalAlpha = opacity * (1 - midP) * 0.6;
+
                 ctx.beginPath();
-                ctx.moveTo(p1x, p1y);
-                ctx.lineTo(p2x, p2y);
+                for (let j = jStart; j <= jEnd; j++) {
+                    const idx = (((c.tailHead - 1 - j) % TRAIL_CAP_COMET) + TRAIL_CAP_COMET) % TRAIL_CAP_COMET;
+                    const px = c.tailBuf[idx * 2], py = c.tailBuf[idx * 2 + 1];
+                    if (j === jStart) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
                 ctx.stroke();
             }
         }
@@ -4193,29 +4243,46 @@ class AtmosphericWeatherCard extends HTMLElement {
                 ctx.lineJoin = 'round';
                 ctx.lineWidth = 3 * plane.scale;
 
+                // Alpha-banded contrail rendering: batch ~50 segments per band
+                // into a single polyline + stroke(). Reduces ~1000 draw calls
+                // (500 seg × 2 stripes) to ~20 (10 bands × 2 stripes).
+                // Alpha at band midpoint is visually identical — max step ≈0.001.
+                const trailSegs = histLen - 1;
                 for (let oi = 0; oi < 2; oi++) {
                     const offset = CONTRAIL_OFFSETS[oi];
-                    for (let k = 0; k < histLen - 1; k++) {
-                        const ridx0 = (((plane.histHead - 1 - k) % TRAIL_CAP_PLANE) + TRAIL_CAP_PLANE) % TRAIL_CAP_PLANE;
-                        const ridx1 = (((plane.histHead - 2 - k) % TRAIL_CAP_PLANE) + TRAIL_CAP_PLANE) % TRAIL_CAP_PLANE;
-                        const pt0x = plane.histBuf[ridx0 * 3], pt0y = plane.histBuf[ridx0 * 3 + 1], pt0gap = plane.histBuf[ridx0 * 3 + 2];
-                        const pt1x = plane.histBuf[ridx1 * 3], pt1y = plane.histBuf[ridx1 * 3 + 1], pt1gap = plane.histBuf[ridx1 * 3 + 2];
-                        if (pt0gap > 0.5 || pt1gap > 0.5) continue;
+                    const oX = sinA * offset * plane.scale * dir;
+                    const oY = cosA * offset * plane.scale;
 
-                        const progress = k / histLen;
-                        let segOp;
-                        if (progress < 0.05) segOp = (progress / 0.05) * baseOp;
-                        else if (progress < 0.6) segOp = baseOp * (1 - (progress - 0.05) * 0.727);
-                        else segOp = baseOp * 0.6 * (1 - (progress - 0.6) / 0.4);
+                    for (let band = 0; band < 10; band++) {
+                        const kStart = (band * trailSegs / 10) | 0;
+                        const kEnd = ((band + 1) * trailSegs / 10) | 0;
+                        if (kStart >= kEnd) continue;
 
-                        if (segOp < 0.005) continue;
-                        ctx.globalAlpha = segOp;
+                        // Alpha from the original 3-piece curve at band midpoint
+                        const midP = (kStart + kEnd) * 0.5 / histLen;
+                        let bandAlpha;
+                        if (midP < 0.05) bandAlpha = (midP / 0.05) * baseOp;
+                        else if (midP < 0.6) bandAlpha = baseOp * (1 - (midP - 0.05) * 0.727);
+                        else bandAlpha = baseOp * 0.6 * (1 - (midP - 0.6) / 0.4);
+                        if (bandAlpha < 0.005) continue;
 
-                        const oX = sinA * offset * plane.scale * dir;
-                        const oY = cosA * offset * plane.scale;
+                        ctx.globalAlpha = bandAlpha;
                         ctx.beginPath();
-                        ctx.moveTo(pt0x + oX, pt0y + oY);
-                        ctx.lineTo(pt1x + oX, pt1y + oY);
+                        let drawing = false;
+
+                        // Walk points kStart..kEnd as a polyline, breaking at gaps
+                        for (let k = kStart; k <= kEnd; k++) {
+                            const ridx = (((plane.histHead - 1 - k) % TRAIL_CAP_PLANE) + TRAIL_CAP_PLANE) % TRAIL_CAP_PLANE;
+                            const gap = plane.histBuf[ridx * 3 + 2];
+                            if (gap > 0.5) {
+                                drawing = false;
+                            } else {
+                                const px = plane.histBuf[ridx * 3] + oX;
+                                const py = plane.histBuf[ridx * 3 + 1] + oY;
+                                if (!drawing) { ctx.moveTo(px, py); drawing = true; }
+                                else { ctx.lineTo(px, py); }
+                            }
+                        }
                         ctx.stroke();
                     }
                 }
@@ -5015,9 +5082,9 @@ class AtmosphericWeatherCard extends HTMLElement {
         // ---- MIDDLE LAYER ----
         this._drawHeatShimmer(mid, w, h);
 
-        // Sun clouds before main clouds — rays bleed through
-        if (this._sunClouds.length > 0) {
-            this._drawSunClouds(mid, w, h, effectiveWind);
+        // Celestial accent clouds before main clouds — rays bleed through
+        if (this._celestialClouds.length > 0) {
+            this._drawCelestialClouds(mid, w, h, effectiveWind);
         }
 
         // Dark theme cloudy-sun on bg (behind clouds)
@@ -5088,4 +5155,3 @@ if (!customElements.get(CARD_NAME)) {
 } else {
     console.info(`%c ${CARD_NAME} already defined - skipping registration`, 'color: orange; font-weight: bold;');
 }
-
