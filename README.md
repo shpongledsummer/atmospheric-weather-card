@@ -18,8 +18,8 @@ A flexible, detail-oriented weather card for Home Assistant. It uses your local 
 
 ## Contents
 
-[Usage Modes (examples)](#usage-modes)<br>
 [Installation](#installation)<br>
+[Usage Modes (examples)](#usage-modes)<br>
 [Configuration](#configuration)<br>
 [Day / Night Logic](#day--night-logic)<br>
 [Styling](#styling)<br>
@@ -28,6 +28,37 @@ A flexible, detail-oriented weather card for Home Assistant. It uses your local 
 [Adding Buttons](#adding-buttons)<br>
 [Weather States](#weather-states)<br>
 [Performance](#performance)
+
+<br>
+
+
+## Installation
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=shpongledsummer&repository=atmospheric-weather-card&category=plugin)
+
+<details>
+<summary><b>Method 1 — HACS (Recommended)</b></summary>
+
+1. Open **HACS** in Home Assistant.
+2. Navigate to **Frontend** → **Custom repositories** (via the top-right menu).
+3. Add this repository URL and select the **Dashboard** category.
+4. Click **Install**.
+5. Reload your dashboard.
+
+</details>
+
+<details>
+<summary><b>Method 2 — Manual</b></summary>
+
+1. Download `atmospheric-weather-card.js` from the latest release.
+2. Place the file in your `config/www/` folder.
+3. Navigate to **Settings** → **Dashboards** → **⋮** → **Resources**.
+4. Add a new resource:
+    * **URL:** `/local/atmospheric-weather-card.js`
+    * **Type:** JavaScript Module
+5. Hard-refresh your browser.
+
+</details>
 
 <br>
 
@@ -561,37 +592,6 @@ custom_cards:
 > * **Embedded Cards:** To keep this card somewhat lightweight and focused on weather visuals, it relies on an embedded custom cards approach. You can read more about this feature [here](#configuration). 
 > * **Companion Card:** There is also a companion card built specifically to sit in a scrollable row alongside this one, which you can find [here](https://github.com/shpongledsummer/minimal-forecast-card).
 > </details>
-
-<br>
-
-
-## Installation
-
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=shpongledsummer&repository=atmospheric-weather-card&category=plugin)
-
-<details>
-<summary><b>Method 1 — HACS (Recommended)</b></summary>
-
-1. Open **HACS** in Home Assistant.
-2. Navigate to **Frontend** → **Custom repositories** (via the top-right menu).
-3. Add this repository URL and select the **Dashboard** category.
-4. Click **Install**.
-5. Reload your dashboard.
-
-</details>
-
-<details>
-<summary><b>Method 2 — Manual</b></summary>
-
-1. Download `atmospheric-weather-card.js` from the latest release.
-2. Place the file in your `config/www/` folder.
-3. Navigate to **Settings** → **Dashboards** → **⋮** → **Resources**.
-4. Add a new resource:
-    * **URL:** `/local/atmospheric-weather-card.js`
-    * **Type:** JavaScript Module
-5. Hard-refresh your browser.
-
-</details>
 
 <br>
 
