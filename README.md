@@ -50,6 +50,10 @@ A flexible, detail-oriented weather card for Home Assistant. It uses your local 
 <details>
 <summary><b>Method 2 — Manual</b></summary>
 
+<br>
+
+[![Open your Home Assistant instance and navigate to your lovelace resources.](https://my.home-assistant.io/badges/lovelace_resources.svg)](https://my.home-assistant.io/redirect/lovelace_resources/)
+
 1. Download `atmospheric-weather-card.js` from the latest release.
 2. Place the file in your `config/www/` folder.
 3. Navigate to **Settings** → **Dashboards** → **⋮** → **Resources**.
