@@ -18,7 +18,7 @@ A flexible, detail-oriented weather card for Home Assistant. It uses your local 
 
 ## Contents
 
-[Usage Modes](#usage-modes)<br>
+[Modes (with examples)](#usage-modes)<br>
 [Installation](#installation)<br>
 [Configuration](#configuration)<br>
 [Day / Night Logic](#day--night-logic)<br>
@@ -825,11 +825,10 @@ In addition to the [Style Settings](#configuration) detailed above, you can fine
   ```yaml
   type: custom:atmospheric-weather-card
   weather_entity: weather.your_weather_entity
-  # (... rest of your cards config)
   card_mod:
     style: |
       :host {
-        --awc-text-day: #ffffff; # change to your liking
+        --awc-text-day: #ffffff;
         --awc-text-night: #ffffff;
         --awc-text-shadow-day: 0 1px 2px rgba(0, 0, 0, 0.15);
         --awc-text-shadow-night: 0 1px 2px rgba(0, 0, 0, 0.8);
@@ -847,8 +846,8 @@ To achieve the immersive look featuring your own home, follow these steps:
 1. **Take a reference photo** from a corner angle to properly capture the depth of the house.
 2. **Generate a 3D model** using an AI image tool. Use a prompt similar to:
    > *Isometric view of a modern minimalist architectural model section from the outside on solid white background. [Describe your floors/rooms]. Materials are matte white and light only. No complex textures, studio lighting, very clean, simplified shapes.*
-3. **Remove the background** and save the resulting image as a transparent PNG.
-4. **Create day and night variants** by adjusting the lighting and colors appropriately.
+3. **Remove the background** with an online tool or image editor and save the resulting image as a transparent PNG.
+4. **Create day and night variants** by adjusting the prompt appropriately.
 5. **Upload the files** to your `config/www/images/` directory and reference them in the card config as `/local/images/my-house-day.png`.
 
 <br>
@@ -868,7 +867,10 @@ The status feature dynamically swaps the displayed house/custom image when a mon
 
 ## Adding Buttons
 
-You can embed buttons (or any other Home Assistant card) directly inside this card using the `custom_cards` feature. To see how to set this up and view the available layout options, check out the **Custom Cards** block in the [Configuration](#configuration) section.
+You can embed buttons (or any other Home Assistant card like a graph, another weather card, sensors etc.) directly inside this card using the `custom_cards` feature. The **Custom Cards** block in the [Configuration](#configuration) section shows how to set this up and explains the layout options. Also mostly all card [examples](#usage-modes) make use of the feature and show different use cases.
+
+> [!TIP]
+> For custom layouts, I highly recommend using `paper-buttons-row` from HACS. It gives you the flexibility to build incredibly detailed and beautiful designs. If you want to get creative, check out the advanced [examples](#usage-modes) for a few prebuilt layouts you can customize.
 
 <br>
 
