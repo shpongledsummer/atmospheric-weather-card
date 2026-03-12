@@ -567,6 +567,8 @@ custom_cards:
 
 ## Installation
 
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=shpongledsummer&repository=https%3A%2F%2Fgithub.com%2Fshpongledsummer%2Fatmospheric-weather-card&category=plugin)
+
 <details>
 <summary><b>Method 1 — HACS (Recommended)</b></summary>
 
