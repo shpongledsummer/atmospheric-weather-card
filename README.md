@@ -889,15 +889,16 @@ Each state triggers a unique combination of particle types, cloud densities, win
 
 <br>
 
-## Performance
+### Performance
 
-To help keep browser CPU and memory usage low, the rendering loop reuses graphics instead of drawing them from scratch every frame.
+Because this card is built around heavy visual animations, it requires more processing power than a standard text dashboard. **It is not recommended for very old or slow wall tablets**, as the animations will likely stutter.
 
-A few other limits are in place to save resources:
+To keep your dashboard running smoothly, the card uses several tricks behind the scenes:
+* **Reusing Graphics:** Complex effects (like clouds, rain, snow, and glows) are drawn just once in the background. The card simply moves these flat pictures around instead of calculating the complicated math 30 times a second.
+* **Smart Pausing:** When you scroll the card out of view, the animations completely pause to save CPU. It keeps the graphics ready in memory so it doesn't freeze your screen when you scroll back up.
+* **Stutter Prevention:** It manages memory very strictly, which stops the browser from having to randomly pause the animations to clean things up.
+* **Fewer Updates:** It tracks exactly what Home Assistant is doing and only updates the text and weather graphics when something actually changes.
+* **Speed Limits:** The animation speed is capped at 30 frames per second. On extremely high-resolution screens (like 4K or Retina), it automatically scales down the internal graphics so it doesn't overload your device.
 
-* Animations pause entirely and clear memory when the card is scrolled out of view.
-* The framerate is capped at 30 FPS.
-* The internal canvas resolution is capped on very high-density displays.
-
-> [!IMPORTANT]
-> The card relies on **GPU hardware acceleration** in your browser. If you notice high CPU usage (especially on Linux/Nvidia setups where software rendering might be the default), please verify that hardware acceleration is enabled in your browser or kiosk app.
+> [!IMPORTANT]  
+> The card relies on standard **Hardware Acceleration** to run smoothly. If you experience heavy lag or high CPU usage (especially on Linux or Firefox setups where software rendering is often the default), please double-check that hardware acceleration is enabled in your browser or kiosk app.
