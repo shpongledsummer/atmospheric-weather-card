@@ -18,7 +18,7 @@ A flexible, detail-oriented weather card for Home Assistant. It uses your local 
 
 ## Contents
 
-[Modes (with examples)](#usage-modes)<br>
+[Usage Modes (with examples)](#usage-modes)<br>
 [Installation](#installation)<br>
 [Configuration](#configuration)<br>
 [Day / Night Logic](#day--night-logic)<br>
