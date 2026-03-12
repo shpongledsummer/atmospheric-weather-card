@@ -56,6 +56,7 @@ You can use either `card_style: standalone` for a self-contained card with dynam
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
+theme: auto # Change to 'light' or 'dark' if your theme is always the same color
 card_style: standalone
 card_height: 110
 text_position: left
@@ -82,6 +83,7 @@ This example shows how to use the `custom_cards` feature to embed the Minimal Fo
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
+theme: auto # Change to 'light' or 'dark' if your theme is always the same color
 card_style: standalone
 card_height: 136
 text_position: left
@@ -135,6 +137,7 @@ This example use the `custom_cards` feature to embed the Minimal Forecast Card (
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
+theme: auto # Change to 'light' or 'dark' if your theme is always the same color
 card_style: standalone
 card_height: 142
 text_position: left
@@ -186,6 +189,7 @@ This is similar to Example 3, but it's larger and uses a horizontal scroll to di
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
+theme: auto # Change to 'light' or 'dark' if your theme is always the same color
 card_style: standalone
 card_height: 260
 sun_entity: sun.sun
@@ -238,6 +242,7 @@ This example embeds a `paper-buttons-row` card using the `custom_cards` feature.
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
+theme: auto # Change to 'light' or 'dark' if your theme is always the same color
 card_style: standalone
 card_height: 134
 text_position: left
@@ -377,6 +382,7 @@ custom_cards:
 
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
+theme: auto # Change to 'light' or 'dark' if your theme is always the same color
 card_style: immersive
 card_height: 150
 stack_order: 1
@@ -420,6 +426,7 @@ To get this working in your setup, make sure you have `paper-buttons-row` instal
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
+theme: auto # Change to 'light' or 'dark' if your theme is always the same color
 full_width: true
 css_mask_horizontal: false
 css_mask_vertical: false
