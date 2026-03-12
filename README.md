@@ -752,8 +752,6 @@ This card handles two separate aspects of its appearance independently:
 * **`theme_entity`**: Add this if your dashboard dynamically switches themes based on schedules or toggles. *(Note: This is a very rare setup, I'm not even sure if anyone else uses this approach. Unless you specifically built your dashboard to do this, you can skip this setting!)*
 * **`theme: night` / `theme: day`**: Add this to force the time axis (permanently showing moon or sun) while letting the color scheme follow your global environment settings. *(Note: This is an unusual edge case, included mostly for the sake of completeness.)*
 
-</details>
-
 <br>
 
 <details>
@@ -891,7 +889,7 @@ Each state triggers a unique combination of particle types, cloud densities, win
 
 <br>
 
-### Performance
+## Performance
 
 Because this card is built around heavy visual animations, it requires more processing power than a standard text dashboard. **It is not recommended for very old or slow wall tablets**, as the animations will likely stutter.
 
