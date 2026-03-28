@@ -29,8 +29,8 @@ A flexible, detail-oriented weather card for Home Assistant. It uses your local 
 [Smart Status Entity](#smart-status-entity)<br>
 [Adding Buttons](#adding-buttons)<br>
 [Weather States](#weather-states)<br>
-[Performance](#performance)
-
+[Performance](#performance)<br>
+[Support the Project](#support-the-project)
 <br>
 
 
@@ -911,3 +911,13 @@ To keep your dashboard running smoothly, the card uses several tricks behind the
 
 > [!IMPORTANT]  
 > The card relies on standard **Hardware Acceleration** to run smoothly. If you experience heavy lag or high CPU usage (especially on Linux or Firefox setups where software rendering is often the default), please double-check that hardware acceleration is enabled in your browser or kiosk app.
+
+---
+
+<br>
+
+## Support the Project
+
+If this card brings a little joy to your daily Home Assistant routine and you'd like to say thanks, a coffee is always appreciated. 
+
+[![Buy me a coffee](https://img.shields.io/badge/Buy_Me_A_Coffee-FFDD00?style=flat-square&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/l66gH8zB82)
