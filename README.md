@@ -1,4 +1,6 @@
 ![Contains](https://img.shields.io/badge/contains-★_shooting_stars-333?style=flat-square)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=flat-square)](https://github.com/hacs/integration)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/shpongledsummer/atmospheric-weather-card?style=flat-square)
 
 ## Atmospheric Weather Card
 
@@ -39,11 +41,14 @@ A flexible, detail-oriented weather card for Home Assistant. It uses your local 
 <details>
 <summary><b>Method 1 — HACS (Recommended)</b></summary>
 
+<br>
+
 1. Open **HACS** in Home Assistant.
-2. Navigate to **Frontend** → **Custom repositories** (via the top-right menu).
-3. Add this repository URL and select the **Dashboard** category.
-4. Click **Install**.
-5. Reload your dashboard.
+2. Navigate to the **Frontend** section.
+3. Click the **Explore & Download Repositories** button (or the `+` icon).
+4. Search for **Atmospheric Weather Card**.
+5. Click **Download**.
+6. Reload your dashboard.
 
 </details>
 
