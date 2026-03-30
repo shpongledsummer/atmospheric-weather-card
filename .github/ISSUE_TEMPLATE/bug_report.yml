@@ -4,14 +4,14 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please complete the troubleshooting steps below before submitting. This helps filter out conflicts with complex layouts or custom themes so I can actually fix the bug faster!
+        Please complete the troubleshooting steps below before submitting. This helps filter out conflicts with complex layouts or custom themes.
   - type: checkboxes
     id: troubleshooting
     attributes:
       label: Required Troubleshooting
-      description: You MUST confirm these steps. Most visual "bugs" are actually caused by custom layouts, grids, or themes.
+      description: Please confirm these steps.
       options:
-        - label: I have tested the card isolated as a single card on a brand new, blank dashboard (outside of any custom layout-cards, grids, or stacks) and the issue persists.
+        - label: I have tested the card isolated as a single card on a brand new, blank dashboard and the issue persists.
           required: true
         - label: I have temporarily switched to the default Home Assistant theme and the issue persists.
           required: true
@@ -33,14 +33,14 @@ body:
     id: card-version
     attributes:
       label: Card Version
-      description: What version of this card are you using?
+      description: What version of the card are you using?
     validations:
       required: true
   - type: dropdown
     id: browser
     attributes:
       label: Browser / App
-      description: Where are you seeing this visual bug?
+      description: Where are you seeing this bug?
       options:
         - Google Chrome
         - Mozilla Firefox
@@ -64,6 +64,6 @@ body:
     id: additional-context
     attributes:
       label: Additional Information
-      description: Add screenshots (highly recommended!), browser console error logs. If you suspect a layout conflict and want to share your full dashboard YAML, drop that here.
+      description: Add screenshots (highly recommended!) or browser console error logs. If you suspect a layout conflict and want to share your full dashboard YAML, drop that here.
     validations:
       required: false
