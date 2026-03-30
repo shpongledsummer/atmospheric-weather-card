@@ -4,9 +4,17 @@ body:
   - type: markdown
     attributes:
       value: |
-        > [!IMPORTANT]
-        > **Your YAML Configuration is Required**
-        > This card has many visual options, so I need to see your exact setup to troubleshoot the issue. Please paste your full YAML configuration below.
+        Please complete the troubleshooting steps below before submitting. This helps filter out conflicts with complex layouts or custom themes so I can actually fix the bug faster!
+  - type: checkboxes
+    id: troubleshooting
+    attributes:
+      label: Required Troubleshooting
+      description: You MUST confirm these steps. Most visual "bugs" are actually caused by custom layouts, grids, or themes.
+      options:
+        - label: I have tested the card isolated as a single card on a brand new, blank dashboard (outside of any custom layout-cards, grids, or stacks) and the issue persists.
+          required: true
+        - label: I have temporarily switched to the default Home Assistant theme and the issue persists.
+          required: true
   - type: textarea
     id: bug-description
     attributes:
@@ -18,14 +26,14 @@ body:
     id: ha-version
     attributes:
       label: Home Assistant Version
-      description: What version of Home Assistant Core are you running? (e.g., 2026.2.1)
+      description: What version of Home Assistant are you running?
     validations:
       required: true
   - type: input
     id: card-version
     attributes:
       label: Card Version
-      description: What version of this weather card are you using?
+      description: What version of this card are you using?
     validations:
       required: true
   - type: dropdown
@@ -47,8 +55,8 @@ body:
   - type: textarea
     id: yaml-code
     attributes:
-      label: Your Card's YAML Configuration
-      description: Paste the exact YAML you are using for the weather card in your Home Assistant dashboard.
+      label: ONLY Your Weather Card's YAML
+      description: Paste the exact YAML for the Atmospheric Weather Card ONLY. Do NOT paste your entire dashboard, wrapping layout cards, or custom grids here.
       render: yaml
     validations:
       required: true
@@ -56,6 +64,6 @@ body:
     id: additional-context
     attributes:
       label: Additional Information
-      description: Add any other context about the problem here, such as screenshots, GIFs, or browser console error logs.
+      description: Add screenshots (highly recommended!), browser console error logs. If you suspect a layout conflict and want to share your full dashboard YAML, drop that here.
     validations:
       required: false
