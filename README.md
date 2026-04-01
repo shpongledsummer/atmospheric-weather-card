@@ -18,21 +18,19 @@ A flexible, detail-oriented weather card for Home Assistant. It uses your local 
 
 > **A note on AI:** I've been pretty skeptical of projects that use AI tools because they often end up as a mess. This project is basically a personal challenge to figure out why that is, and to see what happens when AI is forced to act strictly as an amplifier for things you are already good at.
 
-## Contents
-
-[Installation](#installation)<br>
-[Usage Modes (examples)](#usage-modes)<br>
-[Configuration](#configuration)<br>
-[Day / Night Logic](#day--night-logic)<br>
-[Styling](#styling)<br>
-[Custom House Image](#custom-house-image)<br>
-[Smart Status Entity](#smart-status-entity)<br>
-[Adding Buttons](#adding-buttons)<br>
-[Weather States](#weather-states)<br>
-[Performance](#performance)<br>
-[Support the Project](#support-the-project)
 <br>
 
+## Contents
+
+**Getting Started** · [Installation](#installation) · [Usage Modes (examples)](#usage-modes) · [Setup](#setup)
+
+**Customization** · [Appearance](#appearance) · [Day / Night Logic](#day--night-logic) · [CSS Reference](#css-reference)
+
+**Guides** · [Custom House Image](#custom-house-image) · [Smart Status Entity](#smart-status-entity) · [Adding Buttons](#adding-buttons)
+
+**Reference** · [Weather States](#weather-states) · [Performance](#performance) · [Support the Project](#support-the-project)
+
+<br>
 
 ## Installation
 
@@ -597,16 +595,14 @@ custom_cards:
 > <br>
 > 
 > * **Custom Fonts:** The examples use the **Montserrat** font, which you can download or embed directly from [Google Fonts](https://fonts.google.com/specimen/Montserrat).
-> * **Custom Icons:** You can replace the default icons with your own custom SVG weather icons. See the [Text & Icon Settings](#configuration) for instructions. You can find the icons from the examples [here.](https://github.com/basmilius/weather-icons)
-> * **Embedded Cards:** To keep this card somewhat lightweight and focused on weather visuals, it relies on an embedded custom cards approach. You can read more about this feature [here](#configuration). 
+> * **Custom Icons:** You can replace the default icons with your own custom SVG weather icons. See the [Text & Icons](#appearance) section for instructions. You can find the icons from the examples [here.](https://github.com/basmilius/weather-icons)
+> * **Embedded Cards:** To keep this card somewhat lightweight and focused on weather visuals, it relies on an embedded custom cards approach. You can read more about this feature [here](#appearance). 
 > * **Companion Card:** There is also a companion card built specifically to sit in a scrollable row alongside this one, which you can find [here](https://github.com/shpongledsummer/minimal-forecast-card).
 > </details>
 
 <br>
 
-## Configuration
-
-#### Required & Recommended
+## Setup
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -619,8 +615,12 @@ custom_cards:
 
 <br>
 
+## Appearance
+
+Everything that controls how your card looks — layout, colors, sun/moon, text, and images.
+
 <details>
-<summary><strong>Layout & Dimensions</strong></summary>
+<summary><strong>Card Style & Layout</strong></summary>
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -630,6 +630,21 @@ custom_cards:
 | `full_width` | `boolean` | `false` | Stretches the card edge-to-edge by removing side margins. |
 | `offset` | `string` | `0px` | Shifts the card using CSS margin (e.g., `"-50px 0px 0px 0px"`). Useful when layering cards. |
 | `stack_order` | `number` | *auto* | Manually sets the z-index (e.g., `1`, `0`, `-1`). Useful for forcing an immersive card to display in front of cards with solid backgrounds. |
+| `tap_action` | `object` | — | A standard Home Assistant [tap action](https://www.home-assistant.io/dashboards/actions/). |
+
+</details>
+
+<details>
+<summary><strong>Theme & Filters</strong></summary>
+
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `theme` | `string` | `auto` | Forces the card's appearance. See [Day / Night Logic](#day--night-logic). Accepted values: `dark`, `light`, `night`, `day`. |
+| `filter` | `string` | — | Applies a visual filter preset to the weather canvas. Options: `darken`, `vivid`, `muted`, `warm`. |
+| `moon_style` | `string` | `blue` | The moon's glow color when in **immersive light** mode. Options: `blue`, `yellow`, `purple`, `grey`. |
+| `css_mask_vertical` | `boolean` | `true` | *(Immersive only)* Fades the top and bottom edges. Set to `false` to disable. |
+| `css_mask_horizontal` | `boolean` | `true` | *(Immersive only)* Fades the left and right edges. Set to `false` to disable. |
+| `theme_entity` | `string` | — | An entity whose state dictates the card's appearance. See [Day / Night Logic](#day--night-logic). |
 
 </details>
 
@@ -648,20 +663,37 @@ The sun and moon share a single position and the card automatically swaps them b
 </details>
 
 <details>
-<summary><strong>Visual Styling</strong></summary>
+<summary><strong>Text & Icons</strong></summary>
+
+**Content**
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `theme` | `string` | `auto` | Forces the card's appearance. See [Day / Night Logic](#day--night-logic). Accepted values: `dark`, `light`, `night`, `day`. |
-| `filter` | `string` | — | Applies a visual filter preset to the weather canvas. Options: `darken`, `vivid`, `muted`, `warm`. |
-| `moon_style` | `string` | `blue` | The moon's glow color when in **immersive light** mode. Options: `blue`, `yellow`, `purple`, `grey`. |
-| `css_mask_vertical` | `boolean` | `true` | *(Immersive only)* Fades the top and bottom edges. Set to `false` to disable. |
-| `css_mask_horizontal` | `boolean` | `true` | *(Immersive only)* Fades the left and right edges. Set to `false` to disable. |
+| `top_text_sensor` | `string` | — | The entity to display as the large top text. Defaults to the temperature from your weather entity. Standard entities will automatically translate to your HA language. |
+| `bottom_text_sensor` | `string` | — | The entity to display as the bottom detail line. Defaults to wind speed. Standard entities will automatically translate to your HA language. |
+| `bottom_text_background` | `boolean` | `false` | Adds a styled, semi-transparent background behind the bottom text to improve readability against weather visuals. |
+| `bottom_text_icon` | `string` | *auto* | Forces a specific icon next to the bottom text. Accepts any `mdi:` icon (e.g., `mdi:water-percent`) or the keyword `weather` to automatically show the icon matching the current weather state. Can be combined with `bottom_text_icon_path` to use custom image files instead. You can find the animated SVG icons from the examples [here](https://github.com/basmilius/weather-icons). |
+| `bottom_text_icon_path` | `string` | — | A directory path to custom icon images (e.g., `/local/weather_icons/`). When set, the value of `bottom_text_icon` resolves to an image file instead of an MDI icon. For example, `bottom_text_icon: weather` with `bottom_text_icon_path: /local/weather_icons/` loads `/local/weather_icons/rainy.svg` for rainy weather. |
+| `disable_text` | `boolean` | `false` | Hides all text overlays entirely. |
+| `disable_bottom_text` | `boolean` | `false` | Hides only the bottom detail line. |
+| `disable_bottom_icon` | `boolean` | `false` | Hides only the icon next to the bottom text. |
+
+**Positioning**
+
+By default, text auto-positions to the side opposite the sun and moon. You can manually override this:
+
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `text_position` | `string` | *auto* | Where to place the text. Simple values: `left`, `right`, `center`. Compound values: `top-left`, `bottom-right`, etc. **Split values:** `split-top`, `split-bottom` (anchors text to opposite corners). |
+| `text_alignment` | `string` | `spread` | Controls vertical distribution when using a simple `text_position`. Values: `spread`, `top`, `center`, `bottom`. |
+| `swap_texts` | `boolean` | `false` | Inverts the rendering order of the top and bottom text elements. Combine this with the split layout options for total control over corner placement. |
+
+> **Compound values** like `top-left` or `bottom-center` configure both horizontal and vertical positions simultaneously. The order of the words doesn't matter (e.g., `top-left` and `left-top` work exactly the same). If you set `text_alignment` alongside a compound value, it will override the vertical component of the compound setting.
 
 </details>
 
 <details>
-<summary><strong>Custom Images & Status</strong></summary>
+<summary><strong>Custom Images</strong></summary>
 
 You can add your own images (such as a 3D house model) to the card. This works in both standalone and immersive modes.
 
@@ -678,9 +710,9 @@ You can add your own images (such as a 3D house model) to the card. This works i
 </details>
 
 <details>
-<summary><strong>Custom Cards</strong></summary>
+<summary><strong>Embedded Cards</strong></summary>
 
-You can embed other Home Assistant cards directly inside this card. This is useful for adding additional details like buttons, specific sensors, weather forecasts, graphs etc.
+You can embed other Home Assistant cards directly inside this card. This is useful for adding buttons, specific sensors, weather forecasts, graphs and more.
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -699,42 +731,8 @@ custom_cards:
     entity: weather.your_weather_entity
 ```
 
-</details>
-
-<details>
-<summary><strong>Text & Icon Settings</strong></summary>
-
-| Option | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `top_text_sensor` | `string` | — | The entity to display as the large top text. Defaults to the temperature from your weather entity. Standard entities will automatically translate to your HA language. |
-| `bottom_text_sensor` | `string` | — | The entity to display as the bottom detail line. Defaults to wind speed. Standard entities will automatically translate to your HA language. |
-| `bottom_text_background` | `boolean` | `false` | Adds a styled, semi-transparent background behind the bottom text to improve readability against weather visuals. |
-| `bottom_text_icon` | `string` | *auto* | Forces a specific icon next to the bottom text. Accepts any `mdi:` icon (e.g., `mdi:water-percent`) or the keyword `weather` to automatically show the icon matching the current weather state. Can be combined with `bottom_text_icon_path` to use custom image files instead. You can find the animated SVG icons from the examples [here](https://github.com/basmilius/weather-icons). |
-| `bottom_text_icon_path` | `string` | — | A directory path to custom icon images (e.g., `/local/weather_icons/`). When set, the value of `bottom_text_icon` resolves to an image file instead of an MDI icon. For example, `bottom_text_icon: weather` with `bottom_text_icon_path: /local/weather_icons/` loads `/local/weather_icons/rainy.svg` for rainy weather. |
-| `disable_text` | `boolean` | `false` | Hides all text overlays entirely. |
-| `disable_bottom_text` | `boolean` | `false` | Hides only the bottom detail line. |
-| `disable_bottom_icon` | `boolean` | `false` | Hides only the icon next to the bottom text. |
-
-**Text Positioning**
-By default, text auto-positions to the side opposite the sun and moon. You can manually override this:
-
-| Option | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `text_position` | `string` | *auto* | Where to place the text. Simple values: `left`, `right`, `center`. Compound values: `top-left`, `bottom-right`, etc. **Split values:** `split-top`, `split-bottom` (anchors text to opposite corners). |
-| `text_alignment` | `string` | `spread` | Controls vertical distribution when using a simple `text_position`. Values: `spread`, `top`, `center`, `bottom`. |
-| `swap_texts` | `boolean` | `false` | Inverts the rendering order of the top and bottom text elements. Combine this with the split layout options for total control over corner placement. |
-
-> **Compound values** like `top-left` or `bottom-center` configure both horizontal and vertical positions simultaneously. The order of the words doesn't matter (e.g., `top-left` and `left-top` work exactly the same). If you set `text_alignment` alongside a compound value, it will override the vertical component of the compound setting.
-
-</details>
-
-<details>
-<summary><strong>Logic & Interactivity</strong></summary>
-
-| Option | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `theme_entity` | `string` | — | An entity whose state dictates the card's appearance. See [Day / Night Logic](#day--night-logic). |
-| `tap_action` | `object` | — | A standard Home Assistant [tap action](https://www.home-assistant.io/dashboards/actions/). |
+> [!TIP]
+> For custom button layouts, I highly recommend using `paper-buttons-row` from HACS. It gives you the flexibility to build incredibly detailed and beautiful designs. Check out the advanced [examples](#usage-modes) for a few prebuilt layouts you can customize.
 
 </details>
 
@@ -805,15 +803,16 @@ The card evaluates these sources **in order** and applies the first match.
 > [!TIP]
 > <details>
 > <summary>Sync your phone dark/light mode with the sun for best effect</summary>
->
-> Android (and possibly iOS) can auto-toggle dark mode based on sunrise/sunset. If your HA theme follows the system setting, your entire dashboard and this card stay in sync with the real day/night cycle — which is basically what this card was built for and where it looks best.
-> </details>
+> <br>
+> Android (and possibly iOS) can auto-toggle dark mode based on sunrise/sunset. If your HA theme follows the system setting, your entire dashboard and this card stay in sync with the real day/night cycle, which is basically what this card was built for and where it looks best.
+</details>
 
 <br>
 
-## Styling
+## CSS Reference
 
-In addition to the [Style Settings](#configuration) detailed above, you can fine-tune the card's appearance using CSS variables in your theme or via `card-mod`.
+> [!TIP]
+> Most users won't need these. The options above cover all common use cases. These CSS variables are here for fine-tuning specific details like font sizes, shadows, and spacing — either in your theme or via `card_mod`.
 
 <details>
 <summary><b>Card Variables</b></summary>
@@ -906,10 +905,7 @@ The status feature dynamically swaps the displayed house/custom image when a mon
 
 ## Adding Buttons
 
-You can embed buttons (or any other Home Assistant card like a graph, another weather card, sensors etc.) directly inside this card using the `custom_cards` feature. The **Custom Cards** block in the [Configuration](#configuration) section shows how to set this up and explains the layout options. Also mostly all card [examples](#usage-modes) make use of the feature and show different use cases.
-
-> [!TIP]
-> For custom layouts, I highly recommend using `paper-buttons-row` from HACS. It gives you the flexibility to build incredibly detailed and beautiful designs. If you want to get creative, check out the advanced [examples](#usage-modes) for a few prebuilt layouts you can customize.
+You can embed buttons (or any other Home Assistant card like a graph, another weather card, sensors etc.) directly inside this card using the `custom_cards` feature. See [Embedded Cards](#appearance) in the Appearance section for setup and layout options, and the [examples](#usage-modes) for different use cases.
 
 <br>
 
