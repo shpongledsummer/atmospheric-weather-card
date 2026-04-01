@@ -802,7 +802,7 @@ The card evaluates these sources **in order** and applies the first match.
 
 > [!TIP]
 > <details>
-> <summary>Sync your phone dark/light mode with the sun for best effect</summary>
+> <summary>Sync your phone dark/light mode with the sun for <strong>best effect. </strong></summary>
 > <br>
 > Android (and possibly iOS) can auto-toggle dark mode based on sunrise/sunset. If your HA theme follows the system setting, your entire dashboard and this card stay in sync with the real day/night cycle, which is basically what this card was built for and where it looks best.
 </details>
@@ -811,7 +811,7 @@ The card evaluates these sources **in order** and applies the first match.
 
 ## CSS Reference
 
-> [!TIP]
+> [!NOTE]
 > Most users won't need these. The options above cover all common use cases. These CSS variables are here for fine-tuning specific details like font sizes, shadows, and spacing — either in your theme or via `card_mod`.
 
 <details>
