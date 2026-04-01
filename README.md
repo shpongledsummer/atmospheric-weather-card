@@ -615,7 +615,7 @@ custom_cards:
 | `moon_phase_entity` | `string` | — | *Recommended.* Displays the correct moon phase (e.g., `sensor.moon_phase`). |
 
 > [!IMPORTANT]
-> If you keep your dashboard in dark mode or light mode all the time, remember to set `theme: dark` or `theme: light`. This makes sure the card colors match the rest of your dashboard.
+> The card will automatically follow your theme with the default `theme: auto` setting and will switch between day and night based on your `sun_entity`. Make sure your HA theme is correctly set up for this to work right. If you want to always force the card to a dark or light color you can additionally set `theme: dark` or `theme: light`.
 
 <br>
 
@@ -625,7 +625,7 @@ custom_cards:
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `card_style` | `string` | `immersive` | Set to `standalone` for a solid background with text, or `immersive` for a transparent background. |
-| `card_height` | `number` · `string` | `200` | Height in pixels. Numbers are automatically treated as px (e.g., `110` becomes `110px`). |
+| `card_height` | `number` · `string` | `200` | Height in pixels. Numbers are automatically treated as px (e.g., `110` becomes `110px`). **Set to `auto`** to dynamically fill the available height (for grid layouts). |
 | `square` | `boolean` | `false` | Forces the card into a perfect square. Highly useful for grid layouts. |
 | `full_width` | `boolean` | `false` | Stretches the card edge-to-edge by removing side margins. |
 | `offset` | `string` | `0px` | Shifts the card using CSS margin (e.g., `"-50px 0px 0px 0px"`). Useful when layering cards. |
@@ -636,7 +636,7 @@ custom_cards:
 <details>
 <summary><strong>Sun & Moon</strong></summary>
 
-The sun and moon share a single position and the card automatically swaps them based on how you [configure the card.](#day--night-logic)
+The sun and moon share a single position and the card automatically swaps them based on how you [configure the card.](#day--night-logic) The card also automatically generates a dynamic **sunrise and sunset effect** based on the sun's elevation, and **rotates the moon** accurately based on your Home Assistant latitude setting.
  
 
 | Option | Type | Default | Description |
@@ -706,8 +706,9 @@ custom_cards:
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `top_text_sensor` | `string` | — | The entity to display as the large top text. Defaults to the temperature from your weather entity. |
-| `bottom_text_sensor` | `string` | — | The entity to display as the bottom detail line. Defaults to wind speed. |
+| `top_text_sensor` | `string` | — | The entity to display as the large top text. Defaults to the temperature from your weather entity. Standard entities will automatically translate to your HA language. |
+| `bottom_text_sensor` | `string` | — | The entity to display as the bottom detail line. Defaults to wind speed. Standard entities will automatically translate to your HA language. |
+| `bottom_text_background` | `boolean` | `false` | Adds a styled, semi-transparent background behind the bottom text to improve readability against weather visuals. |
 | `bottom_text_icon` | `string` | *auto* | Forces a specific icon next to the bottom text. Accepts any `mdi:` icon (e.g., `mdi:water-percent`) or the keyword `weather` to automatically show the icon matching the current weather state. Can be combined with `bottom_text_icon_path` to use custom image files instead. You can find the animated SVG icons from the examples [here](https://github.com/basmilius/weather-icons). |
 | `bottom_text_icon_path` | `string` | — | A directory path to custom icon images (e.g., `/local/weather_icons/`). When set, the value of `bottom_text_icon` resolves to an image file instead of an MDI icon. For example, `bottom_text_icon: weather` with `bottom_text_icon_path: /local/weather_icons/` loads `/local/weather_icons/rainy.svg` for rainy weather. |
 | `disable_text` | `boolean` | `false` | Hides all text overlays entirely. |
@@ -750,25 +751,34 @@ This card handles two separate aspects of its appearance independently:
 
 <br>
 
-### Which setting should I use?
+<details>
+<summary><strong>Which setting should I use?</strong></summary>
 
-**The Base Requirement**
-* **`sun_entity`**: This aligns the timeline with your actual sunrise and sunset. Without it, the card just defaults to a constant "day" state.
+**`sun_entity`** is the only setting you really need. It syncs the timeline to your actual sunrise and sunset, so the card shows the sun, moon, and stars at the right times. Without it, the card is stuck in permanent "day" mode.
 
-**Optional Add-ons** *(Use these alongside `sun_entity` to customize behavior)*
+Everything else is automatic — the card follows your Home Assistant's dark/light mode by default (`theme: auto`). Just make sure your [theme is set up correctly](https://www.home-assistant.io/integrations/frontend/).
 
-* **`theme: dark` / `theme: light`**: Add this if your dashboard is permanently set to dark or light mode. It locks the card to that specific color scheme.
-* **`theme_entity`**: Add this if your dashboard dynamically switches themes based on schedules or toggles. *(Note: This is a very rare setup, I'm not even sure if anyone else uses this approach. Unless you specifically built your dashboard to do this, you can skip this setting!)*
-* **`theme: night` / `theme: day`**: Add this to force the time axis (permanently showing moon or sun) while letting the color scheme follow your global environment settings. *(Note: This is an unusual edge case, included mostly for the sake of completeness.)*
-
-<br>
+</details>
 
 <details>
-<summary><strong>How Each Axis is Resolved</strong></summary>
+<summary><strong>Optional overrides</strong></summary>
 
-The card evaluates these sources **in exact order** and applies the first match it finds.
+These let you override the automatic behavior for specific use cases:
 
-<strong>Time Axis</strong> — Sun or Moon?
+| Setting | What it does |
+| :--- | :--- |
+| `theme: dark` / `light` | Forces the card's color scheme, ignoring HA's global theme. |
+| `theme: night` / `day` | Forces the time axis (sun or moon) while colors still follow your global theme. Unusual edge case. |
+| `theme_entity` | Reads a custom entity state instead of HA's native dark mode. Rarely needed anymore, kept for highly custom setups. |
+
+</details>
+
+<details>
+<summary><strong>How each axis is resolved</strong></summary>
+
+The card evaluates these sources **in order** and applies the first match.
+
+**Time Axis** — Sun or Moon?
 
 | Priority | Source | Triggers Night When… |
 | :---: | :--- | :--- |
@@ -777,18 +787,27 @@ The card evaluates these sources **in exact order** and applies the first match 
 | 3 | `theme_entity` | State matches a defined night value.* |
 | 4 | *Fallback* | Always defaults to day. |
 
-<strong>Color Scheme Axis</strong> — Dark or Light?
+**Color Scheme Axis** — Dark or Light?
 
 | Priority | Source | Triggers Dark When… |
 | :---: | :--- | :--- |
 | 1 | `theme: dark` or `theme: light` | Forced manually via config. |
 | 2 | `theme_entity` | State matches a defined night value.* |
-| 3 | `sun_entity` | State is `below_horizon`. |
-| 4 | *System* | Follows Home Assistant's dark mode toggle in the sidebar. |
+| 3 | *System* | Follows Home Assistant's dark mode toggle. |
+| 4 | `sun_entity` | State is `below_horizon` (fallback if system theme unavailable). |
 
-*\* Defined night values include: `dark`, `night`, `evening`, `on`, `true`, `below_horizon`*
+*\* Defined night values: `dark`, `night`, `evening`, `on`, `true`, `below_horizon`*
 
 </details>
+
+<br>
+
+> [!TIP]
+> <details>
+> <summary>Sync your phone dark/light mode with the sun for best effect</summary>
+>
+> Android (and possibly iOS) can auto-toggle dark mode based on sunrise/sunset. If your HA theme follows the system setting, your entire dashboard and this card stay in sync with the real day/night cycle — which is basically what this card was built for and where it looks best.
+> </details>
 
 <br>
 
@@ -826,6 +845,10 @@ In addition to the [Style Settings](#configuration) detailed above, you can fine
 | `--awc-bottom-font-size` | `clamp(15px, 5cqmin, 26px)` | Bottom text size (dynamically responsive). |
 | `--awc-bottom-font-weight` | `500` | Bottom text weight. |
 | `--awc-bottom-opacity` | `0.7` | Opacity of the bottom text. |
+| `--awc-bottom-bg-color` | `color-mix(...)` | Background color when `bottom_text_background` is enabled. |
+| `--awc-bottom-bg-padding` | `6px 12px` | Padding for the bottom text background. |
+| `--awc-bottom-bg-radius` | `12px` | Border radius for the bottom text background. |
+| `--awc-bottom-bg-filter` | `blur(12px) saturate(130%)` | Backdrop filter for the bottom text background. |
 | `--awc-icon-size` | `1.1em` | Size of the bottom icon. |
 | `--awc-text-gap` | `10px` | Vertical spacing between the top and bottom text elements. |
 | `--awc-text-side-offset` | `4px` | Extra horizontal inset added to the text padding. |
