@@ -16,7 +16,7 @@ A flexible, detail-oriented weather card for Home Assistant. It uses your local 
 
 <br>
 
-> **A note on AI:** I've been pretty skeptical of projects that use AI tools because they often end up as a mess. This project is basically a personal challenge to figure out why that is, and to see what happens when AI is forced to act strictly as an amplifier for things you are already good at.
+> **How I use AI here:** AI can easily turn a codebase into a tangled mess if you aren't careful. I'm using AI on this project strictly as a helper for things I'm already good at, but lack the time or patience to do myself. (Well, except CSS. AI sucks at that.)
 
 <br>
 
