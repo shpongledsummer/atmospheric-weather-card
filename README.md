@@ -756,6 +756,8 @@ This card handles two separate aspects of its appearance independently:
 
 Everything else is automatic — the card follows your Home Assistant's dark/light mode by default (`theme: auto`). Just make sure your [theme is set up correctly](https://www.home-assistant.io/integrations/frontend/).
 
+The following optional overrides are useful to adapt the card to the wildly different dashboard setups which are possible with HA.
+
 </details>
 
 <details>
@@ -767,7 +769,7 @@ These let you override the automatic behavior for specific use cases:
 | :--- | :--- |
 | `theme: dark` / `light` | Forces the card's color scheme, ignoring HA's global theme. |
 | `theme: night` / `day` | Forces the time axis (sun or moon) while colors still follow your global theme. Unusual edge case. |
-| `theme_entity` | Reads a custom entity state instead of HA's native dark mode. Rarely needed anymore, kept for highly custom setups. |
+| `theme_entity` | Reads a custom entity state instead of HA's native dark mode. This allows you to create your own logic for the appearance, for example based on a jinja template or an automation. |
 
 </details>
 
