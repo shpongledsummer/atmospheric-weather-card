@@ -1,6 +1,6 @@
 /**
  * ATMOSPHERIC WEATHER CARD
- * Version: 3.3
+ * Version: 3.4
  * * A custom Home Assistant card that renders animated weather effects.
  * * https://github.com/shpongledsummer/atmospheric-weather-card
  */
@@ -54,7 +54,7 @@ const FALLBACK_WEATHER = Object.freeze({
  */
 const WEATHER_MAP = Object.freeze({
     'clear-night':      Object.freeze({ type: 'stars', count: 280, cloud: 4,  wind: 0.1, sunCloudWarm: false, atmosphere: 'night', stars: 420 }),
-    'cloudy':           Object.freeze({ type: 'cloud', count: 0,   cloud: 24, wind: 0.3, dark: false, sunCloudWarm: false, sunClouds: true, atmosphere: 'overcast', stars: 120, scale: 1.6 }),
+    'cloudy':           Object.freeze({ type: 'cloud', count: 0,   cloud: 24, wind: 0.3, dark: false, sunCloudWarm: false, sunClouds: true, atmosphere: 'overcast', stars: 120, scale: 1.8 }),
     'fog':              Object.freeze({ type: 'fog',   count: 0,   cloud: 18, wind: 0.2, sunCloudWarm: false, atmosphere: 'mist', foggy: true, stars: 125, scale: 1.4 }),
     'hail':             Object.freeze({ type: 'hail',  count: 150, cloud: 17, wind: 0.8, dark: true, sunCloudWarm: false, atmosphere: 'storm', stars: 50, scale: 1.2 }),
     'lightning':        Object.freeze({ type: 'rain',  count: 200, cloud: 24, wind: 2.0, thunder: true, dark: true, sunCloudWarm: false, atmosphere: 'storm', stars: 50, scale: 1.5 }),
@@ -66,8 +66,8 @@ const WEATHER_MAP = Object.freeze({
     'partlycloudy':     Object.freeze({ type: 'cloud', count: 0,   cloud: 10, wind: 0.2, sunCloudWarm: true, atmosphere: 'fair', stars: 125, scale: 1.0 }),
     'windy':            Object.freeze({ type: 'cloud', count: 0,   cloud: 18, wind: 2.2, windVapor: true, sunCloudWarm: false, atmosphere: 'windy', stars: 125, scale: 1.2 }),
     'windy-variant':    Object.freeze({ type: 'cloud', count: 0,   cloud: 15, wind: 2.4, dark: false, windVapor: true, sunCloudWarm: false, atmosphere: 'windy', stars: 125, scale: 1.2 }),
-    'sunny':            Object.freeze({ type: 'sun',   count: 0,   cloud: 5,  wind: 0.1, sunCloudWarm: true, atmosphere: 'clear', stars: 0 }),
-    'exceptional':      Object.freeze({ type: 'sun',   count: 0,   cloud: 0,  wind: 0.1, sunCloudWarm: true, atmosphere: 'exceptional', stars: 420 }),
+    'sunny':            Object.freeze({ type: 'sun',   count: 0,   cloud: 5,  wind: 0.1, sunCloudWarm: false, atmosphere: 'clear', stars: 0 }),
+    'exceptional':      Object.freeze({ type: 'sun',   count: 0,   cloud: 0,  wind: 0.1, sunCloudWarm: false, atmosphere: 'exceptional', stars: 420 }),
     'default':          Object.freeze({ type: 'none',  count: 0,   cloud: 6,  wind: 0.1, sunCloudWarm: false, atmosphere: 'fair', stars: 260 })
 });
 
@@ -261,7 +261,7 @@ const STAR_PALETTE_GLOW = Object.freeze([
 /**
  * HSL → RGB conversion utility (zero-allocation, returns r,g,b in 0-255).
  * Used at star init time to pre-compute color strings, eliminating per-frame
- * hsla() template literal allocation for 280+ stars × 60fps.
+ * hsla() template literal allocation for 280+ stars.
  */
 function hslToRgb(h, s, l) {
     h /= 360; s /= 100; l /= 100;
@@ -328,7 +328,7 @@ const CLOUD_TYPE_POOL = Object.freeze({
     _default: Object.freeze(['organic','organic','organic','cumulus','cumulus','cumulus','cumulus','stratus','stratus','stratus'])
 });
 
-// Ring buffer capacities (Phase 1: zero-allocation trail management)
+// Ring buffer capacities for zero-allocation trail management
 const TRAIL_CAP_SHOOTING_STAR = 22;
 const TRAIL_CAP_COMET = 100;
 const TRAIL_CAP_PLANE = 500;
@@ -854,16 +854,16 @@ class AtmosphericWeatherCard extends HTMLElement {
             /* Day backgrounds — driven by CSS custom properties */
             #card-root.standalone.scheme-day {
                 --bg-hl: 255,255,255; --bg-a1: 0.45; --bg-a2: 0.10; --bg-s2: 40%; --bg-s3: 70%;
-                --bg-c1: #4A95D6; --bg-c2: #89C4F4; --bg-c3: #D8F0FE;
+                --bg-c1: #4290D4; --bg-c2: #82C0F2; --bg-c3: #D2EDFE;
             }
-            #card-root.standalone.scheme-day.weather-exceptional { --bg-a1:0.50; --bg-a2:0.15; --bg-c1:#3B82C4; --bg-c2:#7CB9E8; --bg-c3:#CDE8FD; }
-            #card-root.standalone.scheme-day.weather-partly { --bg-a2:0.10; --bg-s2:45%; --bg-s3:75%; --bg-c1:#66A5D9; --bg-c2:#9BCBEE; --bg-c3:#E6F4FB; }
-            #card-root.standalone.scheme-day.weather-overcast{--bg-hl:235, 240, 245;--bg-a1:0.35;--bg-a2:0.08;--bg-s2:50%;--bg-s3:80%;--bg-c1:#8FB4D5;--bg-c2:#C2D6E0;--bg-c3:#EDF4FB;}
-			#card-root.standalone.scheme-day.weather-rainy { --bg-hl:208,223,238; --bg-a1:0.45; --bg-a2:0.10; --bg-s2:45%; --bg-s3:75%; --bg-c1:#F2F7F9; --bg-c2:#DDE9EE; --bg-c3:#C7D4DF; }
-			#card-root.standalone.scheme-day.weather-pouring { --bg-hl:194,204,215; --bg-a1:0.38; --bg-a2:0.08; --bg-s2:45%; --bg-s3:75%; --bg-c1:#D2DCE2; --bg-c2:#B8C7D1; --bg-c3:#A1AFBA; }
-			#card-root.standalone.scheme-day.weather-storm { --bg-hl:180,195,210; --bg-a1:0.40; --bg-a2:0.08; --bg-s2:45%; --bg-s3:75%; --bg-c1:#92A5B0; --bg-c2:#B3C5CE; --bg-c3:#DDEBEE; }
-			#card-root.standalone.scheme-day.weather-snow { --bg-hl:240,245,250; --bg-a1:0.45; --bg-a2:0.15; --bg-s2:45%; --bg-s3:75%; --bg-c1:#B5C8DA; --bg-c2:#D8E5F0; --bg-c3:#F2F7FB; }
-            #card-root.standalone.scheme-day.weather-fog { --bg-hl:245,250,255; --bg-a1:0.70; --bg-a2:0.25; --bg-s2:50%; --bg-s3:85%; --bg-c1:#D9E3ED; --bg-c2:#EDF2F7; --bg-c3:#FDFEFF; }
+            #card-root.standalone.scheme-day.weather-exceptional { --bg-a1:0.50; --bg-a2:0.15; --bg-c1:#3580C2; --bg-c2:#76B6E6; --bg-c3:#C8E5FC; }
+            #card-root.standalone.scheme-day.weather-partly { --bg-a2:0.10; --bg-s2:45%; --bg-s3:75%; --bg-c1:#5599D6; --bg-c2:#8EC3F0; --bg-c3:#D9EEFC; }
+            #card-root.standalone.scheme-day.weather-overcast { --bg-a1:0.40; --bg-a2:0.10; --bg-s2:45%; --bg-s3:78%; --bg-c1:#66A5D9; --bg-c2:#9BCBEE; --bg-c3:#E6F4FB; }
+			#card-root.standalone.scheme-day.weather-rainy { --bg-hl:210,228,248; --bg-a1:0.38; --bg-a2:0.10; --bg-s2:45%; --bg-s3:75%; --bg-c1:#8AB4D0; --bg-c2:#78A6C6; --bg-c3:#6598BC; }
+			#card-root.standalone.scheme-day.weather-pouring { --bg-hl:195,218,240; --bg-a1:0.35; --bg-a2:0.08; --bg-s2:45%; --bg-s3:75%; --bg-c1:#7EA4C0; --bg-c2:#6E96B6; --bg-c3:#5E88AC; }
+			#card-root.standalone.scheme-day.weather-storm { --bg-hl:180,210,238; --bg-a1:0.32; --bg-a2:0.08; --bg-s2:45%; --bg-s3:75%; --bg-c1:#5E88AC; --bg-c2:#7EA6C4; --bg-c3:#A8C8DC; }
+			#card-root.standalone.scheme-day.weather-snow { --bg-hl:240,245,250; --bg-a1:0.45; --bg-a2:0.15; --bg-s2:45%; --bg-s3:75%; --bg-c1:#8DB8D6; --bg-c2:#B4D4E8; --bg-c3:#DAECF5; }
+            #card-root.standalone.scheme-day.weather-fog { --bg-hl:235,245,252; --bg-a1:0.55; --bg-a2:0.20; --bg-s2:50%; --bg-s3:85%; --bg-c1:#AECADE; --bg-c2:#CADDE9; --bg-c3:#E5EFF6; }
 			
 			/* Night backgrounds — same template, dark palette */
             #card-root.standalone.scheme-night {
@@ -920,6 +920,17 @@ class AtmosphericWeatherCard extends HTMLElement {
             #bottom-text > span { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
             #bottom-text ha-icon,
             #bottom-text ha-state-icon { --mdc-icon-size: var(--awc-icon-size, 1.1em); opacity: 0.9; }
+			
+            #bottom-text.with-bg {
+                padding: var(--awc-bottom-bg-padding, 6px 12px);
+                background: var(--awc-bottom-bg-color, color-mix(in srgb, var(--ha-card-background, var(--card-background-color, #fff)) 12%, transparent));
+                backdrop-filter: var(--awc-bottom-bg-filter, blur(12px) saturate(130%));
+                -webkit-backdrop-filter: var(--awc-bottom-bg-filter, blur(12px) saturate(130%));
+                border-radius: var(--awc-bottom-bg-radius, var(--awc-card-border-radius, var(--ha-card-border-radius, 12px)));
+                box-shadow: var(--bottom-bg-shadow);
+				width: fit-content;
+                align-items: center;
+            }
 			
 			#bottom-text img.custom-bottom-icon {
                 position: relative;
@@ -1131,6 +1142,10 @@ class AtmosphericWeatherCard extends HTMLElement {
             this.style.height = 'auto';
             this.style.minHeight = '0';
             this.style.aspectRatio = '1 / 1';
+        } else if (String(config.card_height).toLowerCase() === 'auto') {
+            this.style.height = '100%';
+            this.style.minHeight = '0';
+            this.style.aspectRatio = 'auto';
         } else {
             const heightConfig = config.card_height || '200px';
             const cssHeight = typeof heightConfig === 'number' ? `${heightConfig}px` : heightConfig;
@@ -1253,6 +1268,11 @@ class AtmosphericWeatherCard extends HTMLElement {
             for (const child of this._customCardElements) child.hass = hass;
         }
 
+        // Moon rotation
+        if (this._moonRotationRad === undefined && hass.config && hass.config.latitude !== undefined) {
+            this._moonRotationRad = (51 - hass.config.latitude) * (Math.PI / 180);
+        }
+
         // 1. Resolve entity references
         const wEntity = (this._config.weather_entity && hass.states[this._config.weather_entity]) || FALLBACK_WEATHER;
         const sunEntity = this._config.sun_entity ? hass.states[this._config.sun_entity] : null;
@@ -1368,8 +1388,8 @@ class AtmosphericWeatherCard extends HTMLElement {
     // Unified axis resolution. Returns { isTimeNight, isThemeDark, isImageNight }.
     // Axes share entity reads but differ in priority:
     //   Time:  mode → sun → theme → false
-    //   Theme: mode → theme → sun → sysDark
-    //   Image: mode → theme → sun → sysDark
+    //   Theme: mode → theme → sysDark → sun → false
+    //   Image: mode → theme → sysDark → sun → false
     _resolveAxes(sunEntity, themeEntity, sysDark) {
         // 'theme' is the canonical config key; 'mode' kept as legacy fallback
         const modeRaw = this._config.theme || this._config.mode;
@@ -1386,7 +1406,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         const sunIsBelowHorizon = sunState === 'below_horizon';
         const sunIsNight = sunIsBelowHorizon || (sunState !== null && NIGHT_MODES.includes(sunState));
 
-        // Time axis: mode → sun → theme → false
+        // Time axis: mode → sun → theme → false  (unchanged — sun drives content)
         let isTimeNight;
         if      (mode === 'night') isTimeNight = true;
         else if (mode === 'day')   isTimeNight = false;
@@ -1394,21 +1414,26 @@ class AtmosphericWeatherCard extends HTMLElement {
         else if (themeValid)       isTimeNight = themeIsNight;
         else                       isTimeNight = false;
 
-        // Theme axis: mode → theme → sun → sysDark
+        // Theme axis: mode → theme → sysDark → sun → false
+        // sysDark (hass.themes.darkMode) now outranks sun for visual contrast,
+        // so the card respects the HA system/profile dark-mode setting.
+        // Sun remains a fallback for setups where hass.themes is unavailable.
         let isThemeDark;
-        if      (mode === 'dark')  isThemeDark = true;
-        else if (mode === 'light') isThemeDark = false;
-        else if (themeValid)       isThemeDark = themeIsNight;
-        else if (sunEntity)        isThemeDark = sunIsNight;
-        else                       isThemeDark = !!sysDark;
+        if      (mode === 'dark')          isThemeDark = true;
+        else if (mode === 'light')         isThemeDark = false;
+        else if (themeValid)               isThemeDark = themeIsNight;
+        else if (sysDark !== undefined)    isThemeDark = !!sysDark;
+        else if (sunEntity)                isThemeDark = sunIsNight;
+        else                               isThemeDark = false;
 
-        // Image axis: mode → theme → sun → sysDark
+        // Image axis: mode → theme → sysDark → sun → false
         let isImageNight;
-        if      (mode === 'dark' || mode === 'night') isImageNight = true;
-        else if (mode === 'light' || mode === 'day')  isImageNight = false;
-        else if (themeValid)                          isImageNight = themeIsNight;
-        else if (sunEntity)                           isImageNight = sunIsNight;
-        else                                          isImageNight = !!sysDark;
+        if      (mode === 'dark' || mode === 'night')  isImageNight = true;
+        else if (mode === 'light' || mode === 'day')   isImageNight = false;
+        else if (themeValid)                           isImageNight = themeIsNight;
+        else if (sysDark !== undefined)                isImageNight = !!sysDark;
+        else if (sunEntity)                            isImageNight = sunIsNight;
+        else                                           isImageNight = false;
 
         return { isTimeNight, isThemeDark, isImageNight };
     }
@@ -1656,14 +1681,24 @@ class AtmosphericWeatherCard extends HTMLElement {
         const showText = this._config.disable_text !== true;
         const showIcon = this._config.disable_bottom_icon !== true;
         const showBottom = this._config.disable_bottom_text !== true;
+        const showBottomBg = this._config.bottom_text_background === true;
+        
         this._elements.textWrapper.style.display = showText ? '' : 'none';
         this._elements.bottomText.style.display = showBottom ? '' : 'none';
+        this._elements.bottomText.classList.toggle('with-bg', showBottomBg);
 
         // Top text: custom sensor (any state type) or temperature attribute
         let topVal, topUnit;
         if (this._config.top_text_sensor) {
             const s = hass.states[this._config.top_text_sensor];
-            topVal = s ? s.state : 'N/A';
+            // Localize text states (weather conditions, binary sensors, etc.)
+            if (s) {
+                const raw = s.state;
+                const isTextState = !raw || isNaN(parseFloat(raw)) || !isFinite(raw);
+                topVal = (isTextState && hass.formatEntityState) ? hass.formatEntityState(s) : raw;
+            } else {
+                topVal = 'N/A';
+            }
             topUnit = s?.attributes.unit_of_measurement || '';
         } else {
             topVal = wEntity.attributes.temperature;
@@ -1692,7 +1727,10 @@ class AtmosphericWeatherCard extends HTMLElement {
         if (this._config.bottom_text_sensor) {
             const sensor = hass.states[this._config.bottom_text_sensor];
             if (sensor) {
-                bottomValue = sensor.state;
+                // Localize text states (weather conditions, binary sensors, etc.)
+                const raw = sensor.state;
+                const isTextState = !raw || isNaN(parseFloat(raw)) || !isFinite(raw);
+                bottomValue = (isTextState && hass.formatEntityState) ? hass.formatEntityState(sensor) : raw;
                 bottomUnit = sensor.attributes.unit_of_measurement || '';
                 sensorObj = sensor;
                 iconStrategy = 'native'; // Base strategy for sensors
@@ -1914,9 +1952,11 @@ class AtmosphericWeatherCard extends HTMLElement {
             weather_entity: 'weather.your_weather_entity',
             card_style: 'standalone',
             card_height: 110,
+			theme: auto,
             sun_moon_x_position: -55,
             sun_moon_y_position: 55,
             top_text_sensor: 'sensor.your_custom_sensor',
+			swap_text: false,
             disable_text: false,
             sun_entity: 'sun.sun',
             moon_phase_entity: 'sensor.your_moon_phase_entity',
@@ -1973,6 +2013,8 @@ class AtmosphericWeatherCard extends HTMLElement {
     /**
      * Golden Hour — warms glow, adds ambient wash, and slightly dims the blue sky.
      * Clear/fair/exceptional only. Eases in from 15° -> peaks at 2° -> fades by -6°.
+     * Applies symmetrically to both sunrise and sunset; the intensity curve
+     * is elevation-based so direction is irrelevant.
      * Vars: --g-rgb, --g-op, --c-r, --gh-wash, --ambient-dim.
      */
     _applyGoldenHour(sunEntity, params) {
@@ -1981,8 +2023,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         const atm = params?.atmosphere || '';
 
         // Clear all golden hour CSS vars when inactive
-        const inactive = this._isTimeNight ||
-            (atm !== 'clear' && atm !== 'fair' && atm !== 'exceptional');
+        const inactive = atm !== 'clear' && atm !== 'fair' && atm !== 'exceptional';
         if (inactive) {
             if (this._prevGhWash !== '0') { root.style.setProperty('--gh-wash', '0'); this._prevGhWash = '0'; }
             if (this._prevAmbDim !== '0') { root.style.setProperty('--ambient-dim', '0'); this._prevAmbDim = '0'; }
@@ -1999,7 +2040,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                 t = s * s; 
             }
             else if (e <= 2 && e >= -6) { 
-                // Linear fade out into the night
+                // Peak zone through sub-horizon glow (sunrise dawn / sunset afterglow)
                 t = (e + 6) / 8; 
             }
         }
@@ -2010,8 +2051,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             return; 
         }
 
-        // Allow full 100% intensity for fair/partlycloudy skies.
-        // This unleashes the dramatic, colorful sunsets those weather states deserve!
+        // Unclamped intensity for clear/fair skies
         const i = Math.min(1, t);
 
         // 1. Color: Base yellow -> Soft sunset orange (255, 170, 50)
@@ -2308,9 +2348,9 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
 
         // Celestial accent clouds: daytime when flagged, OR any non-severe night
-        // (moon-lit wisps enhance rain/cloud/snow moods; skip thunder/hail)
+        // (moon-lit wisps enhance rain/cloud/snow moods; skip thunder/hail and clear nights)
         const wantsCelestialClouds = p.sunCloudWarm || p.sunClouds
-            || (this._isNight && !p.thunder && p.type !== 'hail');
+            || (this._isNight && !p.thunder && p.type !== 'hail' && p.atmosphere !== 'night');
         if (wantsCelestialClouds) {
             this._initCelestialClouds(w, h);
         }
@@ -2327,7 +2367,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             this._initDustMotes(w, h);
         }
 
-        // Phase 2: Bake cloud puff compositions onto offscreen canvases
+        // Bake cloud puff compositions onto offscreen canvases
         this._bakeAllClouds();
     }
 
@@ -2469,6 +2509,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         if (totalClouds <= 0) return;
         const configScale = p.scale || 1.0;
         const isStorm     = p.dark;
+        const isHeavy     = totalClouds >= 18;
 
         // ── Height-proportional cloud anatomy ──
         // baseUnit drives the CloudShapeGenerator so internal puff proportions
@@ -2492,7 +2533,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         for (let c = 0; c < clusterCount; c++) {
             const baseX = w * ((c + 0.5) / clusterCount);
             clusters.push({
-                x: baseX + (Math.random() - 0.5) * w * 0.4,
+                x: baseX + (Math.random() - 0.5) * w * 0.85,
                 y: h * (0.11 + Math.random() * (heightLimit - 0.16)),
                 // Wide spread allows clusters to bleed into each other naturally
                 spreadX: w * (0.20 + Math.random() * 0.30),
@@ -2516,7 +2557,8 @@ class AtmosphericWeatherCard extends HTMLElement {
         const gaussRand = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
 
         // ── Filler wisps (background stratus) ──
-        const fillerCount = Math.floor(totalClouds * 0.15);
+        const fillerRatio = isHeavy ? 0.40 : 0.15;
+        const fillerCount = Math.floor(totalClouds * fillerRatio);
         for (let i = 0; i < fillerCount; i++) {
             const seed = Math.random() * 10000;
             this._clouds.push({
@@ -2545,7 +2587,7 @@ class AtmosphericWeatherCard extends HTMLElement {
 
             // ── Cluster-based X/Y with loner escape ──
             let xPos, yPos;
-            const isLoner = Math.random() < 0.35;
+            const isLoner = Math.random() < (isHeavy ? 0.65 : 0.35);
             const cluster = pickCluster();
 
             if (isLoner) {
@@ -2585,12 +2627,12 @@ class AtmosphericWeatherCard extends HTMLElement {
                 case 'stratus':
                     scaleX = 1.98 + Math.random() * 0.9;
                     scaleY = 0.525 + Math.random() * 0.26;
-                    radiusMod = 0.55;
+                    radiusMod = 0.95;
                     break;
                 case 'cirrus':
                     scaleX = 2.5 + Math.random() * 1.2;
                     scaleY = 0.3 + Math.random() * 0.15;
-                    radiusMod = 0.6;
+                    radiusMod = 0.85;
                     break;
                 case 'organic':
                 case 'storm':
@@ -2629,9 +2671,12 @@ class AtmosphericWeatherCard extends HTMLElement {
             
             const sizeBoost = configScale * 1.0; 
             
-            if (sizeRoll < 0.20)      cloudScale = (1.1  + Math.random() * 0.35) * sizeBoost * layerSizeBias;
-            else if (sizeRoll < 0.65) cloudScale = (0.7  + Math.random() * 0.35) * sizeBoost * layerSizeBias;
-            else                       cloudScale = (0.45 + Math.random() * 0.25) * sizeBoost * layerSizeBias;
+            const rollLarge = isHeavy ? 0.40 : 0.20;
+            const rollMedium = isHeavy ? 0.85 : 0.65;
+
+            if (sizeRoll < rollLarge)       cloudScale = (1.2  + Math.random() * 0.60) * sizeBoost * layerSizeBias;
+            else if (sizeRoll < rollMedium) cloudScale = (0.7  + Math.random() * 0.35) * sizeBoost * layerSizeBias;
+            else                            cloudScale = (0.45 + Math.random() * 0.25) * sizeBoost * layerSizeBias;
 
             // ── Type-dependent vertical band ──
             let yMin, yMax;
@@ -2867,8 +2912,8 @@ class AtmosphericWeatherCard extends HTMLElement {
             const k = Math.random();
             const pc = k < palette[0][0] ? palette[0] : k > palette[1][0] ? palette[2] : palette[1];
 
-            // Pre-compute RGB from HSL at init time — eliminates ALL per-frame
-            // hsla() template literal allocations for stars (280+ × 60fps = 16800+/sec).
+            // Pre-compute RGB from HSL at init time — eliminates all per-frame
+            // hsla() template literal allocations for 280+ stars.
             const rgb = hslToRgb(pc[1], pc[2], pc[3]);
             const fillStr = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
 
@@ -3174,7 +3219,7 @@ class AtmosphericWeatherCard extends HTMLElement {
 
         if (!this._sunDiscGradLight || this._sunDiscGradLightR !== sunBaseR) {
             const g = ctx.createRadialGradient(
-                -sunBaseR * 0.20, -sunBaseR * 0.22, 0,
+                0, 0, 0,
                 0, 0, sunBaseR * 3.0
             );
             
@@ -3413,11 +3458,6 @@ class AtmosphericWeatherCard extends HTMLElement {
                 } else {
                     finalOpacity = finalOpacity * (finalOpacity / 0.20);
                 }
-            }
-
-            if (isThemeDark && !isTimeNight && (cloud.cloudType === 'stratus' || cloud.cloudType === 'cirrus')) {
-                finalOpacity *= cloud.cloudType === 'cirrus' ? 0.32 : 0.28;
-                if (finalOpacity < 0.005) continue;
             }
 
             if (finalOpacity < 0.005) continue;
@@ -4252,7 +4292,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             }
 
             if (plane.histLen > 2) {
-                const baseOp = this._isThemeDark ? 0.10 : 0.20;
+                const baseOp = this._isThemeDark ? 0.12 : 0.23;
                 const trailColor = this._isThemeDark ? 'rgb(210,220,240)' : 'rgb(255,255,255)';
                 const histLen = plane.histLen;
 
@@ -4644,6 +4684,12 @@ class AtmosphericWeatherCard extends HTMLElement {
         const mStyleKey = useYellow ? 'yellow' : useBlue ? 'blue' : usePurple ? 'purple' : useGrey ? 'grey' : useLightColors ? 'light' : 'dark';
 		
         ctx.save();
+
+        if (this._moonRotationRad) {
+            ctx.translate(moonX, moonY);
+            ctx.rotate(this._moonRotationRad);
+            ctx.translate(-moonX, -moonY);
+        }
 
         // Glow intensity: weather-dependent (clouds dim the glow, not the disc)
         const cloudCover = this._params?.cloud || 0;
