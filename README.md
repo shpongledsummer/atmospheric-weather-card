@@ -26,9 +26,9 @@ A flexible, detail-oriented weather card for Home Assistant. It uses your local 
 
 **Customization** · [Appearance](#appearance) · [Day / Night Logic](#day--night-logic) · [CSS Reference](#css-reference)
 
-**Guides** · [Custom House Image](#custom-house-image) · [Smart Status Entity](#smart-status-entity) · [Adding Buttons](#adding-buttons)
+**Guides** · [Custom House Image](#custom-house-image) · [Smart Status Entity](#smart-status-entity) · [Companion Card](#companion-forecast-card)
 
-**Reference** · [Weather States](#weather-states) · [Performance](#performance) · [Support the Project](#support-the-project)
+**Reference** · [Adding Buttons](#adding-buttons) · [Weather States](#weather-states) · [Performance](#performance)
 
 <br>
 
@@ -908,6 +908,14 @@ The status feature dynamically swaps the displayed house/custom image when a mon
 ## Adding Buttons
 
 You can embed buttons (or any other Home Assistant card like a graph, another weather card, sensors etc.) directly inside this card using the `custom_cards` feature. See [Embedded Cards](#appearance) in the Appearance section for setup and layout options, and the [examples](#usage-modes) for different use cases.
+
+<br>
+
+## Companion Forecast Card
+
+This card is focused on live visuals and current conditions. If you want to show a weather forecast alongside it, there is a companion card available: the [Minimal Forecast Card](https://github.com/shpongledsummer/minimal-forecast-card).
+
+It is built to be embedded inside this card using the `custom_cards` feature. You can set it up as a vertical or horizontal scroll and show daily or hourly data. You can find the YAML for this in Examples 2, 3, and 4 in the [Usage Modes](#usage-modes) section.
 
 <br>
 
