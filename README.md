@@ -23,7 +23,7 @@ A flexible, detail-oriented weather card for Home Assistant. It generates live, 
 
 <br>
 
-> **How I use AI here:** AI can easily turn a codebase into a tangled mess if you aren't careful. I'm using AI on this project strictly as a helper for things I'm already good at, but lack the time or patience to do myself. (Well, except CSS. AI sucks at that.)
+> **How I use AI here:** I like pretty design and always wanted a nice, visual HA weather card. I strictly use AI in this project for code I actually understand, but would never have the patience or time to write manually.
 
 <br>
 
