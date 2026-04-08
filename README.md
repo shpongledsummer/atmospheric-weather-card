@@ -605,7 +605,7 @@ custom_cards:
 | `moon_phase_entity` | `string` | — | *Recommended.* Displays the correct moon phase (e.g., `sensor.moon_phase`). |
 
 > [!IMPORTANT]
-> The card will automatically follow your theme with the default `theme: auto` setting and will switch between day and night based on your `sun_entity`. Make sure your [HA theme](https://www.home-assistant.io/integrations/frontend/) is correctly set up for this to work right. If you want to always force the card to a dark or light color you can additionally set `theme: dark` or `theme: light`. It's also possible to define a [custom behavior](#day--night-logic).
+> The card will automatically follow your theme with the default `theme: auto` setting and will switch between day and night based on your `sun_entity`. Make sure your [HA theme](https://www.home-assistant.io/integrations/frontend/) is correctly set up for this to work right. It's also possible to define a [custom behavior](#day--night-logic).
 
 <br>
 
