@@ -6,17 +6,7 @@
 
 <img width="400" alt="image" src="https://github.com/user-attachments/assets/03197044-ca08-4b18-b866-5e02eed86b9a" />
 
-A flexible, detail-oriented weather card for Home Assistant. It uses your local weather (and much more) to create live visuals, blending effects like wind gusts and thunderstorms with little details like passing planes, birds and shooting stars. You can run it standalone, embed other cards inside it, or use it as an immersive background.
-
-<details>
-  <summary><strong>Watch a demo</strong></summary>
-
-  https://github.com/user-attachments/assets/1005c3cb-9422-4d30-b67a-dca154397c7a
-</details>
-
-<br>
-
-> **How I use AI here:** AI can easily turn a codebase into a tangled mess if you aren't careful. I'm using AI on this project strictly as a helper for things I'm already good at, but lack the time or patience to do myself. (Well, except CSS. AI sucks at that.)
+A flexible, detail-oriented weather card for Home Assistant. It generates live, animated weather visuals based on your local conditions. You can run it standalone, embed other cards inside it, or use it as an immersive background.
 
 <br>
 
@@ -29,6 +19,10 @@ A flexible, detail-oriented weather card for Home Assistant. It uses your local 
 **Guides** · [Custom House Image](#custom-house-image) · [Smart Status Entity](#smart-status-entity) · [Companion Card](#companion-forecast-card)
 
 **Reference** · [Adding Buttons](#adding-buttons) · [Weather States](#weather-states) · [Performance](#performance)
+
+<br>
+
+> **How I use AI here:** AI can easily turn a codebase into a tangled mess if you aren't careful. I'm using AI on this project strictly as a helper for things I'm already good at, but lack the time or patience to do myself. (Well, except CSS. AI sucks at that.)
 
 <br>
 
