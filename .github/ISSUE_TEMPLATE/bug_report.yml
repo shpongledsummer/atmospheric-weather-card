@@ -29,13 +29,6 @@ body:
         - Custom Theme
     validations:
       required: true
-  - type: input
-    id: custom-theme-name
-    attributes:
-      label: Custom Theme Name
-      description: If you selected "Custom Theme" above, please tell me which one you are using. (If you are using a default theme, you can leave this blank).
-    validations:
-      required: false
   - type: textarea
     id: bug-description
     attributes:
