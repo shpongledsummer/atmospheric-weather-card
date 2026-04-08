@@ -91,10 +91,18 @@ type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
 theme: auto # Change to 'light' or 'dark' if your theme is always the same color
 card_style: standalone
-card_height: 110
+card_height: 130
 text_position: left
-sun_moon_x_position: -55
-sun_moon_y_position: 55
+text_alignment: spread
+sun_moon_size: 50
+sun_moon_x_position: -65
+sun_moon_y_position: center
+top_font_size: 3em
+bottom_font_size: 16px
+combine_text: false
+top_text_background: false
+bottom_text_background: true
+text_background_style: frosted
 sun_entity: sun.sun
 moon_phase_entity: sensor.moon_phase
 tap_action:
@@ -666,7 +674,12 @@ The sun and moon share a single position and the card automatically swaps them b
 | :--- | :--- | :--- | :--- |
 | `top_text_sensor` | `string` | — | The entity to display as the large top text. Defaults to the temperature from your weather entity. Standard entities will automatically translate to your HA language. |
 | `bottom_text_sensor` | `string` | — | The entity to display as the bottom detail line. Defaults to wind speed. Standard entities will automatically translate to your HA language. |
-| `bottom_text_background` | `boolean` | `false` | Adds a styled, semi-transparent background behind the bottom text to improve readability against weather visuals. |
+| `top_text_background` | `boolean` | `false` | Adds a styled background behind the top text (the temperature) to improve readability against the weather visuals. |
+| `bottom_text_background` | `boolean` | `true` | Adds a styled background behind the bottom text to improve readability against the weather visuals. |
+| `text_background_style` | `string` | `frosted` | Picks the style used by the text backgrounds. Options: `frosted` (translucent fill with a thin border, looks like a small glass container), `pill` (more opaque and higher contrast), `fade` (a soft blurred halo that blends the text into the weather visuals). |
+| `combine_text` | `boolean` | `false` | Places the top text and the bottom text right next to each other inside a single container, separated by a thin divider. Looks great combined with a text background. |
+| `top_font_size` | `string` | — | Sets the font size of the top text directly without needing a custom theme or `card_mod`. Accepts any CSS size value (e.g., `3em`, `48px`). |
+| `bottom_font_size` | `string` | — | Sets the font size of the bottom text directly without needing a custom theme or `card_mod`. Accepts any CSS size value (e.g., `16px`, `1.2em`). |
 | `bottom_text_icon` | `string` | *auto* | Forces a specific icon next to the bottom text. Accepts any `mdi:` icon (e.g., `mdi:water-percent`) or the keyword `weather` to automatically show the icon matching the current weather state. Can be combined with `bottom_text_icon_path` to use custom image files instead. You can find the animated SVG icons from the examples [here](https://github.com/basmilius/weather-icons). |
 | `bottom_text_icon_path` | `string` | — | A directory path to custom icon images (e.g., `/local/weather_icons/`). When set, the value of `bottom_text_icon` resolves to an image file instead of an MDI icon. For example, `bottom_text_icon: weather` with `bottom_text_icon_path: /local/weather_icons/` loads `/local/weather_icons/rainy.svg` for rainy weather. |
 | `disable_text` | `boolean` | `false` | Hides all text overlays entirely. |
@@ -841,10 +854,20 @@ The card evaluates these sources **in order** and applies the first match.
 | `--awc-bottom-font-size` | `clamp(15px, 5cqmin, 26px)` | Bottom text size (dynamically responsive). |
 | `--awc-bottom-font-weight` | `500` | Bottom text weight. |
 | `--awc-bottom-opacity` | `0.7` | Opacity of the bottom text. |
-| `--awc-bottom-bg-color` | `color-mix(...)` | Background color when `bottom_text_background` is enabled. |
-| `--awc-bottom-bg-padding` | `6px 12px` | Padding for the bottom text background. |
-| `--awc-bottom-bg-radius` | `12px` | Border radius for the bottom text background. |
-| `--awc-bottom-bg-filter` | `blur(12px) saturate(130%)` | Backdrop filter for the bottom text background. |
+| `--awc-top-bg-color` | *auto* | Background color when `top_text_background` is enabled. Defaults to the active text background style. |
+| `--awc-top-bg-padding` | `8px 14px` | Padding for the top text background. |
+| `--awc-top-bg-radius` | *card radius* | Border radius for the top text background. |
+| `--awc-top-bg-filter` | `blur(10px)` | Backdrop filter for the top text background (only used by the `frosted` style). |
+| `--awc-bottom-bg-color` | *auto* | Background color when `bottom_text_background` is enabled. Defaults to the active text background style. |
+| `--awc-bottom-bg-padding` | `5px 10px` | Padding for the bottom text background. |
+| `--awc-bottom-bg-radius` | *card radius* | Border radius for the bottom text background. |
+| `--awc-bottom-bg-filter` | `blur(10px)` | Backdrop filter for the bottom text background (only used by the `frosted` style). |
+| `--awc-bg-shadow` | *auto* | Overrides the shadow used by the `pill` background style. |
+| `--awc-bg-border` | `1px solid …` | Overrides the border used by the `frosted` background style. |
+| `--awc-bg-fade-extend` | `-8px` | How far the `fade` background reaches past the text edges. |
+| `--awc-bg-fade-blur` | `16px` | Blur amount for the `fade` background style. |
+| `--awc-bg-fade-opacity` | `1` | Opacity of the `fade` background style. |
+| `--awc-combine-separator` | `"\|"` | Character shown between the top and bottom text when `combine_text` is enabled. |
 | `--awc-icon-size` | `1.1em` | Size of the bottom icon. |
 | `--awc-text-gap` | `10px` | Vertical spacing between the top and bottom text elements. |
 | `--awc-text-side-offset` | `4px` | Extra horizontal inset added to the text padding. |
