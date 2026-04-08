@@ -1,4 +1,4 @@
-name: Bug Report
+    name: Bug Report
 description: Report an issue or visual bug
 body:
   - type: markdown
@@ -8,25 +8,39 @@ body:
   - type: checkboxes
     id: troubleshooting
     attributes:
-      label: Required Troubleshooting
-      description: Please confirm these steps.
+      label: Prerequisites & Troubleshooting
+      description: Please confirm these steps before submitting your issue.
       options:
+        - label: I have read the relevant sections of the README and searched for existing issues.
+          required: true
         - label: I have tested the card isolated as a single card on a brand new, blank dashboard and the issue persists.
           required: true
         - label: I have temporarily switched to the default Home Assistant theme and the issue persists.
           required: true
+  - type: dropdown
+    id: theme-type
+    attributes:
+      label: Home Assistant Theme
+      description: What theme are you using when you experience this bug?
+      options:
+        - Default Theme (Auto)
+        - Default Theme (Light)
+        - Default Theme (Dark)
+        - Custom Theme
+    validations:
+      required: true
+  - type: input
+    id: custom-theme-name
+    attributes:
+      label: Custom Theme Name
+      description: If you selected "Custom Theme" above, please tell me which one you are using. (If you are using a default theme, you can leave this blank).
+    validations:
+      required: false
   - type: textarea
     id: bug-description
     attributes:
       label: Bug Description
       description: Clearly describe the issue. What did you expect to happen, and what actually happened?
-    validations:
-      required: true
-  - type: input
-    id: ha-version
-    attributes:
-      label: Home Assistant Version
-      description: What version of Home Assistant are you running?
     validations:
       required: true
   - type: input
