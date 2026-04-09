@@ -14,7 +14,7 @@ A flexible, detail-oriented weather card for Home Assistant. It generates live, 
 
 **Getting Started** · [Installation](#installation) · [Usage Modes (examples)](#usage-modes) · [Setup](#setup)
 
-**Customization** · [Appearance](#appearance) · [Day / Night Logic](#day--night-logic) · [CSS Reference](#css-reference)
+**Customization** · [Appearance](#appearance) · [Day / Night Appearance](#day--night-appearance) · [CSS Reference](#css-reference)
 
 **Guides** · [Custom House Image](#custom-house-image) · [Smart Status Entity](#smart-status-entity) · [Companion Card](#companion-forecast-card)
 
@@ -88,7 +88,7 @@ You can use either `card_style: standalone` for a self-contained card with dynam
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
-theme: auto # Change to 'light' or 'dark' if your theme is always the same color
+theme_entity: sun.sun # Makes the card follow your sun cycle. Remove this if you'd rather it follow your HA theme — whichever fits your setup best.
 card_style: standalone
 card_height: 130
 text_position: left
@@ -123,7 +123,7 @@ This example shows how to use the `custom_cards` feature to embed the Minimal Fo
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
-theme: auto # Change to 'light' or 'dark' if your theme is always the same color
+theme_entity: sun.sun # Makes the card follow your sun cycle. Remove this if you'd rather it follow your HA theme — whichever fits your setup best.
 card_style: standalone
 card_height: 136
 text_position: left
@@ -177,7 +177,7 @@ This example use the `custom_cards` feature to embed the Minimal Forecast Card (
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
-theme: auto # Change to 'light' or 'dark' if your theme is always the same color
+theme_entity: sun.sun # Makes the card follow your sun cycle. Remove this if you'd rather it follow your HA theme — whichever fits your setup best.
 card_style: standalone
 card_height: 142
 text_position: left
@@ -229,12 +229,11 @@ This is similar to Example 3, but it's larger and uses a horizontal scroll to di
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
-theme: auto # Change to 'light' or 'dark' if your theme is always the same color
+theme_entity: sun.sun # Makes the card follow your sun cycle. Remove this if you'd rather it follow your HA theme — whichever fits your setup best.
 card_style: standalone
 card_height: 260
 sun_entity: sun.sun
 text_position: top-left
-theme: auto
 sun_moon_size: 60
 sun_moon_x_position: -55
 sun_moon_y_position: 55
@@ -282,7 +281,7 @@ This example embeds a `paper-buttons-row` card using the `custom_cards` feature.
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
-theme: auto # Change to 'light' or 'dark' if your theme is always the same color
+theme_entity: sun.sun # Makes the card follow your sun cycle. Remove this if you'd rather it follow your HA theme — whichever fits your setup best.
 card_style: standalone
 card_height: 134
 text_position: left
@@ -422,7 +421,7 @@ custom_cards:
 
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
-theme: auto # Change to 'light' or 'dark' if your theme is always the same color
+theme_entity: sun.sun # Makes the card follow your sun cycle. Remove this if you'd rather it follow your HA theme — whichever fits your setup best.
 card_style: immersive
 card_height: 150
 stack_order: 1
@@ -460,13 +459,13 @@ This example is a bit advanced and shows basically all the features of the card 
 To get this working in your setup, make sure you have `paper-buttons-row` installed via HACS, and remember to swap out the entities with your own. You can read how to get your own custom house image [here.](#custom-house-image)
 
 
-> This setup (and immersive mode in general) looks best with themes that automatically switch between light and dark. If you use a fixed theme, you can set `theme: dark` or `theme: light` so it matches. See [Day / Night Logic](#day--night-logic)
+> This setup (and immersive mode in general) looks best with themes that automatically switch between light and dark. If you use a fixed theme, you can set `theme: dark` or `theme: light` so it matches. See [Day / Night Appearance](#day--night-appearance).
 
 
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
-theme: auto # Change to 'light' or 'dark' if your theme is always the same color
+theme_entity: sun.sun # Makes the card follow your sun cycle. Remove this if you'd rather it follow your HA theme — whichever fits your setup best.
 full_width: true
 css_mask_horizontal: false
 css_mask_vertical: false
@@ -613,7 +612,7 @@ custom_cards:
 | `moon_phase_entity` | `string` | — | *Recommended.* Displays the correct moon phase (e.g., `sensor.moon_phase`). |
 
 > [!IMPORTANT]
-> The card will automatically follow your theme with the default `theme: auto` setting and will switch between day and night based on your `sun_entity`. Make sure your [HA theme](https://www.home-assistant.io/integrations/frontend/) is correctly set up for this to work right. It's also possible to define a [custom behavior](#day--night-logic).
+> `sun_entity` is what makes the sun, moon, and stars appear at the right times — without it the card is stuck in permanent day. By default, the card's colors follow your [Home Assistant theme](https://www.home-assistant.io/integrations/frontend/). See [Day / Night Appearance](#day--night-appearance) if you want to change that.
 
 <br>
 
@@ -641,19 +640,19 @@ Everything that controls how your card looks — layout, colors, sun/moon, text,
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `theme` | `string` | `auto` | Forces the card's appearance. See [Day / Night Logic](#day--night-logic). Accepted values: `dark`, `light`, `night`, `day`. |
+| `theme` | `string` | `auto` | Forces the card's color scheme. Accepts `dark` or `light` to lock the look, or `night` / `day` to force the sky content. See [Day / Night Appearance](#day--night-appearance). |
 | `filter` | `string` | — | Applies a visual filter preset to the weather canvas. Options: `darken`, `vivid`, `muted`, `warm`. |
 | `moon_style` | `string` | `blue` | The moon's glow color when in **immersive light** mode. Options: `blue`, `yellow`, `purple`, `grey`. |
 | `css_mask_vertical` | `boolean` | `true` | *(Immersive only)* Fades the top and bottom edges. Set to `false` to disable. |
 | `css_mask_horizontal` | `boolean` | `true` | *(Immersive only)* Fades the left and right edges. Set to `false` to disable. |
-| `theme_entity` | `string` | — | An entity whose state dictates the card's appearance. See [Day / Night Logic](#day--night-logic). |
+| `theme_entity` | `string` | — | Drives the card's color scheme from any entity's state instead of your HA theme. Commonly set to `sun.sun` to sync the card with sunrise/sunset. See [Day / Night Appearance](#day--night-appearance). |
 
 </details>
 
 <details>
 <summary><strong>Sun & Moon</strong></summary>
 
-The sun and moon share a single position and the card automatically swaps them based on how you [configure the card.](#day--night-logic) The card also automatically generates a dynamic **sunrise and sunset effect** based on the sun's elevation, and **rotates the moon** accurately based on your Home Assistant latitude setting.
+The sun and moon share a single position and the card automatically swaps them based on your `sun_entity`. See [Day / Night Appearance](#day--night-appearance) for the full picture. The card also automatically generates a dynamic **sunrise and sunset effect** based on the sun's elevation, and **rotates the moon** accurately based on your Home Assistant latitude setting.
  
 
 | Option | Type | Default | Description |
@@ -745,75 +744,71 @@ custom_cards:
 
 <br>
 
-## Day / Night Logic
+## Day / Night Appearance
 
-This card handles two separate aspects of its appearance independently:
+The card's look is controlled by two things: your **`sun_entity`**, which handles the sun, moon, and stars in the sky, and your **theme**, which decides whether the card looks light or dark. By default, the sky follows the sun and the colors follow your Home Assistant theme. Here are the ways you can set this up.
 
-| | What it controls | Example |
-| :--- | :--- | :--- |
-| **Time** | Sun vs. moon, stars vs. no stars. | *"Show the moon and stars"* |
-| **Color Scheme** | Dark vs. light backgrounds and particle colors. | *"Use dark cloud colors"* |
+<details>
+<summary><strong>Default — follow your Home Assistant theme</strong></summary>
 
 <br>
 
-<details>
-<summary><strong>Which setting should I use?</strong></summary>
+This is the default and works for most setups. With `sun_entity` configured, the card shows the sun during the day and the moon at night, and its colors match whatever your Home Assistant theme is doing. If your theme stays one color, the card stays that color. If your theme switches between light and dark, the card follows along.
 
-**`sun_entity`** is the only setting you really need. It syncs the timeline to your actual sunrise and sunset, so the card shows the sun, moon, and stars at the right times. Without it, the card is stuck in permanent "day" mode.
+```yaml
+sun_entity: sun.sun
+```
 
-Everything else is automatic — the card follows your Home Assistant's dark/light mode by default (`theme: auto`). Just make sure your [theme is set up correctly](https://www.home-assistant.io/integrations/frontend/).
-
-The following optional overrides are useful to adapt the card to the wildly different dashboard setups which are possible with HA.
-
-</details>
-
-<details>
-<summary><strong>Optional overrides</strong></summary>
-
-These let you override the automatic behavior for specific use cases:
-
-| Setting | What it does |
-| :--- | :--- |
-| `theme: dark` / `light` | Forces the card's color scheme, ignoring HA's global theme. |
-| `theme: night` / `day` | Forces the time axis (sun or moon) while colors still follow your global theme. Unusual edge case. |
-| `theme_entity` | Reads a custom entity state instead of HA's native dark mode. This allows you to create your own logic for the appearance, for example based on a jinja template or an automation. |
-
-</details>
-
-<details>
-<summary><strong>How each axis is resolved</strong></summary>
-
-The card evaluates these sources **in order** and applies the first match.
-
-**Time Axis** — Sun or Moon?
-
-| Priority | Source | Triggers Night When… |
-| :---: | :--- | :--- |
-| 1 | `theme: night` or `theme: day` | Forced manually via config. |
-| 2 | `sun_entity` | State is `below_horizon`. |
-| 3 | `theme_entity` | State matches a defined night value.* |
-| 4 | *Fallback* | Always defaults to day. |
-
-**Color Scheme Axis** — Dark or Light?
-
-| Priority | Source | Triggers Dark When… |
-| :---: | :--- | :--- |
-| 1 | `theme: dark` or `theme: light` | Forced manually via config. |
-| 2 | `theme_entity` | State matches a defined night value.* |
-| 3 | *System* | Follows Home Assistant's dark mode toggle. |
-| 4 | `sun_entity` | State is `below_horizon` (fallback if system theme unavailable). |
-
-*\* Defined night values: `dark`, `night`, `evening`, `on`, `true`, `below_horizon`*
-
-</details>
-
-<br>
-
-> [!TIP]
-> <details>
-> <summary>Sync your phone dark/light mode with the sun for <strong>best effect. </strong></summary>
-> <br>
 > Android (and possibly iOS) can auto-toggle dark mode based on sunrise/sunset. If your HA theme follows the system setting, your entire dashboard and this card stay in sync with the real day/night cycle, which is basically what this card was built for and where it looks best.
+
+</details>
+
+<details>
+<summary><strong>Follow the sun instead of your theme</strong></summary>
+
+<br>
+
+If you want the card to switch between light and dark at the real sunrise and sunset regardless of what your Home Assistant theme is doing, point `theme_entity` at your sun entity:
+
+```yaml
+sun_entity: sun.sun
+theme_entity: sun.sun
+```
+
+Now the card goes light at sunrise and dark at sunset on its own, and its colors match the time of day no matter what the rest of your dashboard is doing.
+
+</details>
+
+<details>
+<summary><strong>Force a fixed light or dark look</strong></summary>
+
+<br>
+
+If you want to lock the card's colors to one value and never change them:
+
+```yaml
+theme: dark   # or: light
+```
+
+The sky still follows `sun_entity`, so you still get the moon and stars at night — only the card's colors are forced.
+
+Most users don't need this. If your Home Assistant theme is always the same color, the default already handles it correctly.
+
+</details>
+
+<details>
+<summary><strong>Custom logic via any entity</strong></summary>
+
+<br>
+
+`theme_entity` can point at any entity, not just the sun. Use a template sensor, an `input_boolean`, a helper toggled by an automation — anything you want. The card switches to its dark look when the entity's state is one of: `dark`, `night`, `evening`, `on`, `true`, or `below_horizon`. Anything else counts as light.
+
+```yaml
+theme_entity: sensor.my_custom_mode
+```
+
+Useful if you want something like "dark after 9pm", "dark when it's overcast", or any other rule you can express in a template or automation.
+
 </details>
 
 <br>
