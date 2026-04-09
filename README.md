@@ -753,13 +753,13 @@ The card's look is controlled by two things: your **`sun_entity`**, which handle
 
 <br>
 
-This is the default and works for most setups. With `sun_entity` configured, the card shows the sun during the day and the moon at night, and its colors match whatever your Home Assistant theme is doing. If your theme stays one color, the card stays that color. If your theme switches between light and dark, the card follows along.
+Android and iOS can auto-toggle dark mode based on sunrise and sunset, and this use case is exactly what this card was designed for. With `sun_entity` configured, the card shows the sun during the day and the moon at night, automatically syncing its colors to whatever your Home Assistant theme is doing.
 
 ```yaml
 sun_entity: sun.sun
 ```
 
-> Android (and possibly iOS) can auto-toggle dark mode based on sunrise/sunset. If your HA theme follows the system setting, your entire dashboard and this card stay in sync with the real day/night cycle, which is basically what this card was built for and where it looks best.
+**Important Note on Themes:** Since many themes do not automatically switch based on the sun, you might want the card to ignore your theme and just follow the sun instead. Fully custom configurations to achieve this are explained below.
 
 </details>
 
