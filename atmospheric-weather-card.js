@@ -1,6 +1,6 @@
 /**
  * ATMOSPHERIC WEATHER CARD
- * Version: 3.5
+ * Version: 3.6
  * * A custom Home Assistant card that renders animated weather effects.
  * * https://github.com/shpongledsummer/atmospheric-weather-card
  */
@@ -773,6 +773,13 @@ class AtmosphericWeatherCard extends HTMLElement {
                 opacity: 0;
                 transition: opacity ${PERFORMANCE_CONFIG.REVEAL_TRANSITION_MS}ms ease-out;
             }
+			#card-root.clickable {
+                cursor: pointer;
+            }
+			#card-root.clickable:active {
+				transform: scale(0.98);
+				transition: scale 0.3s ease-in-out;
+			}
             #card-root.standalone {
                 z-index: var(--awc-stack-order, 1);
                 border-radius: var(--awc-card-border-radius, var(--ha-card-border-radius, 12px));
@@ -984,8 +991,33 @@ class AtmosphericWeatherCard extends HTMLElement {
                 font-size: var(--awc-bottom-font-size, clamp(15px, 5cqmin, 26px));
                 font-weight: var(--awc-bottom-font-weight, 500); opacity: var(--awc-bottom-opacity, 0.7);
                 letter-spacing: 0.5px; white-space: nowrap; display: flex; gap: 6px;
+                align-items: center;
+                max-width: var(--awc-bottom-max-width, 100%);
             }
-            #bottom-text > span { overflow: visible; text-overflow: ellipsis; min-width: 0; }
+            #bottom-text > ha-icon,
+            #bottom-text > ha-state-icon,
+            #bottom-text > img.custom-bottom-icon { flex: 0 0 auto; }
+            #bottom-text .bottom-value,
+            #bottom-text .combined-bottom {
+                flex: 1 1 auto;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: inline-block;
+            }
+            #bottom-text .combined-top,
+            #bottom-text .combined-unit,
+            #bottom-text .combined-sep { flex: 0 0 auto; }
+            #bottom-text.overflow-clip .bottom-value,
+            #bottom-text.overflow-clip .combined-bottom { text-overflow: clip; }
+            #bottom-text.overflow-wrap { white-space: normal; }
+            #bottom-text.overflow-wrap .bottom-value,
+            #bottom-text.overflow-wrap .combined-bottom {
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
+                display: inline;
+            }
             #bottom-text ha-icon,
             #bottom-text ha-state-icon { --mdc-icon-size: var(--awc-icon-size, 1.1em); opacity: 0.9; }
             /* MDI glyphs have built-in whitespace; pull leading icons left
@@ -1071,7 +1103,40 @@ class AtmosphericWeatherCard extends HTMLElement {
 			
 			#text-wrapper.swap-texts #temp-text { order: 2; }
             #text-wrapper.swap-texts #bottom-text { order: 1; }
-			
+
+            /* --- MARQUEE OVERFLOW MODE --- */
+            #bottom-text .bottom-value.awc-marquee-host,
+            #bottom-text .combined-bottom.awc-marquee-host {
+                overflow: hidden;
+                text-overflow: clip;
+                contain: layout style;
+                -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--awc-marquee-fade, 12px), #000 calc(100% - var(--awc-marquee-fade, 12px)), transparent 100%);
+                mask-image: linear-gradient(to right, transparent 0, #000 var(--awc-marquee-fade, 12px), #000 calc(100% - var(--awc-marquee-fade, 12px)), transparent 100%);
+            }
+            .awc-marquee-track {
+                display: inline-block;
+                white-space: nowrap;
+            }
+            .awc-marquee-text { display: inline; }
+            .awc-marquee-sep {
+                display: inline-block;
+                padding: 0 var(--awc-marquee-sep-gap, 0.4em);
+                opacity: 0.5;
+            }
+            .awc-marquee-sep::before { content: var(--awc-marquee-separator, "•"); }
+            .awc-marquee-host.is-animating .awc-marquee-track {
+                will-change: transform;
+                animation: awc-marquee var(--awc-marquee-duration, 20s) linear infinite;
+            }
+            @keyframes awc-marquee {
+                from { transform: translateX(0); }
+                to   { transform: translateX(-50%); }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .awc-marquee-host.is-animating .awc-marquee-track { animation: none; will-change: auto; }
+            }
+            #card-root.is-offscreen .awc-marquee-host .awc-marquee-track { animation-play-state: paused; }
+
 			/* --- SPLIT LAYOUTS --- */
             #text-wrapper.split-top, 
             #text-wrapper.split-bottom {
@@ -1217,6 +1282,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                 } else if (changed) {
                     this._scheduleParticleReinit();
                 }
+                if (changed) this._measureMarquee();
             });
         }
 
@@ -1340,6 +1406,12 @@ class AtmosphericWeatherCard extends HTMLElement {
         const root = this._elements.root;
         root.classList.toggle('no-mask-v', config.css_mask_vertical === false);
         root.classList.toggle('no-mask-h', config.css_mask_horizontal === false);
+		
+		// Add clickable class if a valid tap action is configured
+        const hasTapAction = config.tap_action && 
+                             config.tap_action.action && 
+                             config.tap_action.action !== 'none';
+        root.classList.toggle('clickable', !!hasTapAction);
 
         // Canvas filter: preset name resolves to a CSS filter string.
         // User can override via --awc-canvas-filter CSS variable.
@@ -1986,6 +2058,28 @@ class AtmosphericWeatherCard extends HTMLElement {
         if (this._prevTopFS !== topFS) { this._prevTopFS = topFS; topFS ? root.style.setProperty('--awc-top-font-size', topFS) : root.style.removeProperty('--awc-top-font-size'); }
         if (this._prevBottomFS !== bottomFS) { this._prevBottomFS = bottomFS; bottomFS ? root.style.setProperty('--awc-bottom-font-size', bottomFS) : root.style.removeProperty('--awc-bottom-font-size'); }
 
+        const bottomWidthRaw = this._config.bottom_text_width || '';
+        const bottomWidth = bottomWidthRaw ? String(bottomWidthRaw).trim().replace(/%\s*$/, 'cqw') : '';
+        if (this._prevBottomWidth !== bottomWidth) {
+            this._prevBottomWidth = bottomWidth;
+            bottomWidth ? root.style.setProperty('--awc-bottom-max-width', bottomWidth) : root.style.removeProperty('--awc-bottom-max-width');
+            requestAnimationFrame(() => this._measureMarquee());
+        }
+
+        const overflowMode = (this._config.bottom_text_overflow || 'ellipsis').toString().toLowerCase().trim();
+        if (this._prevOverflowMode !== overflowMode) {
+            this._prevOverflowMode = overflowMode;
+            const bt = this._elements.bottomText;
+            bt.classList.remove('overflow-ellipsis', 'overflow-marquee', 'overflow-clip', 'overflow-wrap');
+            bt.classList.add(`overflow-${overflowMode}`);
+        }
+
+        const marqueeSpeed = Math.max(5, parseFloat(this._config.bottom_text_marquee_speed) || 30);
+        if (this._marqueeSpeed !== marqueeSpeed) {
+            this._marqueeSpeed = marqueeSpeed;
+            requestAnimationFrame(() => this._measureMarquee());
+        }
+
         this._elements.textWrapper.style.display = showText ? '' : 'none';
         this._elements.tempText.style.display = combineText ? 'none' : '';
         this._elements.bottomText.style.display = (combineText || showBottom) ? '' : 'none';
@@ -2092,25 +2186,34 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
 
         // --- DOM write: combined or separate ---
+        const isMarquee = overflowMode === 'marquee';
+        const buildBottomSpan = (cls, inner) => isMarquee
+            ? `<span class="${cls} awc-marquee-host"><span class="awc-marquee-track"><span class="awc-marquee-text">${inner}</span></span></span>`
+            : `<span class="${cls}">${inner}</span>`;
+
         let locSig;
         if (combineText) {
             const unitHtml = (!hasCustomTop && topUnit) ? `<span class="combined-unit">${topUnit}</span>` : '';
             const topHtml = `<span class="combined-top">${fmtTop}</span>${unitHtml}`;
-            const bottomHtml = showBottom ? `<span class="combined-bottom">${formattedBottom} ${bottomUnit}</span>` : '';
+            const bottomInner = `${formattedBottom} ${bottomUnit}`;
+            const bottomHtml = showBottom ? buildBottomSpan('combined-bottom', bottomInner) : '';
             const sepHtml = (topHtml && bottomHtml) ? '<span class="combined-sep"></span>' : '';
             const content = swapTexts ? `${bottomHtml}${sepHtml}${topHtml}` : `${topHtml}${sepHtml}${bottomHtml}`;
-            locSig = `C|${fmtTop}|${topUnit}|${formattedBottom}|${bottomUnit}|${iconValue}|${iconStrategy}|${showIcon}|${showBottom}|${swapTexts}`;
+            locSig = `C|${fmtTop}|${topUnit}|${formattedBottom}|${bottomUnit}|${iconValue}|${iconStrategy}|${showIcon}|${showBottom}|${swapTexts}|${overflowMode}`;
             if (this._lastLocStr !== locSig) {
                 this._lastLocStr = locSig;
                 this._lastTempVal = null;
                 this._lastTempUnit = null;
                 this._elements.bottomText.innerHTML = `${iconHtml}${content}`;
+                this._measureMarquee();
             }
         } else {
-            locSig = `${formattedBottom}_${bottomUnit}_${iconValue}_${iconStrategy}_${showIcon}`;
+            const bottomInner = `${formattedBottom} ${bottomUnit}`;
+            locSig = `${formattedBottom}_${bottomUnit}_${iconValue}_${iconStrategy}_${showIcon}|${overflowMode}`;
             if (this._lastLocStr !== locSig) {
                 this._lastLocStr = locSig;
-                this._elements.bottomText.innerHTML = `${iconHtml}<span>${formattedBottom} ${bottomUnit}</span>`;
+                this._elements.bottomText.innerHTML = `${iconHtml}${buildBottomSpan('bottom-value', bottomInner)}`;
+                this._measureMarquee();
             }
         }
 
@@ -2215,6 +2318,42 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
     }
 
+    _measureMarquee() {
+        const bt = this._elements?.bottomText;
+        if (!bt || !bt.classList.contains('overflow-marquee')) return;
+        const host = bt.querySelector('.awc-marquee-host');
+        const track = host?.querySelector('.awc-marquee-track');
+        if (!host || !track) return;
+        if (host.clientWidth === 0) return;
+
+        const firstText = track.querySelector('.awc-marquee-text');
+        if (!firstText) return;
+
+        const naturalWidth = firstText.offsetWidth;
+        const hostWidth = host.clientWidth;
+        const shouldAnimate = naturalWidth > hostWidth + 1;
+
+        if (shouldAnimate) {
+            if (track.childElementCount === 1) {
+                const sep1 = document.createElement('span');
+                sep1.className = 'awc-marquee-sep';
+                const text2 = firstText.cloneNode(true);
+                const sep2 = document.createElement('span');
+                sep2.className = 'awc-marquee-sep';
+                track.append(sep1, text2, sep2);
+            }
+            const loopWidth = track.scrollWidth / 2;
+            const speed = this._marqueeSpeed || 30;
+            const duration = Math.max(2, loopWidth / speed);
+            host.style.setProperty('--awc-marquee-duration', `${duration.toFixed(2)}s`);
+            host.classList.add('is-animating');
+        } else {
+            while (track.childElementCount > 1) track.lastElementChild.remove();
+            host.classList.remove('is-animating');
+            host.style.removeProperty('--awc-marquee-duration');
+        }
+    }
+
     _updateImage(hass, isNight) {
         const baseSrc = isNight ? this._config.night : this._config.day;
         const statusSrc = this._calculateStatusImage(hass, isNight);
@@ -2265,15 +2404,22 @@ class AtmosphericWeatherCard extends HTMLElement {
     getCardSize() {
         return 4;
     }
+    
+    static async getConfigElement() {
+        if (!customElements.get("atmospheric-weather-card-editor")) {
+            await import("./atmospheric-weather-card-editor.js?v=2.4");
+        }
+        return document.createElement("atmospheric-weather-card-editor");
+    }
 
     static getStubConfig() {
         return {
             weather_entity: 'weather.your_weather_entity',
             card_style: 'standalone',
 			sun_entity: 'sun.sun',
+			theme_entity: 'sun.sun',
             moon_phase_entity: 'sensor.your_moon_phase_entity',
 			card_height: 130,
-			theme: 'auto',
 			text_position: 'left',
 			text_alignment: 'spread',
 			sun_moon_size: '50px',
@@ -2289,6 +2435,9 @@ class AtmosphericWeatherCard extends HTMLElement {
 			top_text_background: false,
 			bottom_text_background: true,
 			text_background_style: 'frosted',
+			bottom_text_width: '',
+			bottom_text_overflow: 'ellipsis',
+			bottom_text_marquee_speed: 30,
             tap_action: {
                 action: 'more-info',
                 entity: 'weather.your_weather_entity'
@@ -2296,7 +2445,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         };
     }
 
-    static getGridOptions() {
+    getGridOptions() {
         return {
             columns: 12, rows: 3,
             min_columns: 2, min_rows: 2,
@@ -2464,6 +2613,9 @@ class AtmosphericWeatherCard extends HTMLElement {
         const entry = entries[0];
         const wasVisible = this._isVisible;
         this._isVisible = entry.isIntersecting;
+        if (this._elements?.root) {
+            this._elements.root.classList.toggle('is-offscreen', !this._isVisible);
+        }
         if (this._isVisible && !wasVisible) {
             if (this._needsReinit) {
                 this._needsReinit = false;
