@@ -459,9 +459,6 @@ This example is a bit advanced and shows basically all the features of the card 
 To get this working in your setup, make sure you have `paper-buttons-row` installed via HACS, and remember to swap out the entities with your own. You can read how to get your own custom house image [here.](#custom-house-image)
 
 
-> This setup (and immersive mode in general) looks best with themes that automatically switch between light and dark. If you use a fixed theme, you can set `theme: dark` or `theme: light` so it matches. See [Day / Night Appearance](#day--night-appearance).
-
-
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
@@ -589,10 +586,8 @@ custom_cards:
 
 
 > [!TIP]
-> You can embed any Home Assistant card if you need specific features (extra details, a forecast, graph, buttons, etc.).
-> 
 > <details>
-> <summary><strong>Customizing Fonts, Icons & More</strong></summary>
+> <summary><strong>Fonts & Icons</strong></summary>
 > <br>
 > 
 > * **Custom Fonts:** The examples use the **Montserrat** font, which you can download or embed directly from [Google Fonts](https://fonts.google.com/specimen/Montserrat).
