@@ -1,6 +1,5 @@
 /**
  * ATMOSPHERIC WEATHER CARD — VISUAL EDITOR
- * Version: 1.0
  * Visual editor for the Atmospheric Weather Card.
  * https://github.com/shpongledsummer/atmospheric-weather-card
  */
@@ -33,6 +32,7 @@ const LABELS = Object.freeze({
     card_style: "Card Style",
     square: "Square Mode",
     card_height: "Card Height",
+    card_padding: "Card Padding",
     offset: "Card Offset",
     stack_order: "Layer Order",
     tap_action: "Tap Action",
@@ -80,14 +80,13 @@ const HELPERS = Object.freeze({
     sun_entity:
         "Drives the sky — without it the moon and stars never appear and the card stays in permanent day.",
     moon_phase_entity: "Renders the correct moon phase.",
-    _color_mode:
-        "Default: colors follow your Home Assistant theme. Pick 'Follow another entity' to track sunrise and sunset. Force options lock the look regardless.",
     theme_entity:
-        "Pick the entity that drives the sun/moon circle. Most setups use sun.sun. The sun disappears and the moon shows up when this entity is on, true, dark, night, evening, or below_horizon.",
+        "Pick the entity that drives the dark/light circle. Most setups use sun.sun, so if the sun sets, the moon shows up in its place and the card\'s colors turn dark.",
 
     card_style:
         "Immersive (default) is transparent and blends into your dashboard. Standalone gives the card its own solid background.",
     card_height: "Height in pixels, or click Auto to fill grid layouts.",
+    card_padding: "CSS padding value, e.g. 10px or 10px 20px. Leave empty for the default.",
     offset: "Outer margin in pixels. Useful when layering cards.",
     stack_order: "Raise above 0 to layer the card in front of others. Default: 1 for standalone, -1 for immersive.",
     tap_action: "Action performed when the card is tapped.",
@@ -139,14 +138,39 @@ const HELPERS = Object.freeze({
     text_background_style:
         "Frosted is translucent glass with a thin border. Pill is opaque and high-contrast. Fade is a soft blurred halo.",
 
-    custom_cards_position:
-        "Dock the embedded cards container. Defaults to the bottom corner opposite the sun/moon.",
     custom_cards_css_class:
-        "CSS class on the container — useful for targeting it with card_mod."
+        "CSS class on the container — useful for targeting it with card_mod.",
+
+    custom_cards_position:
+        "Anchors embedded cards inside the container. Positioning only has a visible effect when an embedded card sets a custom_height smaller than the main card — otherwise the card fills the available space."
 });
 
 // Prefill values used for display only. Keys matching these are stripped on
 // save so the persisted YAML stays minimal and only contains user overrides.
+
+const KEY_ORDER = Object.freeze([
+    "type",
+    "name",
+    "entity",
+    "weather_entity",
+    "sun_entity", "moon_phase_entity",
+    "color_mode", "theme", "theme_entity",
+    "card_style", "card_height", "card_padding", "square",
+    "sun_moon_size", "sun_moon_x_position", "sun_moon_y_position", "moon_style",
+    "day", "night", "image_scale", "image_alignment",
+    "status_entity", "status_day", "status_night",
+    "top_text_sensor", "bottom_text_sensor",
+    "combine_text", "swap_text", "disable_bottom_text", "disable_bottom_icon",
+    "top_font_size", "bottom_font_size", "bottom_text_width",
+    "bottom_text_icon", "bottom_text_icon_path",
+    "bottom_text_overflow", "bottom_text_marquee_speed",
+    "text_bg_style",
+    "tap_action", "hold_action", "double_tap_action",
+    "offset",
+    "custom_cards_position", "custom_cards_css_class",
+    "custom_cards"
+]);
+
 const DISPLAY_DEFAULTS = Object.freeze({
     card_style: "immersive",
     theme: "auto",
@@ -203,9 +227,10 @@ const POSITION_GRIDS = Object.freeze({
     image_alignment: {
         cells: [
             ["top-left",    "top-center",    "top-right"],
-            ["center-left", "center",        "center-right"],
+            ["left",        "center",        "right"]       ,
             ["bottom-left", "bottom-center", "bottom-right"]
-        ]
+        ],
+        valueMap: { "left": "center-left", "right": "center-right" }
     },
     custom_cards_position: {
         cells: [
@@ -213,11 +238,7 @@ const POSITION_GRIDS = Object.freeze({
             ["left",        "center",        "right"],
             ["bottom-left", "bottom-center", "bottom-right"]
         ],
-        // Card line 2294: the V resolver falls through to 'cc-align-bottom'
-        // when the position string contains neither 'top' nor 'center', so
-        // plain "left" and "right" render identically to "bottom-left" and
-        // "bottom-right". Greyed out to prevent confusion.
-        disabled: ["left", "right"]
+        valueMap: { "left": "center-left", "right": "center-right" }
     }
 });
 
@@ -259,6 +280,17 @@ class AtmosphericWeatherCardEditor extends LitElement {
                 color: var(--secondary-text-color);
             }
 
+            .card-size-row {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                gap: 8px;
+                margin-bottom: 12px;
+            }
+            .card-size-row ha-textfield {
+                display: block;
+                width: 100%;
+                min-width: 0;
+            }
             .info {
                 padding: 10px 14px;
                 margin: 0 0 12px 0;
@@ -392,6 +424,10 @@ class AtmosphericWeatherCardEditor extends LitElement {
                 color: var(--secondary-text-color);
             }
             .composite-grid-4 input { width: 100%; }
+            .composite-textfield {
+                flex: 1;
+                min-width: 0;
+            }
             .composite-chip {
                 padding: 8px 14px;
                 border: 1.5px solid var(--divider-color);
@@ -546,9 +582,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
         `;
     }
 
-    // Normalize legacy aliases, seed Color Mode state, and auto-fill sensible
-    // entity defaults on a fresh config so new users get a working preview
-    // immediately.
     setConfig(config) {
         const c = { ...(config || {}) };
 
@@ -571,7 +604,7 @@ class AtmosphericWeatherCardEditor extends LitElement {
             autofilled = true;
         }
 
-        this._config = c;
+        this._config = this._cleanConfig(c);
 
         if (c.theme === "light")      this._colorModeState = "force_light";
         else if (c.theme === "dark")  this._colorModeState = "force_dark";
@@ -604,8 +637,13 @@ class AtmosphericWeatherCardEditor extends LitElement {
 
     _sunMoonEntitiesSchema() {
         return [
-            { name: "sun_entity",        selector: { entity: { domain: "sun" } } },
-            { name: "moon_phase_entity", selector: { entity: { domain: "sensor" } } }
+            {
+                type: "grid", name: "",
+                schema: [
+                    { name: "sun_entity",        selector: { entity: { domain: "sun" } } },
+                    { name: "moon_phase_entity", selector: { entity: { domain: "sensor" } } }
+                ]
+            }
         ];
     }
 
@@ -652,8 +690,13 @@ class AtmosphericWeatherCardEditor extends LitElement {
         const c = this._formData;
         const isStandalone = c.card_style === "standalone";
         return [
-            { name: "square", selector: { boolean: {} } },
-            { name: "stack_order", selector: { number: { mode: "box", step: 1 } } },
+            {
+                type: "grid", name: "",
+                schema: [
+                    { name: "square",      selector: { boolean: {} } },
+                    { name: "stack_order", selector: { number: { mode: "box", step: 1 } } }
+                ]
+            },
             ...(isStandalone ? [] : [
                 {
                     type: "grid", name: "",
@@ -769,8 +812,13 @@ class AtmosphericWeatherCardEditor extends LitElement {
 
     _imageTopSchema() {
         return [
-            { name: "day",         selector: { text: {} } },
-            { name: "night",       selector: { text: {} } },
+            {
+                type: "grid", name: "",
+                schema: [
+                    { name: "day",   selector: { text: {} } },
+                    { name: "night", selector: { text: {} } }
+                ]
+            },
             { name: "image_scale", selector: { number: { mode: "slider", min: 0, max: 200, step: 1 } } }
         ];
     }
@@ -784,8 +832,13 @@ class AtmosphericWeatherCardEditor extends LitElement {
         return [
             { name: "status_entity", selector: { entity: {} } },
             ...(hasStatus ? [
-                { name: "status_image_day",   selector: { text: {} } },
-                { name: "status_image_night", selector: { text: {} } }
+                {
+                    type: "grid", name: "",
+                    schema: [
+                        { name: "status_image_day",   selector: { text: {} } },
+                        { name: "status_image_night", selector: { text: {} } }
+                    ]
+                }
             ] : [])
         ];
     }
@@ -806,11 +859,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
         return HELPERS[schema.name] || undefined;
     };
 
-    // ha-form returns the full data object on every change. Side-effects:
-    //   - Color Mode drives both theme_entity and theme.
-    //   - Picking "entity" mode auto-fills theme_entity from sun_entity.
-    //   - First-time status_entity prefills status images from day/night.
-    //   - Turning on Square clears any lingering card_height.
     _valueChanged(ev) {
         ev.stopPropagation();
         if (!this._config) return;
@@ -861,11 +909,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
         this._emit();
     }
 
-    // Cleanup before emit:
-    //   1. Drop empty strings, null, undefined, empty arrays/objects.
-    //   2. Drop values that match DISPLAY_DEFAULTS so YAML stays minimal.
-    //   3. Drop legacy aliases and virtual fields defensively in case a
-    //      stale one slipped in through a paste-in YAML config.
     _cleanConfig(config) {
         const out = { ...config };
 
@@ -893,11 +936,19 @@ class AtmosphericWeatherCardEditor extends LitElement {
         delete out.mode;
         delete out._color_mode;
 
-        return out;
+        const ordered = {};
+        for (const k of KEY_ORDER) {
+            if (k === "custom_cards") continue;
+            if (k in out) ordered[k] = out[k];
+        }
+        for (const k of Object.keys(out)) {
+            if (k === "custom_cards") continue;
+            if (!(k in ordered)) ordered[k] = out[k];
+        }
+        if ("custom_cards" in out) ordered.custom_cards = out.custom_cards;
+        return ordered;
     }
 
-    // Defensive shallow-copy of _config so downstream listeners can't mutate
-    // editor state through the event detail.
     _emit() {
         this.dispatchEvent(new CustomEvent("config-changed", {
             detail: { config: { ...(this._config || {}) } },
@@ -1140,10 +1191,12 @@ class AtmosphericWeatherCardEditor extends LitElement {
     // Native <details> disclosure: state is handled by the browser, so
     // toggling does not trigger a Lit re-render.
     _renderDisclosure(label, content) {
+        const isAdvanced = label === "Advanced options";
         return html`
             <details class="disclosure">
                 <summary>
                     <ha-icon icon="mdi:chevron-right"></ha-icon>
+                    ${isAdvanced ? html`<ha-icon icon="mdi:cog-outline"></ha-icon>` : ""}
                     <span>${label}</span>
                 </summary>
                 <div class="disclosure-body">${content}</div>
@@ -1154,7 +1207,10 @@ class AtmosphericWeatherCardEditor extends LitElement {
     // 3x3 position grid picker. Reads from _formData so DISPLAY_DEFAULTS are
     // reflected in the active cell on a fresh config.
     _renderPositionGrid(field, gridDef) {
-        const value = this._formData[field] || "";
+        const valueMap = gridDef.valueMap || {};
+        const reverseMap = Object.fromEntries(Object.entries(valueMap).map(([k, v]) => [v, k]));
+        const stored = this._formData[field] || "";
+        const value = reverseMap[stored] || stored;
         const cells = gridDef.cells.flat();
         const disabledSet = new Set(gridDef.disabled || []);
         const helper = HELPERS[field];
@@ -1178,7 +1234,7 @@ class AtmosphericWeatherCardEditor extends LitElement {
                                 title=${isDisabled ? `${val} (not supported here)` : val}
                                 aria-label=${val}
                                 aria-checked=${value === val ? "true" : "false"}
-                                @click=${isDisabled ? null : () => this._setField(field, val)}
+                                @click=${isDisabled ? null : () => this._setField(field, valueMap[val] || val)}
                             ></button>
                         `;
                     })}
@@ -1273,6 +1329,29 @@ class AtmosphericWeatherCardEditor extends LitElement {
         `;
     }
 
+    _renderCardPaddingField() {
+        const current = String(this._formData.card_padding || "");
+        return html`
+            <div class="composite">
+                <div class="composite-label">${LABELS.card_padding}</div>
+                <div class="composite-row">
+                    <ha-textfield
+                        class="composite-textfield"
+                        placeholder="e.g. 10px"
+                        .value=${current}
+                        @change=${(e) => {
+                            const v = e.target.value;
+                            this._updateField("card_padding", v ? v : "");
+                        }}
+                    ></ha-textfield>
+                </div>
+                ${HELPERS.card_padding
+                    ? html`<div class="composite-helper">${HELPERS.card_padding}</div>`
+                    : ""}
+            </div>
+        `;
+    }
+
     // Sun / Moon position — the card's parseAxis (card line 2572) accepts
     // exactly two forms:
     //   "center"          → centered on that axis
@@ -1345,18 +1424,47 @@ class AtmosphericWeatherCardEditor extends LitElement {
                     </div>
                     ${isCenter
                         ? ""
-                        : html`
-                              <input
-                                  type="number"
-                                  class="composite-number"
-                                  step="1"
-                                  min=${axis === "y" ? "0" : undefined}
-                                  placeholder=${placeholder}
-                                  .value=${inputValue}
-                                  @change=${(e) => this._setSunMoonAxisValue(field, e.target.value, axis)}
-                              >
-                              <span class="composite-unit">${unitHint}</span>
-                          `}
+                        : (axis === "x"
+                            ? (() => {
+                                const numeric = typeof parsed === "number" ? parsed : 0;
+                                const fromRight = numeric < 0;
+                                const absVal = String(Math.abs(numeric));
+                                const setSide = (side) => {
+                                    const cur = parseInt(absVal, 10) || 0;
+                                    this._updateField(field, String(side === "right" ? -cur : cur));
+                                };
+                                return html`
+                                    <input
+                                        type="number"
+                                        class="composite-number"
+                                        step="1"
+                                        min="0"
+                                        placeholder="e.g. 65"
+                                        .value=${absVal}
+                                        @change=${(e) => {
+                                            const n = Math.abs(parseInt(e.target.value, 10) || 0);
+                                            this._updateField(field, String(fromRight ? -n : n));
+                                        }}
+                                    >
+                                    <span class="composite-unit">px</span>
+                                    <div class="segmented">
+                                        <button type="button" class=${fromRight ? "" : "active"} @click=${() => setSide("left")}>From left</button>
+                                        <button type="button" class=${fromRight ? "active" : ""} @click=${() => setSide("right")}>From right</button>
+                                    </div>
+                                `;
+                              })()
+                            : html`
+                                <input
+                                    type="number"
+                                    class="composite-number"
+                                    step="1"
+                                    min="0"
+                                    placeholder=${placeholder}
+                                    .value=${inputValue}
+                                    @change=${(e) => this._setSunMoonAxisValue(field, e.target.value, axis)}
+                                >
+                                <span class="composite-unit">px from top</span>
+                              `)}
                 </div>
                 ${HELPERS[field]
                     ? html`<div class="composite-helper">${HELPERS[field]}</div>`
@@ -1472,6 +1580,7 @@ class AtmosphericWeatherCardEditor extends LitElement {
                 ${expanded
                     ? html`
                           <div class="card-row-body">
+                              <div class="card-size-row"><ha-textfield label="custom_width" .value=${card.custom_width || ""} @input=${(e)=>{const v=e.target.value; const nc={...card}; if(v) nc.custom_width=v; else delete nc.custom_width; this._updateCardAt(idx,nc);}}></ha-textfield><ha-textfield label="custom_height" .value=${card.custom_height || ""} @input=${(e)=>{const v=e.target.value; const nc={...card}; if(v) nc.custom_height=v; else delete nc.custom_height; this._updateCardAt(idx,nc);}}></ha-textfield></div>
                               <ha-form
                                   .hass=${this.hass}
                                   .data=${{ _card: card }}
@@ -1529,7 +1638,7 @@ class AtmosphericWeatherCardEditor extends LitElement {
     }
 
     _addBlankCard = () => {
-        const cards = [...((this._config && this._config.custom_cards) || []), { type: "entity", entity: "" }];
+        const cards = [...((this._config && this._config.custom_cards) || []), { type: "entity", entity: "", custom_width: "100%" }];
         this._expandedCard = cards.length - 1;
         this._updateField("custom_cards", cards);
     };
@@ -1548,34 +1657,12 @@ class AtmosphericWeatherCardEditor extends LitElement {
 
             <ha-expansion-panel outlined>
                 <div slot="header" class="panel-header">
-                    <ha-icon icon="mdi:palette-outline"></ha-icon>
-                    <span>Color Mode</span>
-                </div>
-                <div class="info">
-                    <b>Important — please read:</b> this card looks best
-                    with themes that switch between dark and light based on
-                    the sun, which is why the default is to follow your
-                    Home Assistant theme. Many HA themes don't work that
-                    way, so the default can look wrong in your setup
-                    (permanently dark or permanently light). The options
-                    below let you override that — the most common choice
-                    is to follow the sun directly instead.
-                </div>
-                ${this._renderForm(this._colorModeSchema())}
-                ${this._renderDisclosure(
-                    "Advanced options",
-                    this._renderForm(this._colorModeAdvancedSchema())
-                )}
-            </ha-expansion-panel>
-
-            <ha-expansion-panel outlined>
-                <div slot="header" class="panel-header">
                     <ha-icon icon="mdi:theme-light-dark"></ha-icon>
                     <span>Sun &amp; Moon</span>
                 </div>
                 <div class="info">
-                    <b>Strongly recommended:</b> set a Sun Entity for the
-                    full day/night sky, and a Moon Phase sensor for accurate
+                    <b>Strongly recommended:</b> Set a Sun Entity for the
+                    full day/night cycle, and your Moon Phase sensor for accurate
                     moon rendering.
                 </div>
                 ${this._renderForm(this._sunMoonEntitiesSchema())}
@@ -1587,11 +1674,38 @@ class AtmosphericWeatherCardEditor extends LitElement {
 
             <ha-expansion-panel outlined>
                 <div slot="header" class="panel-header">
+                    <ha-icon icon="mdi:palette-outline"></ha-icon>
+                    <span>Color Mode</span>
+                </div>
+                <div class="info">
+                    <b>⚠️ Please read:</b> This card is designed for themes
+                    that switch between light and dark based on the sun and
+                    that's why it follows your Home Assistant theme by
+                    default. The options below let you override this — for
+                    example, you can have the card follow the sun directly
+                    instead.
+                </div>
+                ${this._renderForm(this._colorModeSchema())}
+                ${this._renderDisclosure(
+                    "Advanced options",
+                    this._renderForm(this._colorModeAdvancedSchema())
+                )}
+            </ha-expansion-panel>
+
+            <ha-expansion-panel outlined>
+                <div slot="header" class="panel-header">
                     <ha-icon icon="mdi:page-layout-body"></ha-icon>
                     <span>Card Style &amp; Layout</span>
                 </div>
                 ${this._renderForm(this._layoutCoreSchema())}
-                ${isSquare ? "" : this._renderCardHeightField()}
+                ${isSquare
+                    ? this._renderCardPaddingField()
+                    : html`
+                        <div class="card-size-row">
+                            ${this._renderCardHeightField()}
+                            ${this._renderCardPaddingField()}
+                        </div>
+                    `}
                 ${this._renderDisclosure(
                     "Advanced options",
                     html`
@@ -1634,6 +1748,9 @@ class AtmosphericWeatherCardEditor extends LitElement {
                                       ? html`<div class="info">All settings below apply to the whole combined container (top value + bottom value + icon).</div>`
                                       : ""}
                                   ${this._renderForm(this._textBottomSchema())}
+                                  ${(this._formData.bottom_text_overflow || "").toLowerCase() === "marquee" && !this._formData.bottom_text_width
+                                      ? html`<div class="info warning">⚠️ Marquee needs a Container Width set above to scroll. Without it the text stays static.</div>`
+                                      : ""}
                               `
                           )}
                       `}
@@ -1667,10 +1784,11 @@ class AtmosphericWeatherCardEditor extends LitElement {
                 </div>
                 <div class="info">
                     Each card accepts two optional keys beyond its normal
-                    configuration: <code>custom_width</code>
-                    (e.g. <code>140px</code> or <code>60%</code>) fixes the
-                    card's width, and <code>custom_height</code>
-                    (e.g. <code>110px</code>) fixes its height.
+                    configuration: <code>custom_width</code> (e.g.
+                    <code>140px</code>, <code>60%</code>, or
+                    <code>100%</code> for full width) fixes the card's
+                    width, and <code>custom_height</code> (e.g.
+                    <code>110px</code>) fixes its height.
                 </div>
                 ${this._renderPositionGrid("custom_cards_position", POSITION_GRIDS.custom_cards_position)}
                 ${this._renderCustomCardsEditor()}
