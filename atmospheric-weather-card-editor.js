@@ -81,7 +81,7 @@ const HELPERS = Object.freeze({
         "Drives the sky — without it the moon and stars never appear and the card stays in permanent day.",
     moon_phase_entity: "Renders the correct moon phase.",
     theme_entity:
-        "Pick the entity that drives the dark/light circle. Most setups use sun.sun, so if the sun sets, the moon shows up in its place and the card\'s colors turn dark.",
+        "Pick the entity that drives the dark/light cycle. Most setups use sun.sun, so if the sun sets, the moon shows up in its place and the card\'s colors turn dark.",
 
     card_style:
         "Immersive (default) is transparent and blends into your dashboard. Standalone gives the card its own solid background.",
