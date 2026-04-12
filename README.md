@@ -4,7 +4,8 @@
 
 ## Atmospheric Weather Card
 
-<img width="300" alt="image" src="https://github.com/user-attachments/assets/9f4ad27f-76d2-4bd7-a149-fe33b014a3d4" />
+<img width="500" alt="Image" src="https://github.com/user-attachments/assets/2dfb4850-a8bc-4005-a45b-da88b301a2f7" />
+
 
 A flexible, detail-oriented weather card for Home Assistant. It generates live, animated weather visuals based on your local conditions. You can run it standalone, embed other cards inside it, or use it as an immersive background.
 
@@ -71,9 +72,8 @@ You can use either `card_style: standalone` for a self-contained card with dynam
 
 ### Standalone
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/97c90ea6-e7e8-4eb6-b84e-7e161c274c28" /><br>
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/d3ee2420-d315-4391-81cb-2b44d1c9abb8" />
-
+<img width="500" alt="Image" src="https://github.com/user-attachments/assets/5cf69ebe-b4e3-49ad-b540-5e50f2b07412" /><br>
+<img width="500" alt="Image" src="https://github.com/user-attachments/assets/fa42821a-ac3a-4973-b678-602748e29bb9" />
 
 <details>
 <summary><b>Example 1 — Basic Card (Default)</b></summary>
