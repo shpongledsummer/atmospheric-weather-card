@@ -618,6 +618,7 @@ Everything that controls how your card looks — layout, colors, sun/moon, text,
 | :--- | :--- | :--- | :--- |
 | `card_style` | `string` | `immersive` | Set to `standalone` for a solid background with text, or `immersive` for a transparent background. |
 | `card_height` | `number` · `string` | `200` | Height in pixels. Numbers are automatically treated as px (e.g., `110` becomes `110px`). **Set to `auto`** to dynamically fill the available height (for grid layouts). |
+| `card_padding` | `string` | `16px` | Inner padding around the text. Accepts any CSS padding value (e.g., `8px`, `12px 20px`). |
 | `square` | `boolean` | `false` | Forces the card into a perfect square. Highly useful for grid layouts. |
 | `full_width` | `boolean` | `false` | Stretches the card edge-to-edge by removing side margins. |
 | `offset` | `string` | `0px` | Shifts the card using CSS margin (e.g., `"-50px 0px 0px 0px"`). Useful when layering cards. |
@@ -669,6 +670,9 @@ The sun and moon share a single position and the card automatically swaps them b
 | `combine_text` | `boolean` | `false` | Places the top text and the bottom text right next to each other inside a single container, separated by a thin divider. Looks great combined with a text background. |
 | `top_font_size` | `string` | — | Sets the font size of the top text directly without needing a custom theme or `card_mod`. Accepts any CSS size value (e.g., `3em`, `48px`). |
 | `bottom_font_size` | `string` | — | Sets the font size of the bottom text directly without needing a custom theme or `card_mod`. Accepts any CSS size value (e.g., `16px`, `1.2em`). |
+| `bottom_text_width` | `string` | — | Limits the width of the bottom text. Accepts any CSS value — percentages (e.g., `60%`) scale with the card width, or use fixed values like `200px`. Useful when a long sensor value would otherwise push into the sun/moon area. |
+| `bottom_text_overflow` | `string` | `ellipsis` | How long bottom text is handled when it exceeds `bottom_text_width`. Options: `ellipsis` (cuts off with `…`), `clip` (cuts off without indicator), `wrap` (breaks onto a second line), `marquee` (scrolls horizontally). |
+| `bottom_text_marquee_speed` | `number` | `30` | Scroll speed in pixels per second when `bottom_text_overflow: marquee` is active. Minimum `5`. |
 | `bottom_text_icon` | `string` | *auto* | Forces a specific icon next to the bottom text. Accepts any `mdi:` icon (e.g., `mdi:water-percent`) or the keyword `weather` to automatically show the icon matching the current weather state. Can be combined with `bottom_text_icon_path` to use custom image files instead. You can find the animated SVG icons from the examples [here](https://github.com/basmilius/weather-icons). |
 | `bottom_text_icon_path` | `string` | — | A directory path to custom icon images (e.g., `/local/weather_icons/`). When set, the value of `bottom_text_icon` resolves to an image file instead of an MDI icon. For example, `bottom_text_icon: weather` with `bottom_text_icon_path: /local/weather_icons/` loads `/local/weather_icons/rainy.svg` for rainy weather. |
 | `disable_text` | `boolean` | `false` | Hides all text overlays entirely. |
@@ -806,7 +810,7 @@ Useful if you want something like "dark after 9pm", "dark when it's overcast", o
 
 ## Fonts & Icons
 
-If you want to use the exact fonts and weather icons from the screenshots in your own setup, follow these steps below.
+If you want to use the exact fonts and weather icons from the screenshots in your own setup, here's how.
 
 <details>
 <summary><strong>Font family used in the examples</strong></summary>
