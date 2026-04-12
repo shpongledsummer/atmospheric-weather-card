@@ -80,11 +80,6 @@ You can use either `card_style: standalone` for a self-contained card with dynam
 
 <br>
 
-| Day | Night |
-| :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/a1518dd3-d533-4be5-a5d5-1ea6f4fd9748" width="100%"> | <img src="https://github.com/user-attachments/assets/6f533325-5a08-43ec-8523-44f51d0d2aa3" width="100%"> |
-| <img src="https://github.com/user-attachments/assets/fa07c203-feae-4bb0-941d-d14edd9d2feb" width="100%"> | <img src="https://github.com/user-attachments/assets/b5660eeb-b980-434d-b17d-12612754e2f3" width="100%"> |
-
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
@@ -402,8 +397,9 @@ custom_cards:
 
 ### Immersive
 
-<img width="400" alt="Immersive mode" src="https://github.com/user-attachments/assets/d4ee6971-53b4-462e-87af-83fb5d94e45f" />
+<img width="500" alt="Image" src="https://github.com/user-attachments/assets/dd716851-b09a-4112-ad74-bbf605361857" />
 
+*(A look at my dashboard: Immersive mode, a custom background, and a few buttons. The theme and card follow the sun in sync.)*
 
 <br>
 
