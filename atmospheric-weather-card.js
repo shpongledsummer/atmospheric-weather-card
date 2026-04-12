@@ -1,6 +1,6 @@
 /**
  * ATMOSPHERIC WEATHER CARD
- * Version: 3.6
+ * Version: 3.7
  * * A custom Home Assistant card that renders animated weather effects.
  * * https://github.com/shpongledsummer/atmospheric-weather-card
  */
@@ -128,7 +128,7 @@ const PARTICLE_ARRAYS = Object.freeze([
 ]);
 
 // ============================================================================
-// GEOMETRY TABLES — replaces inline magic-number pixel offsets
+// GEOMETRY TABLES — named pixel offsets for icon glyph positions
 // ============================================================================
 
 /**
@@ -1376,31 +1376,28 @@ class AtmosphericWeatherCard extends HTMLElement {
             img.style.transform = '';
 
             const marginVar = 'calc(var(--ha-view-sections-narrow-column-gap, var(--ha-card-margin, 16px)) * 1)';
-            const isCenterH = align === 'center' || align.includes('-center') ||
-                               (!align.includes('left') && !align.includes('right') && align === 'center');
-            const isCenterV = align.includes('center') && !align.includes('left') && !align.includes('right');
-            const isLeft    = align.includes('left');
-            const isBottom  = align.includes('bottom');
+            const [v, h] = align === 'center' ? ['center', 'center'] : align.split('-');
+            const t = [];
 
-            if (isLeft) {
+            if (h === 'left') {
                 img.style.left = marginVar; img.style.right = 'auto';
-            } else if (align === 'center' || align === 'top-center' || align === 'bottom-center' || align === 'center-left' || align === 'center-right') {
+            } else if (h === 'center') {
                 img.style.left = '50%'; img.style.right = 'auto';
-                img.style.transform = 'translateX(-50%)';
+                t.push('translateX(-50%)');
             } else {
                 img.style.right = marginVar; img.style.left = 'auto';
             }
 
-            if (isBottom) {
-                img.style.bottom = '0'; img.style.top = 'auto';
-            } else if (align === 'center') {
-                img.style.top = '50%';
-                img.style.transform = 'translateX(-50%) translateY(-50%)';
-            } else if (align.includes('center') && !align.includes('top') && !align.includes('bottom')) {
-                img.style.top = '50%'; img.style.transform = 'translateX(-50%) translateY(-50%)';
-            } else {
+            if (v === 'top') {
                 img.style.top = '0'; img.style.bottom = 'auto';
+            } else if (v === 'center') {
+                img.style.top = '50%'; img.style.bottom = 'auto';
+                t.push('translateY(-50%)');
+            } else {
+                img.style.bottom = '0'; img.style.top = 'auto';
             }
+
+            img.style.transform = t.join(' ');
         }
 
         const root = this._elements.root;
@@ -1631,9 +1628,9 @@ class AtmosphericWeatherCard extends HTMLElement {
         else                       isTimeNight = false;
 
         // Theme axis: mode → theme → sysDark → sun → false
-        // sysDark (hass.themes.darkMode) now outranks sun for visual contrast,
-        // so the card respects the HA system/profile dark-mode setting.
-        // Sun remains a fallback for setups where hass.themes is unavailable.
+        // sysDark (hass.themes.darkMode) outranks sun so the card respects
+        // the HA system/profile dark-mode setting. Sun is the fallback
+        // for setups where hass.themes is unavailable.
         let isThemeDark;
         if      (mode === 'dark')          isThemeDark = true;
         else if (mode === 'light')         isThemeDark = false;
@@ -1679,22 +1676,22 @@ class AtmosphericWeatherCard extends HTMLElement {
         const showSun = !isNight && goodWeather;
 
         let showCloudySun = false;
-        if (!isNight) {
-            const isBad = !!(p?.dark) ||
-                type === 'rain' || type === 'hail' || type === 'lightning' ||
-                type === 'pouring' || type === 'snowy' || type === 'snowy-rainy';
-            const isOvercastType = state === 'cloudy' || state === 'windy' ||
-                                   state === 'windy-variant' || state === 'fog';
-            const isStandalone = this._config.card_style === 'standalone';
+        if (!isNight) {
+            const isBad = !!(p?.dark) ||
+                type === 'rain' || type === 'hail' || type === 'lightning' ||
+                type === 'pouring' || type === 'snowy' || type === 'snowy-rainy';
+            const isOvercastType = state === 'cloudy' || state === 'windy' ||
+                                   state === 'windy-variant' || state === 'fog';
+            const isStandalone = this._config.card_style === 'standalone';
 
-            if (isStandalone) {
-                // logic for standalone so it doesn't fight the CSS gradients
-                showCloudySun = !isDark && isOvercastType && !isBad;
-            } else {
-                // Immersive mode: render the diffuse glow anytime it's not clear skies
-                showCloudySun = !goodWeather;
-            }
-        }
+            if (isStandalone) {
+                // logic for standalone so it doesn't fight the CSS gradients
+                showCloudySun = !isDark && isOvercastType && !isBad;
+            } else {
+                // Immersive mode: render the diffuse glow anytime it's not clear skies
+                showCloudySun = !goodWeather;
+            }
+        }
 
         // --- Rain color base ---
         const rainRgb = isLight ? '58, 72, 100' : '210, 225, 255';
@@ -1981,7 +1978,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             if (this._prevGRgb !== moonRgb) { root.style.setProperty('--g-rgb', moonRgb); this._prevGRgb = moonRgb; }
             if (this._prevGOp !== gOpVal) { root.style.setProperty('--g-op', gOpVal); this._prevGOp = gOpVal; }
         } else {
-            const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist: 0.16, fog: 0.16, overcast: 0.26, windy: 0.24, fair: 0.38, clear: 0.55, exceptional: 0.55 };
+const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist: 0.16, fog: 0.16, overcast: 0.26, windy: 0.24, fair: 0.38, clear: 0.55, exceptional: 0.55 };
             const dayOp = dayWeatherOp[atm] ?? 0.45;
             const coolGlow = atm === 'overcast' || atm === 'mist' || atm === 'windy' || atm === 'fog';
             const badGlow = atm === 'storm' || atm === 'pouring' || atm === 'rain' || atm === 'snow';
@@ -2057,6 +2054,12 @@ class AtmosphericWeatherCard extends HTMLElement {
         const bottomFS = this._config.bottom_font_size || '';
         if (this._prevTopFS !== topFS) { this._prevTopFS = topFS; topFS ? root.style.setProperty('--awc-top-font-size', topFS) : root.style.removeProperty('--awc-top-font-size'); }
         if (this._prevBottomFS !== bottomFS) { this._prevBottomFS = bottomFS; bottomFS ? root.style.setProperty('--awc-bottom-font-size', bottomFS) : root.style.removeProperty('--awc-bottom-font-size'); }
+
+        const cardPadding = this._config.card_padding || '';
+        if (this._prevCardPadding !== cardPadding) {
+            this._prevCardPadding = cardPadding;
+            cardPadding ? root.style.setProperty('--awc-card-padding', cardPadding) : root.style.removeProperty('--awc-card-padding');
+        }
 
         const bottomWidthRaw = this._config.bottom_text_width || '';
         const bottomWidth = bottomWidthRaw ? String(bottomWidthRaw).trim().replace(/%\s*$/, 'cqw') : '';
@@ -2305,6 +2308,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                                  : ccPos.includes('center') ? 'cc-text-hcenter'
                                  : null;
                     const vClass = ccPos.includes('top') ? 'cc-align-top'
+                                 : ccPos.includes('bottom') ? 'cc-align-bottom'
                                  : ccPos.includes('center') ? 'cc-align-center'
                                  : 'cc-align-bottom';
                     if (hClass) ccw.classList.add(hClass);
@@ -2407,7 +2411,7 @@ class AtmosphericWeatherCard extends HTMLElement {
     
     static async getConfigElement() {
         if (!customElements.get("atmospheric-weather-card-editor")) {
-            await import("./atmospheric-weather-card-editor.js?v=2.4");
+            await import("./atmospheric-weather-card-editor.js?v=3.2");
         }
         return document.createElement("atmospheric-weather-card-editor");
     }
@@ -2435,6 +2439,7 @@ class AtmosphericWeatherCard extends HTMLElement {
 			top_text_background: false,
 			bottom_text_background: true,
 			text_background_style: 'frosted',
+			card_padding: '',
 			bottom_text_width: '',
 			bottom_text_overflow: 'ellipsis',
 			bottom_text_marquee_speed: 30,
@@ -3835,70 +3840,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         const celestial = this._getCelestialPosition(w, h);
         const dpr = this._cachedDimensions.dpr;
 
-        if (this._isThemeDark) {
-            ctx.globalCompositeOperation = 'source-over';
-            const pulse = Math.sin(this._sunPulsePhase * 0.4) * 0.02 + 0.98;
-            const sunBaseR = this._celestialSize ? this._celestialSize / 2 : 31;
-
-            // Atmospheric corona — icy silver bloom
-            if (!this._csCoronaGrad || this._csCoronaGradR !== sunBaseR) {
-                const coronaR = sunBaseR * 3.2;
-                const cg = ctx.createRadialGradient(0, 0, sunBaseR * 0.5, 0, 0, coronaR);
-                cg.addColorStop(0.0,  'rgba(255,255,255,0.24)');
-                cg.addColorStop(0.12, 'rgba(242,248,255,0.14)');
-                cg.addColorStop(0.32, 'rgba(228,238,252,0.05)');
-                cg.addColorStop(0.62, 'rgba(218,230,250,0.012)');
-                cg.addColorStop(1.0,  'rgba(212,225,245,0)');
-                this._csCoronaGrad = cg;
-                this._csCoronaGradR = sunBaseR;
-                this._csCoronaOuterR = coronaR;
-            }
-
-            // Disc body — piercing white core, cool silver feathered edge
-            if (!this._cloudySunGradDark || this._cloudySunGradDarkR !== sunBaseR) {
-                const g = ctx.createRadialGradient(
-                    -sunBaseR * 0.35, -sunBaseR * 0.35, 0,
-                    0, 0, sunBaseR
-                );
-                g.addColorStop(0.0,  'rgba(255,255,255,1)');
-                g.addColorStop(0.28, 'rgba(244,248,255,1)');
-                g.addColorStop(0.58, 'rgba(230,240,252,1)');
-                g.addColorStop(0.85, 'rgba(220,232,250,1)');
-                g.addColorStop(1.0,  'rgba(212,226,246,0.35)');
-                this._cloudySunGradDark = g;
-                this._cloudySunGradDarkR = sunBaseR;
-            }
-
-            const isStandalone = this._config.card_style === 'standalone';
-            const darkDayAtten = this._isTimeNight ? 1.0 : (isStandalone ? 0.38 : 0.85);
-            ctx.globalAlpha = fadeOpacity * darkDayAtten;
-            ctx.scale(pulse, pulse);
-
-            ctx.fillStyle = this._csCoronaGrad;
-            fillCircle(ctx, 0, 0, this._csCoronaOuterR);
-
-            ctx.fillStyle = this._cloudySunGradDark;
-            fillCircle(ctx, 0, 0, sunBaseR);
-
-            // 8-point light rays — faint icy white
-            const rayLen = sunBaseR * 4.2;
-            const diagLen = rayLen * 0.65;
-            ctx.globalAlpha = 0.06 * fadeOpacity * darkDayAtten;
-            ctx.strokeStyle = 'rgba(235,242,255,1)';
-            ctx.lineWidth = 1.2;
-            ctx.beginPath();
-            ctx.moveTo(-rayLen, 0); ctx.lineTo(rayLen, 0);
-            ctx.moveTo(0, -rayLen); ctx.lineTo(0, rayLen);
-            const d = diagLen * 0.707;
-            ctx.moveTo(-d, -d); ctx.lineTo(d, d);
-            ctx.moveTo(d, -d); ctx.lineTo(-d, d);
-            ctx.stroke();
-
-            ctx.globalAlpha = 1;
-            ctx.globalCompositeOperation = 'source-over';
-            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-            return;
-        }
+        const isThemeDarkCS = this._isThemeDark;
 
         ctx.globalCompositeOperation = 'screen';
         const isMoon = this._isNight;
@@ -3930,8 +3872,8 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
 
         const isStandalone = this._config.card_style === 'standalone';
-        const cached = this[cacheKey];
-        ctx.globalAlpha = Math.min(1.0, fadeOpacity * (isStandalone ? 1.0 : 1.4));
+        const cached = this[cacheKey];
+        ctx.globalAlpha = Math.min(1.0, fadeOpacity * (isStandalone ? 1.0 : 1.4) * (isThemeDarkCS && !isMoon ? 0.42 : 1));
         ctx.translate(celestial.x, celestial.y);
 
         ctx.fillStyle = cached.outer;
@@ -5050,7 +4992,8 @@ class AtmosphericWeatherCard extends HTMLElement {
             if (v.x > w + v.w) v.x = -v.w;
             if (v.x < -v.w * 1.5) v.x = w + v.w;
 
-            const baseOp = isDark ? (0.48 + v.tier * 0.24) : (0.66 + v.tier * 0.22);
+            let baseOp = isDark ? (0.48 + v.tier * 0.24) : (0.66 + v.tier * 0.22);
+            if (isDark && v.tier !== 1) baseOp *= 0.7;
             const gustOpBump = Math.max(0, gustVal) * 0.2;
             
             const baseStretch = 0.85 + (1.15 * windIntensity);
@@ -5067,7 +5010,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             const centerY = v.y + undulation;
             const rotAngle = v.baseRotation * rotFade;
 
-            ctx.globalAlpha = Math.min(1.0, (baseOp + gustOpBump) * fadeOpacity * vaporIntensity);
+            ctx.globalAlpha = Math.min(1.0, (baseOp + gustOpBump) * fadeOpacity * vaporIntensity * (isDark ? 0.85 : 1));
 
             ctx.translate(centerX, centerY);
             ctx.rotate(rotAngle);
@@ -5201,6 +5144,12 @@ class AtmosphericWeatherCard extends HTMLElement {
             ctx.save();
             ctx.globalCompositeOperation = 'destination-out';
             ctx.fillStyle = 'rgba(0, 0, 0, 1)';
+            fillCircle(ctx, moonX, moonY, moonRadius - 0.5);
+            ctx.restore();
+        } else if (useLightColors && this._moonPhaseConfig.illumination > 0) {
+            ctx.save();
+            ctx.globalAlpha = fadeOpacity;
+            ctx.fillStyle = 'rgb(235,238,245)';
             fillCircle(ctx, moonX, moonY, moonRadius - 0.5);
             ctx.restore();
         }
