@@ -2411,7 +2411,7 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
     
     static async getConfigElement() {
         if (!customElements.get("atmospheric-weather-card-editor")) {
-            await import("./atmospheric-weather-card-editor.js?v=3.2");
+            await import("./atmospheric-weather-card-editor.js?v=3.31");
         }
         return document.createElement("atmospheric-weather-card-editor");
     }
