@@ -15,7 +15,7 @@ A flexible, detail-oriented weather card for Home Assistant. It generates live, 
 
 **Getting Started** · [Installation](#installation) · [Usage Modes (examples)](#usage-modes) · [Setup](#setup)
 
-**Customization** · [Appearance](#appearance) · [Day / Night Appearance](#day--night-appearance) · [CSS Reference](#css-reference)
+**Customization** · [Appearance](#appearance) · [Day / Night](#day--night) · [Fonts & Icons](#fonts--icons) · [CSS Reference](#css-reference)
 
 **Guides** · [Custom House Image](#custom-house-image) · [Smart Status Entity](#smart-status-entity) · [Companion Card](#companion-forecast-card)
 
@@ -603,7 +603,7 @@ custom_cards:
 | `moon_phase_entity` | `string` | — | *Recommended.* Displays the correct moon phase (e.g., `sensor.moon_phase`). |
 
 > [!IMPORTANT]
-> `sun_entity` is what makes the sun, moon, and stars appear at the right times — without it the card is stuck in permanent day. By default, the card's colors follow your [Home Assistant theme](https://www.home-assistant.io/integrations/frontend/). See [Day / Night Appearance](#day--night-appearance) if you want to change that.
+> `sun_entity` is what makes the sun, moon, and stars appear at the right times — without it the card is stuck in permanent day. By default, the card's colors follow your [Home Assistant theme](https://www.home-assistant.io/integrations/frontend/). See [Day / Night](#day--night) if you want to change that.
 
 <br>
 
@@ -631,19 +631,19 @@ Everything that controls how your card looks — layout, colors, sun/moon, text,
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `theme` | `string` | `auto` | Forces the card's color scheme. Accepts `dark` or `light` to lock the look, or `night` / `day` to force the sky content. See [Day / Night Appearance](#day--night-appearance). |
+| `theme` | `string` | `auto` | Forces the card's color scheme. Accepts `dark` or `light` to lock the look, or `night` / `day` to force the sky content. See [Day / Night](#day--night). |
 | `filter` | `string` | — | Applies a visual filter preset to the weather canvas. Options: `darken`, `vivid`, `muted`, `warm`. |
 | `moon_style` | `string` | `blue` | The moon's glow color when in **immersive light** mode. Options: `blue`, `yellow`, `purple`, `grey`. |
 | `css_mask_vertical` | `boolean` | `true` | *(Immersive only)* Fades the top and bottom edges. Set to `false` to disable. |
 | `css_mask_horizontal` | `boolean` | `true` | *(Immersive only)* Fades the left and right edges. Set to `false` to disable. |
-| `theme_entity` | `string` | — | Drives the card's color scheme from any entity's state instead of your HA theme. Commonly set to `sun.sun` to sync the card with sunrise/sunset. See [Day / Night Appearance](#day--night-appearance). |
+| `theme_entity` | `string` | — | Drives the card's color scheme from any entity's state instead of your HA theme. Commonly set to `sun.sun` to sync the card with sunrise/sunset. See [Day / Night](#day--night). |
 
 </details>
 
 <details>
 <summary><strong>Sun & Moon</strong></summary>
 
-The sun and moon share a single position and the card automatically swaps them based on your `sun_entity`. See [Day / Night Appearance](#day--night-appearance) for the full picture. The card also automatically generates a dynamic **sunrise and sunset effect** based on the sun's elevation, and **rotates the moon** accurately based on your Home Assistant latitude setting.
+The sun and moon share a single position and the card automatically swaps them based on your `sun_entity`. See [Day / Night](#day--night) for the full picture. The card also automatically generates a dynamic **sunrise and sunset effect** based on the sun's elevation, and **rotates the moon** accurately based on your Home Assistant latitude setting.
  
 
 | Option | Type | Default | Description |
@@ -735,7 +735,7 @@ custom_cards:
 
 <br>
 
-## Day / Night Appearance
+## Day / Night
 
 The card's look is controlled by two things: your **`sun_entity`**, which handles the sun, moon, and stars in the sky, and your **theme**, which decides whether the card looks light or dark. By default, the sky follows the sun and the colors follow your Home Assistant theme. Here are the ways you can set this up.
 
@@ -799,6 +799,42 @@ theme_entity: sensor.my_custom_mode
 ```
 
 Useful if you want something like "dark after 9pm", "dark when it's overcast", or any other rule you can express in a template or automation.
+
+</details>
+
+<br>
+
+## Fonts & Icons
+
+If you want to use the exact fonts and weather icons from the screenshots in your own setup, follow these steps below.
+
+<details>
+<summary><strong>Font family used in the examples</strong></summary>
+
+<br>
+
+The screenshots throughout this README use the **Montserrat** font, which you can download or embed directly from [Google Fonts](https://fonts.google.com/specimen/Montserrat). Once it's loaded into your Home Assistant frontend (for example via a custom theme), it applies to this card along with the rest of your dashboard — the card inherits whatever font your theme sets.
+
+</details>
+
+<details>
+<summary><strong>Custom SVG weather icons</strong></summary>
+
+<br>
+
+You can replace the default MDI icon next to the bottom text with your own animated SVG files. The examples use the set from [basmilius/weather-icons](https://github.com/basmilius/weather-icons).
+
+1. Download the SVG files and place them in a folder under `config/www/`, for example `config/www/weather-icons/`.
+2. In your card config, set `bottom_text_icon` to `weather` and point `bottom_text_icon_path` to that folder:
+
+```yaml
+bottom_text_icon: weather
+bottom_text_icon_path: /local/weather-icons/
+```
+
+The card then resolves the icon by the current weather state — for example, `rainy` weather loads `/local/weather-icons/rainy.svg`. Make sure the filenames match the supported [weather states](#weather-states).
+
+The same approach works inside the embedded [Minimal Forecast Card](https://github.com/shpongledsummer/minimal-forecast-card) via its `custom_icon_path` option, which is why several examples in this README set both at once.
 
 </details>
 
