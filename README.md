@@ -15,7 +15,7 @@ A flexible, detail-oriented weather card for Home Assistant. It generates live, 
 
 **Getting Started** · [Installation](#installation) · [Usage Modes (examples)](#usage-modes) · [Setup](#setup)
 
-**Customization** · [Appearance](#appearance) · [Day / Night](#day--night) · [Fonts & Icons](#fonts--icons) · [CSS Reference](#css-reference)
+**Customization** · [Appearance](#appearance) · [Colors](#colors) · [Fonts & Icons](#fonts--icons) · [CSS Reference](#css-reference)
 
 **Guides** · [Custom House Image](#custom-house-image) · [Smart Status Entity](#smart-status-entity) · [Companion Card](#companion-forecast-card)
 
@@ -603,7 +603,7 @@ custom_cards:
 | `moon_phase_entity` | `string` | — | *Recommended.* Displays the correct moon phase (e.g., `sensor.moon_phase`). |
 
 > [!IMPORTANT]
-> `sun_entity` is what makes the sun, moon, and stars appear at the right times — without it the card is stuck in permanent day. By default, the card's colors follow your [Home Assistant theme](https://www.home-assistant.io/integrations/frontend/). See [Day / Night](#day--night) if you want to change that.
+> `sun_entity` is what makes the sun, moon, and stars appear at the right times — without it the card is stuck in permanent day. By default, the card's colors follow your [Home Assistant theme](https://www.home-assistant.io/integrations/frontend/). See [Colors](#colors) if you want to change that.
 
 <br>
 
@@ -632,19 +632,19 @@ Everything that controls how your card looks — layout, colors, sun/moon, text,
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `theme` | `string` | `auto` | Forces the card's color scheme. Accepts `dark` or `light` to lock the look, or `night` / `day` to force the sky content. See [Day / Night](#day--night). |
+| `theme` | `string` | `auto` | Forces the card's color scheme. Accepts `dark` or `light` to lock the look, or `night` / `day` to force the sky content. See [Colors](#colors). |
 | `filter` | `string` | — | Applies a visual filter preset to the weather canvas. Options: `darken`, `vivid`, `muted`, `warm`. |
 | `moon_style` | `string` | `blue` | The moon's glow color when in **immersive light** mode. Options: `blue`, `yellow`, `purple`, `grey`. |
 | `css_mask_vertical` | `boolean` | `true` | *(Immersive only)* Fades the top and bottom edges. Set to `false` to disable. |
 | `css_mask_horizontal` | `boolean` | `true` | *(Immersive only)* Fades the left and right edges. Set to `false` to disable. |
-| `theme_entity` | `string` | — | Drives the card's color scheme from any entity's state instead of your HA theme. Commonly set to `sun.sun` to sync the card with sunrise/sunset. See [Day / Night](#day--night). |
+| `theme_entity` | `string` | — | Drives the card's color scheme from any entity's state instead of your HA theme. Commonly set to `sun.sun` to sync the card with sunrise/sunset. See [Colors](#colors). |
 
 </details>
 
 <details>
 <summary><strong>Sun & Moon</strong></summary>
 
-The sun and moon share a single position and the card automatically swaps them based on your `sun_entity`. See [Day / Night](#day--night) for the full picture. The card also automatically generates a dynamic **sunrise and sunset effect** based on the sun's elevation, and **rotates the moon** accurately based on your Home Assistant latitude setting.
+The sun and moon share a single position and the card automatically swaps them based on your `sun_entity`. See [Colors](#colors) for the full picture. The card also automatically generates a dynamic **sunrise and sunset effect** based on the sun's elevation, and **rotates the moon** accurately based on your Home Assistant latitude setting.
  
 
 | Option | Type | Default | Description |
@@ -739,7 +739,7 @@ custom_cards:
 
 <br>
 
-## Day / Night
+## Colors
 
 The card's look is controlled by two things: your **`sun_entity`**, which handles the sun, moon, and stars in the sky, and your **theme**, which decides whether the card looks light or dark. By default, the sky follows the sun and the colors follow your Home Assistant theme. Here are the ways you can set this up.
 
