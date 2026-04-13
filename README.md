@@ -972,14 +972,22 @@ Each state triggers a unique combination of particle types, cloud densities, win
 
 ## Performance
 
-Because this card is built around heavy visual animations, it requires more processing power than a standard text dashboard. **It is not recommended for very old or slow wall tablets**, as the animations will likely stutter.
+Because this card uses dynamic animations, it naturally requires more power than a standard HA card. To compensate, a large part of the codebase is dedicated simply to keeping resource usage down. It runs conservative graphics settings by default to balance visuals and performance, but even with these efforts, it is not recommended for very old or slow devices.
 
-To keep your dashboard running smoothly, the card uses several tricks behind the scenes:
-* **Reusing Graphics:** Complex effects (like clouds, rain, snow, and glows) are drawn just once in the background. The card simply moves these flat pictures around instead of calculating the complicated math 30 times a second.
-* **Smart Pausing:** When you scroll the card out of view, the animations completely pause to save CPU. It keeps the graphics ready in memory so it doesn't freeze your screen when you scroll back up.
-* **Stutter Prevention:** It manages memory very strictly, which stops the browser from having to randomly pause the animations to clean things up.
-* **Fewer Updates:** It tracks exactly what Home Assistant is doing and only updates the text and weather graphics when something actually changes.
-* **Speed Limits:** The animation speed is capped at 30 frames per second. On extremely high-resolution screens (like 4K or Retina), it automatically scales down the internal graphics so it doesn't overload your device.
+<details>
+<summary><b>Performance Optimizations</b></summary>
+
+<br>
+
+To keep your dashboard running smoothly, the card uses a few behind-the-scenes techniques:
+
+* **Smart Graphics:** Complex weather effects are drawn once and reused, rather than being redrawn constantly.
+* **Auto-Pausing:** Animations stop completely when you scroll the card out of view to save power.
+* **Smooth Operation:** The code is optimized to prevent random freezing or stuttering.
+* **Efficient Updates:** The card only refreshes when your HA data actually changes.
+* **Display Adjustments:** It automatically limits animation speeds and scales down for high-resolution screens to avoid overloading your device.
+
+</details>
 
 > [!IMPORTANT]  
 > The card relies on standard **Hardware Acceleration** to run smoothly. If you experience heavy lag or high CPU usage (especially on Linux or Firefox setups where software rendering is often the default), please double-check that hardware acceleration is enabled in your browser or kiosk app.
