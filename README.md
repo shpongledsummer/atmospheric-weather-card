@@ -741,10 +741,10 @@ custom_cards:
 
 ## Colors
 
-The card's look is controlled by two things: your **`sun_entity`**, which handles the sun, moon, and stars in the sky, and your **theme**, which decides whether the card looks light or dark. By default, the sky follows the sun and the colors follow your Home Assistant theme. Here are the ways you can set this up.
+The card's look is controlled by two things: your **`sun_entity`**, which handles the sun, moon, and stars in the sky, and your **theme**, which decides whether the card looks light or dark. Here are the ways you can set this up.
 
 <details>
-<summary><strong>Default — follow your Home Assistant theme</strong></summary>
+<summary><strong>Follow your Home Assistant theme</strong></summary>
 
 <br>
 
@@ -753,8 +753,6 @@ Android and iOS can auto-toggle dark mode based on sunrise and sunset, and this 
 ```yaml
 sun_entity: sun.sun
 ```
-
-**Important Note on Themes:** Since many themes do not automatically switch based on the sun, you might want the card to ignore your theme and just follow the sun instead. Fully custom configurations to achieve this are explained below.
 
 </details>
 
