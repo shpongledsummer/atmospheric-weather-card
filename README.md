@@ -603,7 +603,7 @@ custom_cards:
 | `moon_phase_entity` | `string` | — | *Recommended.* Displays the correct moon phase (e.g., `sensor.moon_phase`). |
 
 > [!IMPORTANT]
-> `sun_entity` is what makes the sun, moon, and stars appear at the right times — without it the card is stuck in permanent day. By default, the card's colors follow your [Home Assistant theme](https://www.home-assistant.io/integrations/frontend/). See [Colors](#colors) if you want to change that.
+> The `sun_entity` controls the timing of the sun and moon. Without it, the card defaults to permanent day. Additionally, card colors change based on your configuration, see [Colors](#colors)  to learn how this works.
 
 <br>
 
