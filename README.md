@@ -401,7 +401,7 @@ custom_cards:
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/dd716851-b09a-4112-ad74-bbf605361857" />
 
-*(A look at my dashboard: Immersive mode, a custom background, and a few buttons. The theme and card follow the sun in sync.)*
+*(A look at my dashboard: Immersive mode, a custom image, and a few buttons. The theme and card follow the sun in sync.)*
 
 <br>
 
