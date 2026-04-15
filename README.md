@@ -408,29 +408,28 @@ custom_cards:
 
 <br>
 
-| Day | Night |
-| :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/a4b69e07-f1e9-4ac4-8f51-f4c4130b959d" width="100%"> | <img src="https://github.com/user-attachments/assets/2b34d41f-28c7-483b-8f08-98e7a197b129" width="100%"> |
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/ddc2788b-f0f0-4c19-90f6-f0151a8fc06a" /><br>
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/73427776-89f1-4831-9a71-fea18e8a2aff" />
 
 ```yaml
 
 
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
-theme_entity: sun.sun # Makes the card follow your sun cycle. Remove this if you'd rather it follow your HA theme — whichever fits your setup best.
+theme_entity: sun.sun
 card_style: immersive
-card_height: 150
+card_height: 120px
+card_padding: 16px
 stack_order: 1
-sun_moon_size: 35
+sun_moon_size: 40
 text_position: left
 text_alignment: center
 top_text_sensor: sensor.time
-disable_bottom_icon: true
-bottom_text_sensor: sensor.weather_description
-bottom_text_icon: mdi:weather-cloudy
+bottom_text_sensor: weather.your_weather_entity
+bottom_text_icon: weather
 offset: 0px 0px 0px 0px
-sun_moon_x_position: -80
-sun_moon_y_position: 80
+sun_moon_x_position: -60
+sun_moon_y_position: center
 moon_phase_entity: sensor.moon_phase
 tap_action:
   action: none
