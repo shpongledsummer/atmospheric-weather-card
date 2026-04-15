@@ -83,20 +83,22 @@ You can use either `card_style: standalone` for a self-contained card with dynam
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
-theme_entity: sun.sun # Makes the card follow your sun cycle. Remove this if you'd rather it follow your HA theme — whichever fits your setup best.
+theme_entity: sun.sun
 card_style: standalone
-card_height: 130
+card_height: 140px
+card_padding: 20px
 text_position: left
 text_alignment: spread
 sun_moon_size: 50
-sun_moon_x_position: -65
+sun_moon_x_position: -70
 sun_moon_y_position: center
-top_font_size: 3em
+top_font_size: 34px
 bottom_font_size: 16px
+bottom_text_icon: weather
 combine_text: false
 top_text_background: false
 bottom_text_background: true
-text_background_style: frosted
+text_background_style: pill
 sun_entity: sun.sun
 moon_phase_entity: sensor.moon_phase
 tap_action:
