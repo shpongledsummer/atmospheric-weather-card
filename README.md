@@ -4,7 +4,7 @@
 
 ## Atmospheric Weather Card
 
-<img width="500" alt="Image" src="https://github.com/user-attachments/assets/2dfb4850-a8bc-4005-a45b-da88b301a2f7" />
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/17da3677-70be-4da1-946b-2d06bf544af5" />
 
 
 A flexible, detail-oriented weather card for Home Assistant. It generates live, animated weather visuals based on your local conditions. You can run it standalone, embed other cards inside it, or use it as an immersive background.
@@ -72,8 +72,8 @@ You can use either `card_style: standalone` for a self-contained card with dynam
 
 ### Standalone
 
-<img width="500" alt="Image" src="https://github.com/user-attachments/assets/5cf69ebe-b4e3-49ad-b540-5e50f2b07412" /><br>
-<img width="500" alt="Image" src="https://github.com/user-attachments/assets/fa42821a-ac3a-4973-b678-602748e29bb9" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/5cf69ebe-b4e3-49ad-b540-5e50f2b07412" /><br>
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/fa42821a-ac3a-4973-b678-602748e29bb9" />
 
 <details>
 <summary><b>Example 1 — Basic Card (Default)</b></summary>
@@ -397,7 +397,7 @@ custom_cards:
 
 ### Immersive
 
-<img width="500" alt="Image" src="https://github.com/user-attachments/assets/dd716851-b09a-4112-ad74-bbf605361857" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/dd716851-b09a-4112-ad74-bbf605361857" />
 
 *(A look at my dashboard: Immersive mode, a custom background, and a few buttons. The theme and card follow the sun in sync.)*
 
