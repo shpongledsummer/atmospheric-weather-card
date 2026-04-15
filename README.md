@@ -15,7 +15,7 @@ A flexible, detail-oriented weather card for Home Assistant. It generates live, 
 
 **Getting Started** · [Installation](#installation) · [Usage Modes (examples)](#usage-modes) · [Setup](#setup)
 
-**Customization** · [Appearance](#appearance) · [Colors](#colors) · [Fonts & Icons](#fonts--icons) · [CSS Reference](#css-reference)
+**Customization** · [Appearance](#appearance) · [Color Mode](#colors) · [Fonts & Icons](#fonts--icons) · [CSS Reference](#css-reference)
 
 **Guides** · [Custom House Image](#custom-house-image) · [Smart Status Entity](#smart-status-entity) · [Companion Card](#companion-forecast-card)
 
@@ -740,7 +740,7 @@ custom_cards:
 
 <br>
 
-## Colors
+## Color Mode
 
 The card's look is controlled by two things: your **`sun_entity`**, which handles the sun, moon, and stars in the sky, and your **theme**, which decides whether the card looks light or dark. Here are the ways you can set this up.
 
