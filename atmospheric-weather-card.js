@@ -1,6 +1,6 @@
 /**
  * ATMOSPHERIC WEATHER CARD
- * Version: 3.7
+ * Version: 3.8
  * * A custom Home Assistant card that renders animated weather effects.
  * * https://github.com/shpongledsummer/atmospheric-weather-card
  */
@@ -306,7 +306,7 @@ const LIGHT_BAD_BOOST_TYPES = Object.freeze(new Set([
 // Cloud palette lookup table
 // Each entry: [litR,litG,litB, midR,midG,midB, shadowR,shadowG,shadowB, ambient, hlBase, hOff]
 const CLOUD_PALETTES = Object.freeze({
-    darkNight:    Object.freeze([210,222,244,  48, 60, 96,   8, 13, 32,  0.75, 0.66, 0.05]),
+    darkNight:    Object.freeze([215,225,245,  58, 72,112,  15, 22, 45,  0.72, 0.66, 0.05]),
     darkDay:      Object.freeze([218,228,250, 110,128,176,  52, 66,114,  0.86, 0.62, 0.07]),
     lightStorm:   Object.freeze([255,255,255, 192,200,222, 110,124,164,  1.00, 0.78, 0.16]),
     lightRain:    Object.freeze([255,255,255, 202,212,232, 120,136,174,  1.00, 0.80, 0.14]),
@@ -325,6 +325,46 @@ const CLOUD_TYPE_PROFILES = Object.freeze({
     scud:    Object.freeze([0.20, 0.65, 1.00, 1.08, 0.93]),
 });
 
+// Celestial glow profiles by atmosphere key
+// [R, G, B, intensity, breathAmp, breathPeriodMul, sizeMul]
+const GLOW_PROFILES = Object.freeze({
+    clear:       Object.freeze([255, 244, 210, 1.00, 1.0, 1.0, 1.0]),
+    fair:        Object.freeze([255, 240, 200, 0.95, 1.0, 1.1, 1.0]),
+    exceptional: Object.freeze([255, 246, 215, 1.00, 1.0, 1.0, 1.0]),
+    overcast:    Object.freeze([255, 248, 220, 1.00, 0.5, 1.7, 1.0]),
+    windy:       Object.freeze([252, 248, 225, 0.95, 0.6, 1.4, 1.0]),
+    mist:        Object.freeze([250, 240, 215, 0.80, 0.4, 2.0, 1.05]),
+    fog:         Object.freeze([250, 240, 215, 0.80, 0.4, 2.0, 1.05]),
+    rain:        Object.freeze([250, 238, 210, 0.55, 0.3, 2.0, 1.0]),
+    pouring:     Object.freeze([240, 225, 195, 0.40, 0.2, 2.2, 1.0]),
+    storm:       Object.freeze([232, 222, 200, 0.18, 0.1, 3.0, 1.0]),
+    snow:        Object.freeze([248, 244, 230, 0.70, 0.3, 1.8, 1.0]),
+});
+
+// Celestial cloud palettes — lit/mid/shadow per mood, used by _drawCelestialClouds.
+const CELESTIAL_CLOUD_PALETTES = Object.freeze({
+    warm: Object.freeze({
+        litR: 255, litG: 252, litB: 235,
+        midR: 252, midG: 230, midB: 188,
+        shadowR: 220, shadowG: 188, shadowB: 142
+    }),
+    cool: Object.freeze({
+        litR: 255, litG: 255, litB: 255,
+        midR: 215, midG: 224, midB: 240,
+        shadowR: 148, shadowG: 162, shadowB: 192
+    }),
+    moon: Object.freeze({
+        litR: 220, litG: 230, litB: 250,
+        midR: 130, midG: 148, midB: 185,
+        shadowR: 32, shadowG: 44, shadowB: 78
+    }),
+    darkDay: Object.freeze({
+        litR: 222, litG: 232, litB: 252,
+        midR: 148, midG: 165, midB: 208,
+        shadowR: 60, shadowG: 76, shadowB: 122
+    })
+});
+
 // Sky composition variants — randomly selected per init for visual variety
 const SKY_COMPOSITIONS = Object.freeze({
     fair: Object.freeze([
@@ -339,31 +379,31 @@ const SKY_COMPOSITIONS = Object.freeze({
         Object.freeze(['cirrus','cirrus','organic','organic','cumulus']),
     ]),
     overcast: Object.freeze([
-        Object.freeze(['stratus','stratus','stratus','stratus','organic','organic']),
-        Object.freeze(['stratus','stratus','stratus','organic','cumulus','cumulus']),
-        Object.freeze(['stratus','stratus','stratus','stratus','stratus','cumulus']),
-        Object.freeze(['organic','organic','organic','stratus','stratus','stratus']),
+        Object.freeze(['stratus','stratus','organic','organic','cumulus','cumulus']),
+        Object.freeze(['stratus','stratus','organic','cumulus','cumulus','organic']),
+        Object.freeze(['stratus','organic','organic','organic','cumulus','stratus']),
+        Object.freeze(['organic','organic','organic','stratus','stratus','cumulus']),
     ]),
     cloudy: Object.freeze([
-        Object.freeze(['stratus','stratus','stratus','stratus','organic','cumulus']),
+        Object.freeze(['stratus','stratus','cumulus','organic','organic','cumulus']),
         Object.freeze(['stratus','stratus','organic','organic','cumulus','cumulus']),
-        Object.freeze(['stratus','stratus','stratus','cumulus','cumulus','organic']),
-        Object.freeze(['organic','organic','stratus','stratus','stratus','cumulus']),
+        Object.freeze(['stratus','organic','cumulus','cumulus','organic','stratus']),
+        Object.freeze(['organic','organic','stratus','stratus','cumulus','cumulus']),
     ]),
     windy: Object.freeze([
-        Object.freeze(['cirrus','cirrus','cirrus','stratus','stratus','organic']),
-        Object.freeze(['stratus','stratus','cirrus','cirrus','organic','organic']),
-        Object.freeze(['cirrus','cirrus','cirrus','cirrus','stratus','stratus']),
+        Object.freeze(['cirrus','cirrus','cirrus','stratus','organic','cumulus']),
+        Object.freeze(['stratus','stratus','cirrus','cirrus','organic','cumulus']),
+        Object.freeze(['cirrus','cirrus','cirrus','stratus','cumulus','organic']),
     ]),
     snow: Object.freeze([
-        Object.freeze(['stratus','stratus','stratus','organic','organic','cumulus']),
-        Object.freeze(['stratus','stratus','organic','organic','organic','stratus']),
-        Object.freeze(['organic','organic','stratus','stratus','cumulus','stratus']),
+        Object.freeze(['stratus','stratus','organic','organic','organic','cumulus']),
+        Object.freeze(['stratus','stratus','organic','organic','cumulus','organic']),
+        Object.freeze(['organic','organic','stratus','stratus','cumulus','organic']),
     ]),
     rain: Object.freeze([
-        Object.freeze(['stratus','stratus','stratus','organic','organic','cumulus']),
-        Object.freeze(['organic','organic','stratus','stratus','stratus','cumulus']),
-        Object.freeze(['stratus','stratus','organic','cumulus','cumulus','stratus']),
+        Object.freeze(['stratus','stratus','organic','organic','cumulus','organic']),
+        Object.freeze(['organic','organic','stratus','stratus','organic','cumulus']),
+        Object.freeze(['stratus','stratus','organic','cumulus','cumulus','organic']),
     ]),
     _default: Object.freeze([
         Object.freeze(['cumulus','cumulus','organic','organic','stratus','cirrus']),
@@ -466,17 +506,21 @@ class CloudShapeGenerator {
         const seededRandom = this._seededRandom(seed);
         const s = baseUnit / 100;
         const puffCount = 8 + Math.floor(seededRandom() * 4);
+        // Per-cloud aspect variance: 1.3x-1.8x horizontal. Real clouds vary in shape;
+        // fixed aspect produces uniform blobs that read as fake.
+        const aspectH = 30 + seededRandom() * 10;
+        const aspectV = 20 + seededRandom() * 6;
 
         for (let i = 0; i < puffCount; i++) {
             const angle = (i / puffCount) * TWO_PI + seededRandom() * 0.8;
-            const dist = 0.3 + seededRandom() * 0.5;
+            const dist = 0.05 + seededRandom() * 0.85;
             puffs.push({
-                offsetX: Math.cos(angle) * 45 * s * dist,
-                offsetY: Math.sin(angle) * 25 * s * dist,
-                rad: (12 + seededRandom() * 18) * s,
+                offsetX: Math.cos(angle) * aspectH * s * dist,
+                offsetY: Math.sin(angle) * aspectV * s * dist,
+                rad: (15 + seededRandom() * 18) * s,
                 shade: 0.5 + seededRandom() * 0.4,
                 softness: 0.4 + seededRandom() * 0.4,
-                squash: 0.8 + seededRandom() * 0.2,
+                squash: 0.85 + seededRandom() * 0.18,
                 rotation: seededRandom() * 0.5,
                 depth: seededRandom()
             });
@@ -486,38 +530,110 @@ class CloudShapeGenerator {
         return puffs;
     }
 
-    static generateSunEnhancementPuffs(seed, baseUnit = 100) {
+    // Sun-decoration stratocumulus (~2:1). Depth zones map to the bake classifier
+    // in _drawCelestialClouds: <0.30 shadow, 0.30-0.65 body, >0.65 surface.
+    static generateSunDecorationPuffs(seed, baseUnit = 100) {
         const puffs = [];
         const seededRandom = this._seededRandom(seed);
         const s = baseUnit / 100;
-        const puffCount = 5 + Math.floor(seededRandom() * 3);
 
-        for (let i = 0; i < puffCount; i++) {
-            const spreadX = (i - puffCount / 2) * 12 * s + (seededRandom() - 0.5) * 8 * s;
-            const spreadY = (seededRandom() - 0.5) * 10 * s;
+        const halfWidth = (52 + seededRandom() * 14) * s;
+        const baselineY = (10 + seededRandom() * 4) * s;
+        const totalSpan = halfWidth * 2;
+
+        const bottomCount = 6 + Math.floor(seededRandom() * 2);
+        for (let i = 0; i < bottomCount; i++) {
+            const t = bottomCount === 1 ? 0.5 : i / (bottomCount - 1);
+            const x = -halfWidth + totalSpan * t + (seededRandom() - 0.5) * 6 * s;
+            const edge = Math.abs(x) / (halfWidth + 1);
+            const taper = 1 - Math.pow(edge, 1.6) * 0.30;
+            const rad = (22 + seededRandom() * 8) * s * taper;
+            const y = baselineY - rad * (0.85 + seededRandom() * 0.10);
             puffs.push({
-                offsetX: spreadX,
-                offsetY: spreadY,
-                rad: (10 + seededRandom() * 12) * s,
-                shade: 0.7 + seededRandom() * 0.3,
-                softness: 0.3 + seededRandom() * 0.3,
-                squash: 0.9 + seededRandom() * 0.1,
-                rotation: (seededRandom() - 0.5) * 0.5,
-                depth: seededRandom()
+                offsetX: x, offsetY: y, rad,
+                shade: 0.45 + seededRandom() * 0.10,
+                softness: 0.30,
+                squash: 0.95,
+                rotation: 0,
+                depth: seededRandom() * 0.25
             });
         }
 
-        for (let i = 0; i < 3; i++) {
+        const bodyCount = 6 + Math.floor(seededRandom() * 3);
+        for (let i = 0; i < bodyCount; i++) {
+            const t = bodyCount === 1 ? 0.5 : i / (bodyCount - 1);
+            const x = -halfWidth * 0.85 + totalSpan * 0.85 * t + (seededRandom() - 0.5) * 10 * s;
+            const edge = Math.abs(x) / (halfWidth + 1);
+            const taper = 1 - Math.pow(edge, 1.6) * 0.35;
+            const rad = (18 + seededRandom() * 12) * s * taper;
+            const y = baselineY - rad - (4 + seededRandom() * 8) * s;
             puffs.push({
-                offsetX: (seededRandom() - 0.5) * 40 * s,
-                offsetY: (seededRandom() - 0.5) * 15 * s,
-                rad: (7 + seededRandom() * 7) * s,
-                shade: 0.6 + seededRandom() * 0.3,
-                softness: 0.4 + seededRandom() * 0.3,
-                squash: 0.8,
-                rotation: seededRandom(),
-                depth: 0.5 + seededRandom() * 0.5
+                offsetX: x, offsetY: y, rad,
+                shade: 0.60 + seededRandom() * 0.15,
+                softness: 0.25,
+                squash: 1.0,
+                rotation: 0,
+                depth: 0.30 + seededRandom() * 0.32
             });
+        }
+
+        const crownCount = 3 + Math.floor(seededRandom() * 2);
+        for (let i = 0; i < crownCount; i++) {
+            const t = crownCount === 1 ? 0.5 : i / (crownCount - 1);
+            const x = -halfWidth * 0.50 + totalSpan * 0.50 * t + (seededRandom() - 0.5) * 10 * s;
+            const edge = Math.abs(x) / (halfWidth + 1);
+            const taper = 1 - Math.pow(edge, 1.8) * 0.35;
+            const rad = (14 + seededRandom() * 10) * s * taper;
+            const y = baselineY - (24 + seededRandom() * 14) * s - rad * 0.5;
+            puffs.push({
+                offsetX: x, offsetY: y, rad,
+                shade: 0.78 + seededRandom() * 0.15,
+                softness: 0.22,
+                squash: 0.92,
+                rotation: 0,
+                depth: 0.70 + seededRandom() * 0.30
+            });
+        }
+
+        puffs.sort((a, b) => a.depth - b.depth);
+        return puffs;
+    }
+
+    /**
+     * Layered wispy cirrus — designed for top-of-card accent clouds.
+     * Unlike generateMixedPuffs('cirrus') which produces parallel streaks of tiny puffs
+     * (the chain-of-ovals look), this generates 2-3 overlapping horizontal layers of
+     * chunky mid-size puffs. Layers share Y within ±8s band, puffs along each layer
+     * are spaced so they overlap (no gaps), creating a cohesive ~3:1 wide cloud.
+     */
+    static generateCirrusLayeredPuffs(seed, baseUnit = 100) {
+        const puffs = [];
+        const seededRandom = this._seededRandom(seed);
+        const s = baseUnit / 100;
+        const layerCount = 2 + Math.floor(seededRandom() * 2);
+        const layerSpan = 90 * s;
+
+        for (let L = 0; L < layerCount; L++) {
+            const layerY = (seededRandom() - 0.5) * 14 * s;
+            const layerOpacity = 0.65 + seededRandom() * 0.35;
+            const puffsInLayer = 7 + Math.floor(seededRandom() * 3);
+            const spacing = layerSpan / (puffsInLayer - 1);
+
+            for (let i = 0; i < puffsInLayer; i++) {
+                const x = -layerSpan / 2 + i * spacing + (seededRandom() - 0.5) * spacing * 0.45;
+                const yJitter = (seededRandom() - 0.5) * 8 * s;
+                const taper = 1 - Math.pow(Math.abs(x) / (layerSpan / 2 + 1), 1.6) * 0.55;
+                puffs.push({
+                    offsetX: x,
+                    offsetY: layerY + yJitter,
+                    rad: (14 + seededRandom() * 10) * s * taper,
+                    shade: (0.55 + seededRandom() * 0.30) * layerOpacity,
+                    softness: 0.45 + seededRandom() * 0.30,
+                    squash: 0.70 + seededRandom() * 0.20,
+                    rotation: (seededRandom() - 0.5) * 0.25,
+                    depth: L * 0.3 + seededRandom() * 0.3
+                });
+            }
         }
 
         puffs.sort((a, b) => a.depth - b.depth);
@@ -616,23 +732,29 @@ class CloudShapeGenerator {
                 });
             }
         } else if (variety === 'cirrus') {
-            const streakCount = 4 + Math.floor(seededRandom() * 3);
+            const layerCount = 2 + Math.floor(seededRandom() * 2);
+            const layerGap = 11 * s;
+            const layerSpan = 95 * s;
+            const baseY = -((layerCount - 1) * layerGap) / 2;
 
-            for (let sc = 0; sc < streakCount; sc++) {
-                const streakX = (sc - streakCount / 2) * 35 * s;
-                const streakAngle = (seededRandom() - 0.5) * 0.3;
-                const puffsInStreak = 6 + Math.floor(seededRandom() * 4);
+            for (let L = 0; L < layerCount; L++) {
+                const layerY = baseY + L * layerGap + (seededRandom() - 0.5) * 5 * s;
+                const layerOpacity = 0.65 + seededRandom() * 0.35;
+                const puffsInLayer = 13 + Math.floor(seededRandom() * 4);
+                const stepX = layerSpan / (puffsInLayer - 1);
 
-                for (let i = 0; i < puffsInStreak; i++) {
-                    const progress = i / puffsInStreak;
+                for (let i = 0; i < puffsInLayer; i++) {
+                    const x = -layerSpan / 2 + i * stepX + (seededRandom() - 0.5) * stepX * 0.40;
+                    const taper = 1 - Math.pow(Math.abs(x) / (layerSpan / 2 + 1), 1.6) * 0.45;
+                    const rad = (15 + seededRandom() * 9) * s * taper;
                     puffs.push({
-                        offsetX: streakX + progress * 40 * s * Math.cos(streakAngle),
-                        offsetY: progress * 30 * s * Math.sin(streakAngle) + (seededRandom() - 0.5) * 6 * s,
-                        rad: (8 + seededRandom() * 8 * (1 - progress * 0.5)) * s,
-                        shade: 0.5 + seededRandom() * 0.3,
-                        softness: 0.5 + seededRandom() * 0.3,
-                        squash: 0.4 + seededRandom() * 0.3,
-                        rotation: streakAngle + (seededRandom() - 0.5) * 0.5,
+                        offsetX: x,
+                        offsetY: layerY + (seededRandom() - 0.5) * 4 * s,
+                        rad,
+                        shade: (0.50 + seededRandom() * 0.30) * layerOpacity,
+                        softness: 0.50 + seededRandom() * 0.25,
+                        squash: 0.50 + seededRandom() * 0.20,
+                        rotation: (seededRandom() - 0.5) * 0.20,
                         depth: seededRandom()
                     });
                 }
@@ -754,6 +876,8 @@ class AtmosphericWeatherCard extends HTMLElement {
 
     get _isLightBackground() { return !this._isThemeDark; }
     get _isNight()           { return this._isTimeNight; }
+    get _isImmersive()       { return this._config.card_style !== 'standalone'; }
+    get _isDarkDayImmersive(){ return this._isImmersive && this._isThemeDark && !this._isTimeNight; }
 
     static _buildStyles() {
         return `
@@ -967,8 +1091,8 @@ class AtmosphericWeatherCard extends HTMLElement {
                 position: absolute; inset: 0; z-index: 10;
                 pointer-events: none; display: none;
                 flex-direction: column; box-sizing: border-box;
-                padding: var(--awc-card-padding, var(--ha-space-4, 16px)) calc(var(--awc-card-padding, var(--ha-space-4, 16px)) + var(--awc-text-side-offset, 4px));
-                gap: var(--awc-text-gap, 10px);
+                padding: var(--awc-card-padding, var(--ha-space-4, 16px));
+				gap: var(--awc-text-gap, 10px);
                 overflow: visible;
             }
 			
@@ -978,6 +1102,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                 font-family: var(--ha-font-family, var(--paper-font-body1_-_font-family, sans-serif));
                 transition: color 0.3s ease, text-shadow 0.3s ease;
                 min-width: 0; max-width: 100%;
+                box-sizing: border-box;
             }
             #temp-text {
                 font-size: var(--awc-top-font-size, clamp(24px, 11cqw, 52px));
@@ -992,7 +1117,9 @@ class AtmosphericWeatherCard extends HTMLElement {
                 font-weight: var(--awc-bottom-font-weight, 500); opacity: var(--awc-bottom-opacity, 0.7);
                 letter-spacing: 0.5px; white-space: nowrap; display: flex; gap: 6px;
                 align-items: center;
+                width: var(--awc-bottom-width, auto); /* <-- HIER NEU */
                 max-width: var(--awc-bottom-max-width, 100%);
+                box-sizing: border-box;
             }
             #bottom-text > ha-icon,
             #bottom-text > ha-state-icon,
@@ -1041,7 +1168,8 @@ class AtmosphericWeatherCard extends HTMLElement {
             #bottom-text.with-bg {
                 padding: var(--awc-bottom-bg-padding, 5px 10px);
                 border-radius: var(--awc-bottom-bg-radius, var(--awc-card-border-radius, var(--ha-card-border-radius, 12px)));
-                width: fit-content; align-items: center;
+                width: var(--awc-bottom-width, fit-content); /* <-- HIER NEU */
+                align-items: center;
                 text-shadow: none !important;
             }
 
@@ -1131,6 +1259,9 @@ class AtmosphericWeatherCard extends HTMLElement {
             @keyframes awc-marquee {
                 from { transform: translateX(0); }
                 to   { transform: translateX(-50%); }
+            }
+            .awc-marquee-host.awc-marquee-rtl .awc-marquee-track {
+                animation-direction: reverse;
             }
             @media (prefers-reduced-motion: reduce) {
                 .awc-marquee-host.is-animating .awc-marquee-track { animation: none; will-change: auto; }
@@ -1375,26 +1506,29 @@ class AtmosphericWeatherCard extends HTMLElement {
             img.style.left = ''; img.style.right = '';
             img.style.transform = '';
 
-            const marginVar = 'calc(var(--ha-view-sections-narrow-column-gap, var(--ha-card-margin, 16px)) * 1)';
+            // Shift the image inward by the card's padding on whichever edges
+            // it's anchored to, matching how text and embedded cards respect
+            // --awc-card-padding. Same fallback chain as those elements.
+            const padVar = 'var(--awc-card-padding, var(--ha-space-4, 16px))';
             const [v, h] = align === 'center' ? ['center', 'center'] : align.split('-');
             const t = [];
 
             if (h === 'left') {
-                img.style.left = marginVar; img.style.right = 'auto';
+                img.style.left = padVar; img.style.right = 'auto';
             } else if (h === 'center') {
                 img.style.left = '50%'; img.style.right = 'auto';
                 t.push('translateX(-50%)');
             } else {
-                img.style.right = marginVar; img.style.left = 'auto';
+                img.style.right = padVar; img.style.left = 'auto';
             }
 
             if (v === 'top') {
-                img.style.top = '0'; img.style.bottom = 'auto';
+                img.style.top = padVar; img.style.bottom = 'auto';
             } else if (v === 'center') {
                 img.style.top = '50%'; img.style.bottom = 'auto';
                 t.push('translateY(-50%)');
             } else {
-                img.style.bottom = '0'; img.style.top = 'auto';
+                img.style.bottom = padVar; img.style.top = 'auto';
             }
 
             img.style.transform = t.join(' ');
@@ -1673,31 +1807,20 @@ class AtmosphericWeatherCard extends HTMLElement {
         // --- Visibility flags ---
         const goodWeather = state === 'sunny' || state === 'partlycloudy' ||
                             state === 'clear-night' || state === 'exceptional';
-        const showSun = !isNight && goodWeather;
 
-        let showCloudySun = false;
-        if (!isNight) {
-            const isBad = !!(p?.dark) ||
-                type === 'rain' || type === 'hail' || type === 'lightning' ||
-                type === 'pouring' || type === 'snowy' || type === 'snowy-rainy';
-            const isOvercastType = state === 'cloudy' || state === 'windy' ||
-                                   state === 'windy-variant' || state === 'fog';
-            const isStandalone = this._config.card_style === 'standalone';
-
-            if (isStandalone) {
-                // logic for standalone so it doesn't fight the CSS gradients
-                showCloudySun = !isDark && isOvercastType && !isBad;
-            } else {
-                // Immersive mode: render the diffuse glow anytime it's not clear skies
-                showCloudySun = !goodWeather;
-            }
-        }
+        // --- Celestial glow (unified sun/cloudy-sun) ---
+        const isStandaloneEarly = this._config.card_style === 'standalone';
+        const isDarkDayImmersive = this._isDarkDayImmersive;
+        const glow = this._computeGlowParams(
+            state, type, atm, p, goodWeather,
+            isDark, isNight, isStandaloneEarly, isDarkDayImmersive
+        );
 
         // --- Rain color base ---
         const rainRgb = isLight ? '58, 72, 100' : '210, 225, 255';
 
         // Star mode: glow (dark night), golden (light immersive night), hidden
-        const isStandalone = this._config.card_style === 'standalone';
+        const isStandalone = isStandaloneEarly;
         let starMode = 'hidden';
         if (isNight) {
             if (isDark) {
@@ -1708,29 +1831,27 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
 
         // Cloud palette evaluated once; render loop reads flat values
-        const cp = this._computeCloudPalette(isDark, isNight, isLight, p, type, atm);
+        const cp = this._computeCloudPalette(isDark, isNight, isLight, p, type, atm, isStandalone);
 
         // --- Cloud global opacity ---
         const cloudGlobalOp = isDark ? 0.70 : 0.84;
 
-        // --- Celestial cloud palette: warm (sun-lit), cool (overcast day), darkDay (forced dark), moon (night) ---
+        // --- Celestial cloud palette: warm (sun-lit), cool (overcast day), darkDay (standalone forced dark), moon (night & immersive forced dark) ---
         let celestialCloudPalette;
         if (isNight) celestialCloudPalette = 'moon';
-        else if (isDark) celestialCloudPalette = 'darkDay';
+        else if (isDark) celestialCloudPalette = isStandalone ? 'darkDay' : 'moon';
         else celestialCloudPalette = p?.sunCloudWarm ? 'warm' : 'cool';
 
         // Invalidate cached gradients; lazily rebuilt on next frame
         this._sunDiscGrad = this._sunDiscGradR = null;
-        this._haloGrad = this._haloGradR = null;
-        this._cloudySunGradDark = this._cloudySunGradDarkR = null;
-        this._csCoronaGrad = this._csCoronaGradR = null;
-        this._csGlowMoon = this._csGlowDay = this._moonCache = this._rainGrad = null;
+        this._haloGrad = this._haloGradR = this._haloGradColor = null;
+        this._diffuseGlowCache = null;
+        this._moonCache = this._rainGrad = null;
 
         this._renderState = {
             isBadWeatherForComets,
             isSevereWeather,
-            showSun,
-            showCloudySun,
+            glow,
             rainRgb,
             cloudGlobalOp,
             starMode,
@@ -1743,11 +1864,104 @@ class AtmosphericWeatherCard extends HTMLElement {
     }
 
     /**
+     * Computes celestial glow parameters (unified sun + cloudy-sun).
+     * Returns null when glow should not render (night, or standalone-dark non-overcast).
+     * Fields: active, showDisc, showHalo, drawPhase, color[R,G,B], intensity,
+     *         breathAmp, breathPeriodMul, sizeMul, compOp, cacheKey.
+     */
+    _computeGlowParams(state, type, atm, p, goodWeather, isDark, isNight, isStandalone, isDarkDayImmersive) {
+        if (isNight) return null;  // moon system handles night
+
+        const isBad = !!(p?.dark) || BAD_WEATHER_TYPES.has(type);
+        const isOvercastType = state === 'cloudy' || state === 'windy' ||
+                               state === 'windy-variant' || state === 'fog';
+
+        let active, showDisc, showHalo, drawPhase;
+
+        if (goodWeather) {
+            // Direct sun visible: crisp disc + breath annulus + halo rings
+            active = true;
+            showDisc = true;
+            showHalo = true;
+            drawPhase = 'bg';
+        } else if (isStandalone) {
+            // Standalone relies on CSS background for atmosphere; only diffuse in light-overcast.
+            // Dark-theme standalone draws no JS glow (CSS gradient carries the mood).
+            active = !isDark && isOvercastType && !isBad;
+            showDisc = false;
+            showHalo = false;
+            drawPhase = 'mid-post';
+        } else {
+            // Immersive: JS glow is the primary atmospheric cue — always render
+            active = true;
+            showDisc = false;
+            showHalo = false;
+            drawPhase = isDark ? 'mid-pre' : 'mid-post';
+        }
+
+        if (!active) return null;
+
+        const prof = GLOW_PROFILES[atm] || GLOW_PROFILES.fair;
+        let color = [prof[0], prof[1], prof[2]];
+        let intensity = prof[3];
+        const breathAmp = prof[4];
+        const breathPeriodMul = prof[5];
+        let sizeMul = prof[6];
+        let glowBoost = 1.0;
+
+        // Context overrides — "forced dark day" and immersive-specific tuning
+        if (isDarkDayImmersive) {
+            // Warm golden backlight through cool clouds
+            color = [225, 200, 150]; 
+            intensity *= 0.7; 
+            sizeMul *= 1.7;
+        } else if (isStandalone && isDark && !isNight && goodWeather) {
+            // Specific tuning for Standalone Forced Dark Day (Clear skies)
+            // Slightly darker amber color
+            color = [225, 200, 150];
+            // Reduce the halo intensity by 20%
+            intensity *= 0.70; 
+        } else if (!isStandalone && !isDark && goodWeather) {
+            // Immersive light: pale cream vanishes on near-white bg; saturate + boost.
+            color = [255, 195, 105];
+            intensity *= 1.3;
+            glowBoost = 1.30;
+        } else if (!isStandalone && !showDisc) {
+            // Immersive diffuse without CSS bg: boost to carry the atmosphere alone
+            intensity *= 1.4;
+        }
+
+        // Diffuse glow uses 'screen' on dark backgrounds (brightens through clouds).
+        // On light backgrounds screen is a no-op against near-white, so we fall back
+        // to 'source-over' which blends the warm color as a visible tint.
+        const compOp = showDisc ? null : (isDark ? 'screen' : 'source-over');
+
+        // Cache key for the diffuse gradient — invalidates when color or size changes
+        const cacheKey = showDisc ? null
+            : `${color[0]}_${color[1]}_${color[2]}_${sizeMul.toFixed(2)}`;
+
+        return {
+            active: true,
+            showDisc,
+            showHalo,
+            drawPhase,
+            color,
+            intensity,
+            breathAmp,
+            breathPeriodMul,
+            sizeMul,
+            compOp,
+            cacheKey,
+            glowBoost,
+        };
+    }
+
+    /**
      * Computes the cloud rendering color palette.
      * Returns a flat object with lit/mid/shadow/flash RGB channels,
      * ambient, highlightOffsetBase, hOffset, and per-puff modifier flags.
      */
-    _computeCloudPalette(isDark, isNight, isLight, p, type, atm) {
+    _computeCloudPalette(isDark, isNight, isLight, p, type, atm, isStandalone) {
         // --- Flash colors (lightning sheet flash) ---
         const fc = isDark ? FLASH_COLORS.dark : FLASH_COLORS.light;
         const { litR: flashLitR, litG: flashLitG, litB: flashLitB,
@@ -1759,7 +1973,8 @@ class AtmosphericWeatherCard extends HTMLElement {
         if (isDark && isNight) {
             mood = 'darkNight';
         } else if (isDark) {
-            mood = 'darkDay';
+            // Immersive dark-day reuses night palette — silver-rim clouds work against any dark dashboard.
+            mood = isStandalone ? 'darkDay' : 'darkNight';
         } else if (p?.dark || BAD_WEATHER_TYPES.has(type) || p?.foggy) {
             mood = (p?.thunder || STORM_TYPES.has(type)) ? 'lightStorm' : 'lightRain';
         } else if (atm === 'fair' || atm === 'clear') {
@@ -1783,7 +1998,10 @@ class AtmosphericWeatherCard extends HTMLElement {
         const isBadType = LIGHT_BAD_BOOST_TYPES.has(type) || p?.foggy;
         const isRainyBoost = isLight && !isDark && isBadType;
         const isStormOverride = isRainyBoost && (p?.thunder || STORM_TYPES.has(type));
-        const rainyOpacityMul = (isRainyBoost && !isStormOverride) ? 1.10 : 1.0;
+        // Standalone has a CSS sky backdrop that swallows thin cloud bottoms, so the +10%
+        // rainy boost improves readability. Immersive has no such backdrop — the boost
+        // there stacks with overlapping cloud haloes and reintroduces grey-mush bottoms.
+        const rainyOpacityMul = (isRainyBoost && !isStormOverride && !this._isImmersive) ? 1.10 : 1.0;
 
         return {
             litR, litG, litB,
@@ -1963,14 +2181,17 @@ class AtmosphericWeatherCard extends HTMLElement {
             const nightWeatherOp = { storm: 0.08, pouring: 0.10, rain: 0.14, snow: 0.22, overcast: 0.28, windy: 0.28, mist: 0.20, fog: 0.20, fair: 0.80 };
             const weatherFactor = nightWeatherOp[atm] ?? 1.0;
             const nightOp = (0.20 + illum * 0.30) * weatherFactor;
-            const isStandalone = this._config.card_style === 'standalone';
-            const isImmersiveLight = !this._isThemeDark && !isStandalone;
+            const forcedLight = !this._isThemeDark;
 
-            const moonStyle = (this._config.moon_style || 'blue').toLowerCase();
+            // Colored moon_style drives the glow tint in both modes. Unset or
+            // unknown values fall back to the original per-theme defaults.
+            const rawStyle = (this._config.moon_style || '').toLowerCase();
+            const coloredRgbMap = { yellow: '255,200,50', blue: '100,125,175', purple: '140,115,175', grey: '105,110,120' };
             let moonRgb;
-            if (isImmersiveLight) {
-                const moonRgbMap = { yellow: '255,200,50', purple: '140,115,175', grey: '105,110,120' };
-                moonRgb = moonRgbMap[moonStyle] || '100,125,175';
+            if (coloredRgbMap[rawStyle]) {
+                moonRgb = coloredRgbMap[rawStyle];
+            } else if (forcedLight) {
+                moonRgb = '100,125,175';
             } else {
                 moonRgb = this._isLightBackground ? '218,228,255' : '190,210,255';
             }
@@ -1995,7 +2216,7 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
         root.classList.toggle('time-day', !this._isTimeNight);
 
         // === STANDALONE-ONLY: background gradients, weather classes, film grain ===
-        if (this._config.card_style !== 'standalone') {
+        if (this._isImmersive) {
             if (this._prevStyleSig !== null) {
                 root.classList.remove(
                     'standalone',
@@ -2062,10 +2283,16 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
         }
 
         const bottomWidthRaw = this._config.bottom_text_width || '';
-        const bottomWidth = bottomWidthRaw ? String(bottomWidthRaw).trim().replace(/%\s*$/, 'cqw') : '';
+        const bottomWidth = bottomWidthRaw ? String(bottomWidthRaw).trim() : '';
         if (this._prevBottomWidth !== bottomWidth) {
             this._prevBottomWidth = bottomWidth;
-            bottomWidth ? root.style.setProperty('--awc-bottom-max-width', bottomWidth) : root.style.removeProperty('--awc-bottom-max-width');
+            if (bottomWidth) {
+                root.style.setProperty('--awc-bottom-width', bottomWidth);
+                root.style.setProperty('--awc-bottom-max-width', bottomWidth);
+            } else {
+                root.style.removeProperty('--awc-bottom-width');
+                root.style.removeProperty('--awc-bottom-max-width');
+            }
             requestAnimationFrame(() => this._measureMarquee());
         }
 
@@ -2080,6 +2307,12 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
         const marqueeSpeed = Math.max(5, parseFloat(this._config.bottom_text_marquee_speed) || 30);
         if (this._marqueeSpeed !== marqueeSpeed) {
             this._marqueeSpeed = marqueeSpeed;
+            requestAnimationFrame(() => this._measureMarquee());
+        }
+
+        const marqueeRtl = this._config.bottom_text_marquee_rtl === true;
+        if (this._marqueeRtl !== marqueeRtl) {
+            this._marqueeRtl = marqueeRtl;
             requestAnimationFrame(() => this._measureMarquee());
         }
 
@@ -2328,6 +2561,7 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
         const host = bt.querySelector('.awc-marquee-host');
         const track = host?.querySelector('.awc-marquee-track');
         if (!host || !track) return;
+        host.classList.toggle('awc-marquee-rtl', this._marqueeRtl === true);
         if (host.clientWidth === 0) return;
 
         const firstText = track.querySelector('.awc-marquee-text');
@@ -2411,7 +2645,7 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
     
     static async getConfigElement() {
         if (!customElements.get("atmospheric-weather-card-editor")) {
-            await import("./atmospheric-weather-card-editor.js?v=3.31");
+            await import("./atmospheric-weather-card-editor.js?v=3.47");
         }
         return document.createElement("atmospheric-weather-card-editor");
     }
@@ -2443,6 +2677,7 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
 			bottom_text_width: '',
 			bottom_text_overflow: 'ellipsis',
 			bottom_text_marquee_speed: 30,
+			bottom_text_marquee_rtl: false,
             tap_action: {
                 action: 'more-info',
                 entity: 'weather.your_weather_entity'
@@ -2995,13 +3230,19 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
     }
 
     _initClouds(w, h, p) {
-        const isStandalone = this._config.card_style === 'standalone';
-        const heightLimit  = isStandalone ? 0.75 : 0.55;
+        const isStandalone = !this._isImmersive;
+        // Immersive dark-day has no sky layer, so clouds must cover more vertical space.
+        const isDarkDayImmersive = this._isDarkDayImmersive;
+        const heightLimit  = isStandalone ? 0.75 : (isDarkDayImmersive ? 0.72 : 0.55);
         const totalClouds  = p.cloud || 0;
         if (totalClouds <= 0) return;
         const configScale = p.scale || 1.0;
         const isStorm     = p.dark;
         const isHeavy     = totalClouds >= 18;
+
+        // Per-session size-distribution bias: -0.08 (wispy sky) to +0.08 (chunky sky)
+        // Shifts rollLarge/rollMedium probabilities so reloads yield visibly different mixes.
+        this._sessionSizeBias = (Math.random() - 0.5) * 0.16;
 
         // ── Height-proportional cloud anatomy ──
         // baseUnit drives the CloudShapeGenerator so internal puff proportions
@@ -3075,7 +3316,6 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
         const typePool = compositions[Math.floor(Math.random() * compositions.length)];
 
         for (let i = 0; i < mainCount; i++) {
-            const layer = 1 + (i % 4);
             const seed  = Math.random() * 10000;
 
             // ── Cluster-based X/Y with loner escape ──
@@ -3099,6 +3339,16 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
                 type = typePool[Math.floor(Math.random() * typePool.length)];
             }
 
+            let layer;
+            switch (type) {
+                case 'cumulus': layer = Math.random() < 0.5 ? 1 : 2; break;
+                case 'organic': layer = Math.random() < 0.5 ? 1 : 2; break;
+                case 'stratus': layer = Math.random() < 0.5 ? 2 : 3; break;
+                case 'cirrus':  layer = Math.random() < 0.5 ? 3 : 4; break;
+                case 'storm':   layer = Math.random() < 0.5 ? 1 : 2; break;
+                default:        layer = 2; break;
+            }
+
             let puffs;
             switch (type) {
                 case 'storm':   puffs = CloudShapeGenerator.generateOrganicPuffs(true, seed, baseUnit); break;
@@ -3111,13 +3361,13 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
             let scaleX, scaleY, radiusMod;
             switch (type) {
                 case 'stratus':
-                    scaleX = 1.98 + Math.random() * 0.9;
-                    scaleY = 0.525 + Math.random() * 0.26;
+                    scaleX = 1.58 + Math.random() * 0.72;
+                    scaleY = 0.58 + Math.random() * 0.28;
                     radiusMod = 0.95;
                     break;
                 case 'cirrus':
-                    scaleX = 2.5 + Math.random() * 1.2;
-                    scaleY = 0.3 + Math.random() * 0.15;
+                    scaleX = 2.0 + Math.random() * 0.96;
+                    scaleY = 0.33 + Math.random() * 0.17;
                     radiusMod = 0.85;
                     break;
                 case 'organic':
@@ -3168,18 +3418,18 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
             
             const sizeBoost = configScale * 1.0; 
             
-            const rollLarge = isHeavy ? 0.40 : 0.20;
-            const rollMedium = isHeavy ? 0.85 : 0.65;
+            const rollLarge = isHeavy ? (0.40 + this._sessionSizeBias) : (0.20 + this._sessionSizeBias);
+            const rollMedium = isHeavy ? (0.88 + this._sessionSizeBias * 0.5) : (0.72 + this._sessionSizeBias * 0.5);
 
-            if (sizeRoll < rollLarge)       cloudScale = (1.2  + Math.random() * 0.60) * sizeBoost * layerSizeBias;
+            if (sizeRoll < rollLarge)       cloudScale = (1.2  + Math.random() * 0.90) * sizeBoost * layerSizeBias;
             else if (sizeRoll < rollMedium) cloudScale = (0.7  + Math.random() * 0.35) * sizeBoost * layerSizeBias;
-            else                            cloudScale = (0.58 + Math.random() * 0.18) * sizeBoost * layerSizeBias;
+            else                            cloudScale = (0.62 + Math.random() * 0.14) * sizeBoost * layerSizeBias;
             cloudScale = Math.min(cloudScale, 2.8);
 
             if (cloudScale < 0.75 && puffs) {
                 const t = (0.75 - cloudScale) / 0.75;
-                const spread = 1.0 + t * 2.2;
-                const shrink = 1.0 - t * 0.3;
+                const spread = 1.0 + t * 1.0;
+                const shrink = 1.0 - t * 0.15;
                 for (let k = 0; k < puffs.length; k++) {
                     puffs[k].offsetX *= spread;
                     puffs[k].offsetY *= spread;
@@ -3191,9 +3441,15 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
             let yMin, yMax;
             switch (type) {
                 case 'cirrus':  yMin = 0.04; yMax = 0.22; break;
-                case 'stratus': yMin = 0.08; yMax = 0.38; break;
-                case 'cumulus': yMin = 0.16; yMax = heightLimit - 0.06; break;
-                default:        yMin = 0.10; yMax = heightLimit - 0.04; break;
+                case 'stratus': yMin = 0.10; yMax = 0.42; break;
+                case 'cumulus': yMin = 0.20; yMax = heightLimit - 0.06; break;
+                default:        yMin = 0.12; yMax = heightLimit - 0.04; break;
+            }
+
+            // Extend stratus/cirrus range in immersive dark-day; card edges serve as horizon.
+            if (isDarkDayImmersive) {
+                if (type === 'stratus')      yMax = 0.48;
+                else if (type === 'cirrus')  yMax = 0.35;
             }
 
             // Y from type range, biased slightly toward cluster center
@@ -3224,7 +3480,7 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
             // Companion stratus: spawn a thin wide cloud behind larger cumulus/organic.
             // Creates the natural "layered" look of different cloud types together.
             if (!isStorm && (type === 'cumulus' || type === 'organic') &&
-                cloudScale > 0.75 * configScale && Math.random() < 0.20) {
+                cloudScale > 0.75 * configScale && Math.random() < 0.45) {
                 const cSeed = Math.random() * 10000;
                 const cPuffs = CloudShapeGenerator.generateMixedPuffs(cSeed, 'stratus', baseUnit);
                 const cScaleX = 2.2 + Math.random() * 0.8;
@@ -3257,30 +3513,29 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
         }
 
         if (!isStorm && totalClouds >= 12) {
-            const accentCount = 2 + Math.floor(Math.random() * 2);
+            const accentCount = 1 + Math.floor(Math.random() * 2);
             for (let i = 0; i < accentCount; i++) {
                 const seed = Math.random() * 10000;
-                const cPuffs = CloudShapeGenerator.generateMixedPuffs(seed, 'cirrus', baseUnit);
-                const cScaleX = 2.2 + Math.random() * 1.0;
-                const cScaleY = 0.3 + Math.random() * 0.15;
+                const cPuffs = CloudShapeGenerator.generateCirrusLayeredPuffs(seed, baseUnit);
+                const cScaleX = 1.5 + Math.random() * 0.5;
+                const cScaleY = 0.58 + Math.random() * 0.18;
                 for (let k = 0; k < cPuffs.length; k++) {
                     cPuffs[k].offsetX *= cScaleX;
                     cPuffs[k].offsetY *= cScaleY;
-                    cPuffs[k].rad *= 0.85;
                 }
                 this._clouds.push({
                     x: Math.random() * w,
-                    y: h * (0.04 + Math.random() * 0.14),
-                    scale: (0.9 + Math.random() * 0.5) * configScale,
+                    y: h * (0.05 + Math.random() * 0.12),
+                    scale: (1.0 + Math.random() * 0.4) * configScale,
                     speed: 0.015 + Math.random() * 0.01,
                     puffs: cPuffs, cloudType: 'cirrus',
                     layer: Math.floor(Math.random() * 2),
-                    opacity: 0.45 + Math.random() * 0.20,
+                    opacity: 0.55 + Math.random() * 0.20,
                     seed, breathPhase: Math.random() * TWO_PI,
                     breathSpeed: 0.002, flashIntensity: 0,
                     flashOriginX: 0, flashOriginY: 0,
-                    _hStretch: 1.4,
-                    _vCompress: baseVCompress * 0.82
+                    _hStretch: 1.0,
+                    _vCompress: baseVCompress * 0.95
                 });
             }
         }
@@ -3288,17 +3543,22 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
         this._clouds.sort((a, b) => a.layer - b.layer);
 
         if (totalClouds > 0) {
-            const scudCount = 2 + Math.floor(Math.random() * 3);
+            // Immersive dark-day uses more scud in middle-lower region as atmospheric foreground.
+            const scudCount = isDarkDayImmersive
+                ? 4 + Math.floor(Math.random() * 3)
+                : 2 + Math.floor(Math.random() * 3);
             for (let i = 0; i < scudCount; i++) {
                 const seed = Math.random() * 10000;
                 this._fgClouds.push({
                     x: Math.random() * w,
-                    y: Math.random() * (h * heightLimit) - 40,
+                    y: isDarkDayImmersive
+                        ? h * 0.30 + Math.random() * (h * 0.45)
+                        : Math.random() * (h * heightLimit) - 40,
                     scale: (0.8 + Math.random() * 0.4) * configScale * 1.8,
                     speed: 0.1 + Math.random() * 0.06,
                     puffs: CloudShapeGenerator.generateMixedPuffs(seed, 'cumulus', baseUnit),
                     cloudType: 'scud', layer: 5,
-                    opacity: 0.65,
+                    opacity: isDarkDayImmersive ? 0.45 : 0.65,
                     seed, breathPhase: Math.random() * TWO_PI,
                     breathSpeed: 0.004,
                     flashIntensity: 0, flashOriginX: 0, flashOriginY: 0,
@@ -3340,10 +3600,11 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
         const isExceptional = (this._params.cloud || 0) === 0;
         const isNight = this._isNight;
         const isDarkDay = !isNight && this._isThemeDark;
+        const isDarkDayImmersive = this._isDarkDayImmersive;
 
         const opMul = isNight
             ? (this._isThemeDark ? 0.35 : 0.55)
-            : (isDarkDay ? 0.45 : 1.0);
+            : (isDarkDayImmersive ? 0.75 : (isDarkDay ? 0.45 : 1.0));
 
         // Centered halo cloud: diffuse glow around the celestial body
         if (!isNight) {
@@ -3353,34 +3614,34 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
                 scale: decorStyle ? 2.2 : 1.8,
                 speed: 0.002,
                 puffs: CloudShapeGenerator.generateWispyPuffs(Math.random() * 10000),
-                opacity: isDarkDay ? 0.10 : (decorStyle ? 0.20 : 0.15),
+                opacity: isDarkDayImmersive ? 0.22 : (isDarkDay ? 0.10 : (decorStyle ? 0.20 : 0.15)),
                 seed: Math.random(),
                 breathPhase: 0,
                 breathSpeed: 0.001,
                 baseX: cx,
                 baseY: cy,
                 driftPhase: 0,
-                _vSquash: 0.68
+                _vSquash: 1.0
             });
         }
 
         // Decorative wisps for non-warm daytime states (overcast, rain, snow, etc.)
         if (decorStyle) {
-            const count = isDarkDay ? Math.max(2, decorStyle.count - 2) : decorStyle.count;
+            const baseCount = Math.max(2, decorStyle.count - 1);
+            const count = isDarkDayImmersive
+                ? baseCount
+                : (isDarkDay ? Math.max(2, baseCount - 2) : baseCount);
             for (let i = 0; i < count; i++) {
                 const angle = (i / count) * TWO_PI + (Math.random() - 0.5) * 0.8;
                 const dist = 35 + Math.random() * 30;
                 const dx = Math.cos(angle) * dist;
                 const dy = Math.sin(angle) * dist * 0.45 + 8;
-                const useCirrus = Math.random() < 0.35;
                 this._celestialClouds.push({
                     x: cx + dx,
                     y: cy + dy,
                     scale: decorStyle.baseScale + Math.random() * 0.15,
                     speed: 0.006,
-                    puffs: useCirrus
-                        ? CloudShapeGenerator.generateMixedPuffs(Math.random() * 10000, 'cirrus')
-                        : CloudShapeGenerator.generateWispyPuffs(Math.random() * 10000),
+                    puffs: CloudShapeGenerator.generateSunDecorationPuffs(Math.random() * 10000),
                     opacity: (decorStyle.baseOpacity + Math.random() * 0.10) * opMul,
                     seed: Math.random(),
                     breathPhase: Math.random() * TWO_PI,
@@ -3388,7 +3649,7 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
                     baseX: cx + dx,
                     baseY: cy + dy,
                     driftPhase: Math.random() * TWO_PI,
-                    _vSquash: useCirrus ? 0.48 : 0.65
+                    _vSquash: 1.0
                 });
             }
         }
@@ -3397,68 +3658,55 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
         const scatterCount = isExceptional ? 2 : (isNight ? 4 : (isDarkDay ? 4 : scatterBase));
         const scatterOpMul = decorStyle ? opMul * 0.70 : opMul;
 
-        for (let i = 0; i < scatterCount; i++) {
-            const dx = (Math.random() - 0.5) * 140;
-            const dy = 10 + Math.random() * 65;
-            const sizeRoll = Math.random();
-            const shapeRoll = Math.random();
+        // Zoned composition around the celestial body. Three bands with distinct roles:
+        //  - hero-below: 1-2 larger clouds below-and-slightly-offset (drama, partial occlusion)
+        //  - side-anchor: mid-size flanking clouds, can overlap hero for layered mass
+        //  - top-catch: smaller wisps above the sun that pick up rim-lighting
+        // Distribution is biased so counts scale with scatterCount but never produce a
+        // uniform ring of identical blobs.
+        const heroCount = scatterCount >= 5 ? 2 : 1;
+        const topCount = isExceptional ? 1 : Math.max(1, Math.floor(scatterCount * 0.28));
+        const sideCount = Math.max(1, scatterCount - heroCount - topCount);
 
-            let puffs, vSquash;
-            if (isNight || isDarkDay) {
-                puffs = CloudShapeGenerator.generateWispyPuffs(Math.random() * 10000);
-                vSquash = 0.66;
-            } else if (shapeRoll < 0.35) {
-                puffs = CloudShapeGenerator.generateOrganicPuffs(false, Math.random() * 10000);
-                vSquash = 0.68;
-            } else if (shapeRoll < 0.55) {
-                puffs = CloudShapeGenerator.generateMixedPuffs(Math.random() * 10000, 'cirrus');
-                vSquash = 0.50;
-            } else if (shapeRoll < 0.75) {
-                puffs = CloudShapeGenerator.generateWispyPuffs(Math.random() * 10000);
-                vSquash = 0.68;
-            } else {
-                puffs = CloudShapeGenerator.generateSunEnhancementPuffs(Math.random() * 10000);
-                vSquash = 0.70;
-            }
-
-            const scale = sizeRoll < 0.20 ? (0.25 + Math.random() * 0.15)
-                        : sizeRoll > 0.85 ? (0.70 + Math.random() * 0.22)
-                        :                    (0.35 + Math.random() * 0.35);
-
+        const pushCelestial = (ox, oy, scale, vSquash, opBase) => {
             this._celestialClouds.push({
-                x: cx + dx,
-                y: cy + dy,
+                x: cx + ox,
+                y: cy + oy,
                 scale,
                 speed: 0.004 + Math.random() * 0.004,
-                puffs,
-                opacity: (0.35 + Math.random() * 0.40) * scatterOpMul,
+                puffs: CloudShapeGenerator.generateSunDecorationPuffs(Math.random() * 10000),
+                opacity: opBase * scatterOpMul,
                 seed: Math.random(),
                 breathPhase: Math.random() * TWO_PI,
                 breathSpeed: 0.002 + Math.random() * 0.002,
-                baseX: cx + dx,
-                baseY: cy + dy,
+                baseX: cx + ox,
+                baseY: cy + oy,
                 driftPhase: Math.random() * TWO_PI,
                 _vSquash: vSquash
             });
+        };
+
+        // Hero clouds: below and slightly to the side, biggest, most opaque, slight overlap
+        for (let i = 0; i < heroCount; i++) {
+            const side = heroCount === 1 ? (Math.random() < 0.5 ? -1 : 1) : (i === 0 ? -1 : 1);
+            const ox = side * (20 + Math.random() * 40);
+            const oy = 35 + Math.random() * 45;
+            pushCelestial(ox, oy, 0.78 + Math.random() * 0.24, 1.0, 0.55 + Math.random() * 0.20);
         }
 
-        const wispCount = isExceptional ? 0 : ((isNight || isDarkDay) ? 2 : (decorStyle ? 2 : 3));
-        for (let i = 0; i < wispCount; i++) {
-            this._celestialClouds.push({
-                x: cx + (Math.random() - 0.5) * 90,
-                y: cy - 25 - Math.random() * 25,
-                scale: 0.35,
-                speed: 0.01,
-                puffs: CloudShapeGenerator.generateWispyPuffs(Math.random() * 10000),
-                opacity: 0.3 * opMul,
-                seed: Math.random(),
-                breathPhase: Math.random() * TWO_PI,
-                breathSpeed: 0.002,
-                baseX: cx + (Math.random() - 0.5) * 90,
-                baseY: cy - 25 - Math.random() * 25,
-                driftPhase: Math.random() * TWO_PI,
-                _vSquash: 0.65
-            });
+        // Side anchors: flanking and slightly below, mid-size, may overlap hero
+        for (let i = 0; i < sideCount; i++) {
+            const angleBias = (Math.random() < 0.5 ? -1 : 1) * (0.9 + Math.random() * 0.6);
+            const ox = Math.cos(angleBias) * (55 + Math.random() * 35);
+            const oy = Math.abs(Math.sin(angleBias)) * (20 + Math.random() * 40) - 5;
+            pushCelestial(ox, oy, 0.42 + Math.random() * 0.30, 1.0, 0.40 + Math.random() * 0.25);
+        }
+
+        // Top catches: smaller wisps above the sun
+        for (let i = 0; i < topCount; i++) {
+            const ox = (Math.random() - 0.5) * 130;
+            const oy = -30 - Math.random() * 28;
+            pushCelestial(ox, oy, 0.28 + Math.random() * 0.18, 1.0, 0.32 + Math.random() * 0.18);
         }
     }
 
@@ -3533,13 +3781,15 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
     }
 
     _initWindVapor(w, h, count = 18) {
+        // Immersive dark-day doubles wind vapor as atmospheric cloud layer — wider spread.
+        const yRange = h * (this._isDarkDayImmersive ? 0.75 : 0.55);
         for (let i = 0; i < count; i++) {
             const tier = i % 3;
             const depthScale = 0.5 + tier * 0.25;
             const vw = w * (0.8 + Math.random() * 0.8) * depthScale;
             this._windVapor.push({
                 x: Math.random() * (w + vw) - vw * 0.5,
-                y: Math.random() * (h * 0.55),
+                y: Math.random() * yRange,
                 w: vw,
                 speed: (1.5 + Math.random() * 2.0) * depthScale,
                 tier,
@@ -3608,76 +3858,103 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
         for (let i = 0; i < len; i++) {
             const cloud = this._celestialClouds[i];
 
-            // Bake puffs into an offscreen canvas on first encounter
             if (!cloud._bakedCanvas) {
                 const puffs = cloud.puffs;
+                const cp = CELESTIAL_CLOUD_PALETTES[palette] || CELESTIAL_CLOUD_PALETTES.cool;
+
                 let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-                
-                // Find bounding box of all unscaled puffs
                 for (let j = 0; j < puffs.length; j++) {
                     const p = puffs[j];
-                    if (p.offsetX - p.rad < minX) minX = p.offsetX - p.rad;
-                    if (p.offsetX + p.rad > maxX) maxX = p.offsetX + p.rad;
-                    if (p.offsetY - p.rad < minY) minY = p.offsetY - p.rad;
-                    if (p.offsetY + p.rad > maxY) maxY = p.offsetY + p.rad;
+                    const r = p.rad * 1.08;
+                    if (p.offsetX - r < minX) minX = p.offsetX - r;
+                    if (p.offsetX + r > maxX) maxX = p.offsetX + r;
+                    if (p.offsetY - r < minY) minY = p.offsetY - r;
+                    if (p.offsetY + r > maxY) maxY = p.offsetY + r;
                 }
-                
-                const pad = 4;
+
+                const pad = 5;
                 minX -= pad; minY -= pad; maxX += pad; maxY += pad;
                 const bakeW = Math.ceil(maxX - minX);
                 const bakeH = Math.ceil(maxY - minY);
-                
+                const shadeH = bakeH || 1;
+
                 const oc = document.createElement('canvas');
                 oc.width = bakeW;
                 oc.height = bakeH;
                 const oCtx = oc.getContext('2d', { willReadFrequently: false });
-                
+
                 for (let j = 0; j < puffs.length; j++) {
                     const puff = puffs[j];
-                    const baseOp = cloud.opacity * puff.shade;
-                    
                     const drawX = puff.offsetX - minX;
                     const drawY = puff.offsetY - minY;
-                    
-                    const grad = oCtx.createRadialGradient(
-                        drawX - puff.rad * 0.35, drawY - puff.rad * 0.45, 0,
-                        drawX, drawY, puff.rad
-                    );
-                    
-                    if (palette === 'warm') {
-                        grad.addColorStop(0, `rgba(255,255,250,${baseOp})`);
-                        grad.addColorStop(0.3, `rgba(255,245,225,${baseOp * 0.9})`);
-                        grad.addColorStop(0.6, `rgba(250,235,200,${baseOp * 0.75})`);
-                        grad.addColorStop(0.85, `rgba(240,220,180,${baseOp * 0.5})`);
-                        grad.addColorStop(1, 'rgba(235,210,160,0)');
-                    } else if (palette === 'moon') {
-                        // Silver-blue lit edge with fast falloff into night sky.
-                        // Matches darkNight cloud palette mood (lit: 210,222,244 / shadow: 8,13,32).
-                        grad.addColorStop(0, `rgba(192,208,238,${baseOp * 0.9})`);
-                        grad.addColorStop(0.25, `rgba(135,155,195,${baseOp * 0.5})`);
-                        grad.addColorStop(0.5, `rgba(72,88,128,${baseOp * 0.2})`);
-                        grad.addColorStop(0.75, `rgba(35,45,72,${baseOp * 0.05})`);
-                        grad.addColorStop(1, 'rgba(16,24,48,0)');
-                    } else if (palette === 'darkDay') {
-                        // Forced dark day — shadow tones raised to separate from
-                        // dark-blue bg while preserving lit→shadow definition
-                        grad.addColorStop(0, `rgba(218,230,252,${baseOp * 0.85})`);
-                        grad.addColorStop(0.3, `rgba(155,172,215,${baseOp * 0.58})`);
-                        grad.addColorStop(0.6, `rgba(98,118,168,${baseOp * 0.30})`);
-                        grad.addColorStop(0.85, `rgba(62,76,124,${baseOp * 0.10})`);
-                        grad.addColorStop(1, 'rgba(44,56,96,0)');
+                    const normY = drawY / shadeH;
+                    const posFactor = Math.max(0.20, 1 - normY * 0.55);
+
+                    const depth = puff.depth;
+                    const isShadow  = depth < 0.30;
+                    const isSurface = depth > 0.65;
+
+                    let pR, pG, pB, opMul, radMul, hlYOff;
+                    if (isShadow) {
+                        const sf = posFactor * 0.30;
+                        pR = (cp.midR * sf + cp.shadowR * (1 - sf)) | 0;
+                        pG = (cp.midG * sf + cp.shadowG * (1 - sf)) | 0;
+                        pB = (cp.midB * sf + cp.shadowB * (1 - sf)) | 0;
+                        opMul = 0.72;
+                        radMul = 0.88;
+                        hlYOff = 0;
+                    } else if (isSurface) {
+                        const sf = posFactor * (0.55 + puff.shade * 0.45);
+                        pR = (cp.litR * sf + cp.midR * (1 - sf)) | 0;
+                        pG = (cp.litG * sf + cp.midG * (1 - sf)) | 0;
+                        pB = (cp.litB * sf + cp.midB * (1 - sf)) | 0;
+                        opMul = 0.70 + puff.shade * 0.28;
+                        radMul = 1.05;
+                        hlYOff = -puff.rad * 0.42;
                     } else {
-                        grad.addColorStop(0, `rgba(232,238,252,${baseOp})`);
-                        grad.addColorStop(0.3, `rgba(218,226,248,${baseOp * 0.9})`);
-                        grad.addColorStop(0.6, `rgba(200,212,238,${baseOp * 0.75})`);
-                        grad.addColorStop(0.85, `rgba(185,198,228,${baseOp * 0.5})`);
-                        grad.addColorStop(1, 'rgba(170,184,218,0)');
+                        const sf = posFactor * (0.42 + puff.shade * 0.48);
+                        pR = (cp.litR * sf + cp.midR * (1 - sf)) | 0;
+                        pG = (cp.litG * sf + cp.midG * (1 - sf)) | 0;
+                        pB = (cp.litB * sf + cp.midB * (1 - sf)) | 0;
+                        opMul = 0.58 + puff.shade * 0.32;
+                        radMul = 1.0;
+                        hlYOff = -puff.rad * 0.22;
                     }
-                    
+
+                    const finalOp = cloud.opacity * puff.shade * opMul;
+                    if (finalOp < 0.005) continue;
+
+                    const pRadius = puff.rad * radMul;
+                    const grad = oCtx.createRadialGradient(0, hlYOff, 0, 0, 0, pRadius);
+
+                    if (isShadow) {
+                        grad.addColorStop(0,    `rgba(${pR},${pG},${pB},${finalOp})`);
+                        grad.addColorStop(0.45, `rgba(${cp.shadowR},${cp.shadowG},${cp.shadowB},${finalOp * 0.55})`);
+                        grad.addColorStop(1.0,  `rgba(${cp.shadowR},${cp.shadowG},${cp.shadowB},0)`);
+                    } else if (isSurface) {
+                        grad.addColorStop(0,    `rgba(${pR},${pG},${pB},${finalOp})`);
+                        grad.addColorStop(0.22, `rgba(${pR},${pG},${pB},${finalOp * 0.90})`);
+                        grad.addColorStop(0.48, `rgba(${cp.midR},${cp.midG},${cp.midB},${finalOp * 0.52})`);
+                        grad.addColorStop(0.72, `rgba(${cp.shadowR},${cp.shadowG},${cp.shadowB},${finalOp * 0.14})`);
+                        grad.addColorStop(1.0,  `rgba(${cp.shadowR},${cp.shadowG},${cp.shadowB},0)`);
+                    } else {
+                        const midStop = 0.30 + puff.softness * 0.18;
+                        grad.addColorStop(0,             `rgba(${pR},${pG},${pB},${finalOp})`);
+                        grad.addColorStop(midStop,       `rgba(${cp.midR},${cp.midG},${cp.midB},${finalOp * 0.72})`);
+                        grad.addColorStop(midStop + 0.30,`rgba(${cp.shadowR},${cp.shadowG},${cp.shadowB},${finalOp * 0.20})`);
+                        grad.addColorStop(1.0,           `rgba(${cp.shadowR},${cp.shadowG},${cp.shadowB},0)`);
+                    }
+
+                    oCtx.save();
+                    oCtx.translate(drawX, drawY);
+                    if (puff.squash !== 1.0) oCtx.scale(1, puff.squash);
                     oCtx.fillStyle = grad;
-                    fillCircle(oCtx, drawX, drawY, puff.rad);
+                    oCtx.beginPath();
+                    oCtx.arc(0, 0, pRadius, 0, TWO_PI);
+                    oCtx.fill();
+                    oCtx.restore();
                 }
-                
+
                 cloud._bakedCanvas = oc;
                 cloud._bakeOffX = minX;
                 cloud._bakeOffY = minY;
@@ -3718,173 +3995,153 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
     }
 
     /**
-     * Draws the sun in three passes:
-     *   1. Breath glow — fresh gradient per frame, outer radius morphs 1.5×↔2.4× sunBaseR.
-     *      (Cached gradients don't visibly morph under ctx.scale; the star-halo code
-     *      uses the same fresh-per-frame pattern. Static caches were the bug.)
-     *   2. Sun disc — cached, static, crisp body.
-     *   3. Atmospheric halo rings — cached, standalone-only (skipped in immersive
-     *      where they'd be cut off), opacity gently synced to the breath wave.
+     * Unified celestial glow renderer — replaces _drawSunGlow + _drawCloudySun.
+     * Parameters come from rs.glow (computed once in _buildRenderState).
+     *
+     *   showDisc mode (sun directly visible): breath annulus + crisp disc + optional halo rings.
+     *   diffuse mode  (sun occluded by clouds): soft radial blob (outer + core), breath-modulated opacity.
+     *
+     * Radius is capped to card dimensions so the glow never cuts off at immersive borders.
+     * Color/intensity/breath amplitude are profile-driven; forced-dark-day immersive gets
+     * the warm-backlight override (amber color, larger radius) inside _computeGlowParams.
      */
-    _drawSunGlow(ctx, w, h) {
+    _drawCelestialGlow(ctx, w, h) {
+        const glow = this._renderState.glow;
+        if (!glow) return;
+
         const fadeOpacity = this._layerFadeProgress.effects;
         const { x: cx, y: cy } = this._getCelestialPosition(w, h);
-        const dpr = this._cachedDimensions.dpr;
         const sunBaseR = this._celestialSize ? this._celestialSize / 2 : 31;
+        const sizeCap = Math.min(w, h) * 0.9;
 
-        // Breath wave: ~4.7s period (0.008/frame × 2.8), normalized 0..1
-        const t = (Math.sin(this._sunPulsePhase * 2.8) + 1) / 2;
+        // Breath wave: base 4.7s period, slowed by breathPeriodMul for heavier atmosphere
+        const t = (Math.sin(this._sunPulsePhase * 2.8 / glow.breathPeriodMul) + 1) / 2;
+        const [gR, gG, gB] = glow.color;
 
-        // ---- 1. BREATH GLOW (fresh gradient per frame, morphing radius) ----
-        const breathOuterR = sunBaseR * (1.5 + t * 0.9);          // 1.5× → 2.4× sunBaseR
-        const bodyStop = Math.min(sunBaseR / breathOuterR, 0.72); // sun body cutoff
-        
-        // Position the peak proportionally in the remaining space so it doesn't bunch up
-        const peakStop = bodyStop + (1 - bodyStop) * 0.45; 
-        
-        // Scale peak opacity dynamically. Fainter when shrunk, brighter when expanded.
-        const peakAlphaDay = (0.15 + t * 0.27).toFixed(3);   // 0.15 shrunk → 0.42 expanded
-        const peakAlphaNight = (0.10 + t * 0.26).toFixed(3); // 0.10 shrunk → 0.36 expanded
+        ctx.save();
+        if (glow.compOp) ctx.globalCompositeOperation = glow.compOp;
+        ctx.translate(cx, cy);
 
-        const breathGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, breathOuterR);
-        if (this._isLightBackground) {
-            breathGrad.addColorStop(0,        'rgba(255, 220, 130, 0)');
-            breathGrad.addColorStop(bodyStop, 'rgba(255, 218, 128, 0)');
-            breathGrad.addColorStop(peakStop, `rgba(255, 212, 118, ${peakAlphaDay})`);
-            breathGrad.addColorStop(1,        'rgba(255, 175, 55, 0)');
+        if (glow.showDisc) {
+            // Ring-space check: halo rings need room (outer radius sunBaseR*5.8). When the
+            // sun is close to any card edge, rings would either clip or shrink so small they
+            // become invisible. Below a usable threshold we skip rings and compensate by
+            // boosting the breath annulus to carry the glow effect alone.
+            const edgeLimit = Math.min(cx, cy, w - cx, h - cy);
+            const ringFull = sunBaseR * 5.8;
+            const ringScale = Math.min(1, edgeLimit / ringFull);
+            const ringOk = glow.showHalo && ringScale >= 0.75;
+            const breathBoost = glow.showHalo && !ringOk ? 1.8 : 1.0;
+            const gb = glow.glowBoost || 1.0;
+
+            const breathOuterR = Math.min(sunBaseR * (1.5 + t * 0.9 * glow.breathAmp), sizeCap);
+            const bodyStop = Math.min(sunBaseR / breathOuterR, 0.72);
+            const peakStop = bodyStop + (1 - bodyStop) * 0.45;
+            const peakAlpha = (Math.min(0.62, (0.15 + t * 0.27 * glow.breathAmp) * gb)).toFixed(3);
+            const boostedPeakAlpha = (Math.min(0.62, (0.15 + t * 0.27 * glow.breathAmp) * breathBoost * gb)).toFixed(3);
+
+            const bg = ctx.createRadialGradient(0, 0, 0, 0, 0, breathOuterR);
+            bg.addColorStop(0,        `rgba(${gR},${gG},${gB},0)`);
+            bg.addColorStop(bodyStop, `rgba(${gR},${gG},${gB},0)`);
+            bg.addColorStop(peakStop, `rgba(${gR},${gG},${gB},${breathBoost === 1.0 ? peakAlpha : boostedPeakAlpha})`);
+            bg.addColorStop(1,        `rgba(${gR},${gG},${gB},0)`);
+
+            ctx.globalAlpha = fadeOpacity;
+            ctx.fillStyle = bg;
+            fillCircle(ctx, 0, 0, breathOuterR);
+
+            // ---- SUN DISC (cached, theme-aware) ----
+            if (!this._sunDiscGrad || this._sunDiscGradR !== sunBaseR) {
+                const g = ctx.createRadialGradient(0, 0, 0, 0, 0, sunBaseR * 3.0);
+                if (this._isLightBackground) {
+                    g.addColorStop(0.00, 'rgba(255, 255, 255, 1)');
+                    g.addColorStop(0.10, 'rgba(255, 255, 240, 0.98)');
+                    g.addColorStop(0.28, 'rgba(255, 242, 170, 0.94)');
+                    g.addColorStop(0.33, 'rgba(255, 210, 90, 0.82)');
+                    g.addColorStop(0.36, 'rgba(255, 198, 65, 0.60)');
+                    g.addColorStop(0.42, 'rgba(255, 188, 52, 0.38)');
+                    g.addColorStop(0.70, 'rgba(255, 178, 42, 0.20)');
+                    g.addColorStop(1.00, 'rgba(255, 162, 32, 0)');
+                } else {
+                    g.addColorStop(0.00, 'rgba(255, 238, 200, 1)');
+                    g.addColorStop(0.10, 'rgba(255, 230, 178, 0.96)');
+                    g.addColorStop(0.28, 'rgba(255, 214, 130, 0.90)');
+                    g.addColorStop(0.33, 'rgba(255, 188, 72, 0.78)');
+                    g.addColorStop(0.36, 'rgba(255, 176, 54, 0.56)');
+                    g.addColorStop(0.42, 'rgba(255, 188, 52, 0.38)');
+                    g.addColorStop(0.70, 'rgba(255, 178, 42, 0.20)');
+                    g.addColorStop(1.00, 'rgba(255, 162, 32, 0)');
+                }
+                this._sunDiscGrad = g;
+                this._sunDiscGradR = sunBaseR;
+            }
+            ctx.fillStyle = this._sunDiscGrad;
+            fillCircle(ctx, 0, 0, sunBaseR * 3.0);
+
+            // ---- HALO RINGS (same glow.color as annulus; skipped when rings can't fit) ----
+            if (ringOk) {
+                const r1Inner = sunBaseR * 2.0 * ringScale;
+                const r1Outer = sunBaseR * 3.6 * ringScale;
+                const r2Inner = sunBaseR * 3.8 * ringScale;
+                const r2Outer = sunBaseR * 5.8 * ringScale;
+                const colorKey = `${gR}_${gG}_${gB}`;
+
+                if (!this._haloGrad || this._haloGradR !== r2Outer || this._haloGradColor !== colorKey) {
+                    const g1 = ctx.createRadialGradient(0, 0, r1Inner, 0, 0, r1Outer);
+                    g1.addColorStop(0,    `rgba(${gR},${gG},${gB},0)`);
+                    g1.addColorStop(0.25, `rgba(${gR},${gG},${gB},0.10)`);
+                    g1.addColorStop(0.45, `rgba(${gR},${gG},${gB},0.18)`);
+                    g1.addColorStop(0.65, `rgba(${gR},${gG},${gB},0.11)`);
+                    g1.addColorStop(1,    `rgba(${gR},${gG},${gB},0)`);
+                    const g2 = ctx.createRadialGradient(0, 0, r2Inner, 0, 0, r2Outer);
+                    g2.addColorStop(0,   `rgba(${gR},${gG},${gB},0)`);
+                    g2.addColorStop(0.3, `rgba(${gR},${gG},${gB},0.06)`);
+                    g2.addColorStop(0.5, `rgba(${gR},${gG},${gB},0.10)`);
+                    g2.addColorStop(0.7, `rgba(${gR},${gG},${gB},0.055)`);
+                    g2.addColorStop(1,   `rgba(${gR},${gG},${gB},0)`);
+                    this._haloGrad = { g1, g2, r1: r1Outer, r2: r2Outer };
+                    this._haloGradR = r2Outer;
+                    this._haloGradColor = colorKey;
+                }
+                ctx.globalAlpha = fadeOpacity * Math.min(1.0, (0.45 + t * 0.65) * gb);
+                ctx.fillStyle = this._haloGrad.g1;
+                fillCircle(ctx, 0, 0, this._haloGrad.r1);
+                ctx.fillStyle = this._haloGrad.g2;
+                fillCircle(ctx, 0, 0, this._haloGrad.r2);
+            }
         } else {
-            breathGrad.addColorStop(0,        'rgba(255, 210, 120, 0)');
-            breathGrad.addColorStop(bodyStop, 'rgba(255, 208, 118, 0)');
-            breathGrad.addColorStop(peakStop, `rgba(255, 200, 108, ${peakAlphaNight})`);
-            breathGrad.addColorStop(1,        'rgba(255, 165, 50, 0)');
-        }
+            // ---- DIFFUSE MODE (sun-behind-clouds backlight) ----
+            const csGlowScale = sunBaseR / 26;
+            const outerR = Math.min(92 * csGlowScale * glow.sizeMul, sizeCap);
+            const coreR  = Math.min(42 * csGlowScale * glow.sizeMul, sizeCap * 0.45);
 
-        ctx.translate(cx, cy);
-        ctx.globalAlpha = fadeOpacity;
-        ctx.fillStyle = breathGrad;
-        fillCircle(ctx, 0, 0, breathOuterR);
-        ctx.globalAlpha = 1;
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-        // ---- 2. SUN DISC (cached, static, crisp) ----
-        if (!this._sunDiscGrad || this._sunDiscGradR !== sunBaseR) {
-            const g = ctx.createRadialGradient(0, 0, 0, 0, 0, sunBaseR * 3.0);
-            if (this._isLightBackground) {
-                g.addColorStop(0.00, 'rgba(255, 255, 255, 1)');
-                g.addColorStop(0.10, 'rgba(255, 255, 240, 0.98)');
-                g.addColorStop(0.28, 'rgba(255, 242, 170, 0.94)');
-                g.addColorStop(0.33, 'rgba(255, 210, 90, 0.82)');
-                g.addColorStop(0.36, 'rgba(255, 198, 65, 0.60)');
-                g.addColorStop(0.42, 'rgba(255, 188, 52, 0.38)');
-                g.addColorStop(0.70, 'rgba(255, 178, 42, 0.20)');
-                g.addColorStop(1.00, 'rgba(255, 162, 32, 0)');
-            } else {
-                g.addColorStop(0.00, 'rgba(255, 238, 200, 1)');
-                g.addColorStop(0.10, 'rgba(255, 230, 178, 0.96)');
-                g.addColorStop(0.28, 'rgba(255, 214, 130, 0.90)');
-                g.addColorStop(0.33, 'rgba(255, 188, 72, 0.78)');
-                g.addColorStop(0.36, 'rgba(255, 176, 54, 0.56)');
-                g.addColorStop(0.42, 'rgba(255, 188, 52, 0.38)');
-                g.addColorStop(0.70, 'rgba(255, 178, 42, 0.20)');
-                g.addColorStop(1.00, 'rgba(255, 162, 32, 0)');
-            }
-            this._sunDiscGrad = g;
-            this._sunDiscGradR = sunBaseR;
-        }
-
-        ctx.translate(cx, cy);
-        ctx.globalAlpha = fadeOpacity;
-        ctx.fillStyle = this._sunDiscGrad;
-        fillCircle(ctx, 0, 0, sunBaseR * 3.0);
-        ctx.globalAlpha = 1;
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-        // ---- 3. ATMOSPHERIC HALO RINGS (standalone only — skipped in immersive) ----
-        if (this._config.card_style === 'standalone') {
-            if (!this._haloGrad || this._haloGradR !== sunBaseR) {
-                const r1Inner = sunBaseR * 2.0, r1Outer = sunBaseR * 3.6;
-                const r2Inner = sunBaseR * 3.8, r2Outer = sunBaseR * 5.8;
-
-                const g1 = ctx.createRadialGradient(0, 0, r1Inner, 0, 0, r1Outer);
-                g1.addColorStop(0,    'rgba(255, 250, 235, 0)');
-                g1.addColorStop(0.25, 'rgba(255, 248, 230, 0.08)');
-                g1.addColorStop(0.45, 'rgba(255, 250, 240, 0.14)');
-                g1.addColorStop(0.65, 'rgba(255, 248, 235, 0.09)');
-                g1.addColorStop(1,    'rgba(255, 245, 225, 0)');
-
-                const g2 = ctx.createRadialGradient(0, 0, r2Inner, 0, 0, r2Outer);
-                g2.addColorStop(0,   'rgba(240, 245, 255, 0)');
-                g2.addColorStop(0.3, 'rgba(245, 248, 255, 0.04)');
-                g2.addColorStop(0.5, 'rgba(248, 250, 255, 0.07)');
-                g2.addColorStop(0.7, 'rgba(242, 246, 255, 0.035)');
-                g2.addColorStop(1,   'rgba(238, 242, 255, 0)');
-
-                this._haloGrad = { g1, g2, r1: r1Outer, r2: r2Outer };
-                this._haloGradR = sunBaseR;
+            if (!this._diffuseGlowCache ||
+                this._diffuseGlowCache.key !== glow.cacheKey ||
+                this._diffuseGlowCache.outerR !== outerR) {
+                const outer = ctx.createRadialGradient(0, 0, 0, 0, 0, outerR);
+                outer.addColorStop(0,    `rgba(${gR},${gG},${gB},0.58)`);
+                outer.addColorStop(0.14, `rgba(${gR},${gG},${gB},0.32)`);
+                outer.addColorStop(0.32, `rgba(${gR},${gG},${gB},0.12)`);
+                outer.addColorStop(0.60, `rgba(${gR},${gG},${gB},0.025)`);
+                outer.addColorStop(1,    `rgba(${gR},${gG},${gB},0)`);
+                const core = ctx.createRadialGradient(0, 0, 0, 0, 0, coreR);
+                core.addColorStop(0,    `rgba(${gR},${gG},${gB},0.48)`);
+                core.addColorStop(0.35, `rgba(${gR},${gG},${gB},0.18)`);
+                core.addColorStop(1,    `rgba(${gR},${gG},${gB},0)`);
+                this._diffuseGlowCache = { outer, core, outerR, coreR, key: glow.cacheKey };
             }
 
-            // Subtle breath-synced opacity modulation (0.6 → 1.0)
-            ctx.translate(cx, cy);
-            ctx.globalAlpha = fadeOpacity * (0.6 + t * 0.4);
-            ctx.fillStyle = this._haloGrad.g1;
-            fillCircle(ctx, 0, 0, this._haloGrad.r1);
-            ctx.fillStyle = this._haloGrad.g2;
-            fillCircle(ctx, 0, 0, this._haloGrad.r2);
-            ctx.globalAlpha = 1;
-            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        }
-    }
-
-    _drawCloudySun(ctx, w, h) {
-        const fadeOpacity = this._layerFadeProgress.effects;
-        const celestial = this._getCelestialPosition(w, h);
-        const dpr = this._cachedDimensions.dpr;
-
-        const isThemeDarkCS = this._isThemeDark;
-
-        ctx.globalCompositeOperation = 'screen';
-        const isMoon = this._isNight;
-        const c1 = isMoon ? '240,245,255' : '255,255,255';
-        const c2 = isMoon ? '225,235,252' : '240,246,255';
-        const c3 = isMoon ? '215,228,248' : '228,238,252';
-        const cCore = isMoon ? '210,225,255' : '255,255,255';
-
-        const sunBaseR = this._celestialSize ? this._celestialSize / 2 : 31;
-        const csGlowScale = sunBaseR / 26;
-        const outerR = 92 * csGlowScale;
-        const coreR  = 42 * csGlowScale;
-
-        const cacheKey = isMoon ? '_csGlowMoon' : '_csGlowDay';
-        if (!this[cacheKey] || this[cacheKey].sr !== sunBaseR) {
-            const g = ctx.createRadialGradient(0, 0, 0, 0, 0, outerR);
-            g.addColorStop(0,    `rgba(${c1},0.58)`);
-            g.addColorStop(0.14, `rgba(${c1},0.32)`);
-            g.addColorStop(0.32, `rgba(${c2},0.12)`);
-            g.addColorStop(0.60, `rgba(${c3},0.025)`);
-            g.addColorStop(1,    `rgba(${c3},0)`);
-
-            const core = ctx.createRadialGradient(0, 0, 0, 0, 0, coreR);
-            core.addColorStop(0,   `rgba(${cCore},0.48)`);
-            core.addColorStop(0.35, `rgba(${c1},0.18)`);
-            core.addColorStop(1,    `rgba(${c2},0)`);
-
-            this[cacheKey] = { outer: g, core: core, outerR, coreR, sr: sunBaseR };
+            // Subtle opacity breath — slow pulse matches heavy atmosphere
+            const breathMod = 1.0 + (t - 0.5) * 0.20 * glow.breathAmp;
+            const dc = this._diffuseGlowCache;
+            ctx.globalAlpha = Math.min(1.0, fadeOpacity * glow.intensity * breathMod);
+            ctx.fillStyle = dc.outer;
+            fillCircle(ctx, 0, 0, dc.outerR);
+            ctx.fillStyle = dc.core;
+            fillCircle(ctx, 0, 0, dc.coreR);
         }
 
-        const isStandalone = this._config.card_style === 'standalone';
-        const cached = this[cacheKey];
-        ctx.globalAlpha = Math.min(1.0, fadeOpacity * (isStandalone ? 1.0 : 1.4) * (isThemeDarkCS && !isMoon ? 0.42 : 1));
-        ctx.translate(celestial.x, celestial.y);
-
-        ctx.fillStyle = cached.outer;
-        fillCircle(ctx, 0, 0, cached.outerR);
-
-        ctx.fillStyle = cached.core;
-        fillCircle(ctx, 0, 0, cached.coreR);
-
-        ctx.globalAlpha = 1;
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.restore();
     }
 
     // ========================================================================
@@ -3958,6 +4215,10 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
         const bodyHlScale = hlMul * 0.4;
         const baseOpacity = globalOpacity * cloud.opacity * ambient;
 
+        // Immersive-light differentiation: inner gradient stops pull in tighter (see below)
+        // and a quadratic bottom-fade is applied post-modifier to prevent stacked-halo mush.
+        const isImmersiveLight = isLightBg && this._isImmersive;
+
         for (let j = 0; j < puffs.length; j++) {
             const puff = puffs[j];
             const sq = puff.squash !== undefined ? puff.squash : 1.0;
@@ -4007,6 +4268,11 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
                 finalOpacity = Math.min(1.0, finalOpacity * rainyOpacityMul);
             }
 
+            if (isLightBg) {
+                const bottomFade = isImmersiveLight ? 0.50 : 0.30;
+                finalOpacity *= 1 - normalizedY * normalizedY * bottomFade;
+            }
+
             let dR = pR, dG = pG, dB = pB;
             let dMidR = midR, dMidG = midG, dMidB = midB;
             let dShadR = shadowR, dShadG = shadowG, dShadB = shadowB;
@@ -4036,9 +4302,9 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
                 grad.addColorStop(0,    `rgba(${dR},${dG},${dB},${finalOpacity})`);
                 grad.addColorStop(0.22, `rgba(${dR},${dG},${dB},${finalOpacity * 0.90})`);
                 if (isLightBg) {
-                    grad.addColorStop(0.45, `rgba(${dMidR},${dMidG},${dMidB},${finalOpacity * 0.50})`);
-                    grad.addColorStop(0.68, `rgba(${dShadR},${dShadG},${dShadB},${finalOpacity * 0.12})`);
-                    grad.addColorStop(0.90, `rgba(${dShadR},${dShadG},${dShadB},${finalOpacity * 0.01})`);
+                    grad.addColorStop(0.45, `rgba(${dMidR},${dMidG},${dMidB},${finalOpacity * (isImmersiveLight ? 0.56 : 0.50)})`);
+                    grad.addColorStop(isImmersiveLight ? 0.62 : 0.68, `rgba(${dShadR},${dShadG},${dShadB},${finalOpacity * (isImmersiveLight ? 0.09 : 0.12)})`);
+                    grad.addColorStop(isImmersiveLight ? 0.82 : 0.90, `rgba(${dShadR},${dShadG},${dShadB},${finalOpacity * 0.01})`);
                 } else {
                     grad.addColorStop(0.40, `rgba(${dMidR},${dMidG},${dMidB},${finalOpacity * 0.42})`);
                     grad.addColorStop(0.65, `rgba(${dShadR},${dShadG},${dShadB},${finalOpacity * 0.10})`);
@@ -4048,10 +4314,10 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
                 const midStop = 0.28 + puff.softness * 0.22;
                 grad.addColorStop(0, `rgba(${dR},${dG},${dB},${finalOpacity})`);
                 if (isLightBg) {
-                    grad.addColorStop(midStop, `rgba(${dMidR},${dMidG},${dMidB},${finalOpacity * 0.72})`);
+                    grad.addColorStop(midStop, `rgba(${dMidR},${dMidG},${dMidB},${finalOpacity * (isImmersiveLight ? 0.78 : 0.72)})`);
                     const shelf = midStop + (1.0 - midStop) * 0.40;
-                    grad.addColorStop(shelf, `rgba(${dShadR},${dShadG},${dShadB},${finalOpacity * 0.20})`);
-                    grad.addColorStop(shelf + (1.0 - shelf) * 0.55, `rgba(${dShadR},${dShadG},${dShadB},${finalOpacity * 0.02})`);
+                    grad.addColorStop(shelf, `rgba(${dShadR},${dShadG},${dShadB},${finalOpacity * (isImmersiveLight ? 0.14 : 0.20)})`);
+                    grad.addColorStop(shelf + (1.0 - shelf) * (isImmersiveLight ? 0.42 : 0.55), `rgba(${dShadR},${dShadG},${dShadB},${finalOpacity * 0.02})`);
                     grad.addColorStop(1.0, `rgba(${dShadR},${dShadG},${dShadB},0)`);
                 } else {
                     grad.addColorStop(midStop, `rgba(${dMidR},${dMidG},${dMidB},${finalOpacity * 0.78})`);
@@ -4750,7 +5016,7 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
                 const histLen = plane.histLen;
 
                 ctx.strokeStyle = trailColor;
-                ctx.lineCap = 'round';
+                ctx.lineCap = 'butt';
                 ctx.lineJoin = 'round';
                 ctx.lineWidth = 3 * plane.scale;
 
@@ -4860,7 +5126,8 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
         const p = this._params;
         const isSevereWeather = this._renderState.isSevereWeather;
 
-        if (this._isLightBackground && !isSevereWeather && this._birds.length === 0) {
+        // birdColor (below) picks dark/light silhouettes by theme — one gate works everywhere.
+        if (!isSevereWeather && this._birds.length === 0) {
             const dir = Math.random() > 0.5 ? 1 : -1;
             const startX = dir === 1 ? -60 : w + 60;
             const depthScale = 0.9 + Math.random() * 0.5;
@@ -4917,7 +5184,7 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
 
         if (this._birds.length === 0) return;
 
-        const birdColor = this._isLightBackground ? 'rgba(40, 45, 50, 0.8)' : 'rgba(200, 210, 220, 0.6)';
+        const birdColor = this._isLightBackground ? 'rgba(40, 45, 50, 0.8)' : 'rgba(195, 203, 212, 0.55)';
         ctx.save();
         ctx.strokeStyle = birdColor;
         ctx.lineJoin = 'round';
@@ -4963,6 +5230,12 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
         } else {
             activeCount = Math.floor(8 + windIntensity * 4);
             vaporIntensity = 0.85 + windIntensity * 0.15;
+        }
+
+        // Immersive dark-day uses wind vapor as an atmospheric cloud layer — enforce minimum density.
+        if (this._isDarkDayImmersive) {
+            activeCount = Math.max(activeCount, 14);
+            vaporIntensity = Math.max(vaporIntensity, 1.05);
         }
 
         const len = Math.min(this._windVapor.length, activeCount);
@@ -5045,15 +5318,15 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
         const moonScale = moonRadius / 18;
 
         const useLightColors = !this._isThemeDark;
-        const isImmersiveLight = useLightColors && this._config.card_style !== 'standalone';
 
-        const moonStyle = (this._config.moon_style || 'blue').toLowerCase();
-        const useBlue = isImmersiveLight && moonStyle === 'blue';
-        const useYellow = isImmersiveLight && moonStyle === 'yellow';
-        const usePurple = isImmersiveLight && moonStyle === 'purple';
-        const useGrey = isImmersiveLight && moonStyle === 'grey';
-        // Resolved style key for MOON_STYLE_COLORS lookups
-        const mStyleKey = useYellow ? 'yellow' : useBlue ? 'blue' : usePurple ? 'purple' : useGrey ? 'grey' : useLightColors ? 'light' : 'dark';
+        // moon_style honors an explicit colored value (yellow/blue/purple/grey)
+        // in both forced-light and dark mode. Unset or unknown values fall back
+        // to the original per-theme defaults: 'blue' on forced-light, 'dark' on
+        // dark mode (preserves the pre-existing white moon).
+        const rawMoonStyle = (this._config.moon_style || '').toLowerCase();
+        const isColoredStyle = rawMoonStyle === 'yellow' || rawMoonStyle === 'blue'
+            || rawMoonStyle === 'purple' || rawMoonStyle === 'grey';
+        const mStyleKey = isColoredStyle ? rawMoonStyle : (useLightColors ? 'blue' : 'dark');
 		
         ctx.save();
 
@@ -5070,7 +5343,7 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
         const atmScale = (!useLightColors && this._params?.atmosphere === 'fair') ? 0.79 : 1.0;
         let effectiveGlow = glowIntensity * fadeOpacity * glowWeatherScale * atmScale;
 
-        if (isImmersiveLight) {
+        if (useLightColors) {
             effectiveGlow *= 0.85;
         }
 
@@ -5079,10 +5352,10 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
         // globalAlpha scales effectiveGlow/fadeOpacity per frame.
         // Cache key = style+theme+radius. _buildRenderState nulls this._moonCache
         // on state/theme change. Canvas dimensions checked via glowR.
-        const cacheKey = moonStyle + (useLightColors ? 'L' : 'D');
+        const cacheKey = mStyleKey + (useLightColors ? 'L' : 'D');
         if (!this._moonCache || this._moonCache.key !== cacheKey || this._moonCache.mr !== moonRadius) {
             this._moonCache = this._buildMoonCache(ctx, moonRadius, moonScale, w, h,
-                useLightColors, useYellow, useBlue, usePurple, useGrey, isImmersiveLight);
+                useLightColors, mStyleKey);
             this._moonCache.key = cacheKey;
             this._moonCache.mr = moonRadius;
         }
@@ -5263,9 +5536,8 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
 
     // Builds all moon gradient caches for the current style/theme combo.
     // Called once, then reused until _buildRenderState nulls _moonCache.
-    _buildMoonCache(ctx, moonRadius, moonScale, w, h, useLightColors, useYellow, useBlue, usePurple, useGrey, isImmersiveLight) {
+    _buildMoonCache(ctx, moonRadius, moonScale, w, h, useLightColors, styleKey) {
         const mc = {};
-        const styleKey = useYellow ? 'yellow' : useBlue ? 'blue' : usePurple ? 'purple' : useGrey ? 'grey' : useLightColors ? 'light' : 'dark';
 
         // Helper: populate gradient from LUT stops array { peak, stops: [[pos, rgb, alpha], ...] }
         const applyStops = (grad, cfg, peak) => {
@@ -5364,8 +5636,8 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
         const rs = this._renderState;
 
         // ---- BACKGROUND LAYER ----
-        if (rs.showSun) {
-            this._drawSunGlow(bg, w, h);
+        if (rs.glow && rs.glow.drawPhase === 'bg') {
+            this._drawCelestialGlow(bg, w, h);
         }
         // Sky haze handled by CSS ::after (--g-rgb/--g-op/--gh-wash)
 
@@ -5385,9 +5657,9 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
                 const twinkleVal = Math.sin(s.phase) + (Math.sin(s.phase * 3) * 0.5);
                 const sizePulse = 1 + (twinkleVal * 0.25);
                 const currentSize = s.baseSize * sizePulse;
-                const horizonFade = (this._config.card_style === 'standalone')
-                    ? 1.0
-                    : (1 - Math.pow(s.y / (h * 0.95), 3));
+                const horizonFade = this._isImmersive
+                    ? (1 - Math.pow(s.y / (h * 0.95), 3))
+                    : 1.0;
                 const opacityPulse = 1 + (twinkleVal * 0.15);
                 const finalOpacity = Math.min(1, Math.max(0.0, s.brightness * opacityPulse * starFade * horizonFade));
 
@@ -5488,17 +5760,16 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
         }
 
         // ---- MIDDLE LAYER ----
+        const glowActive = rs.glow;
+
+        // Dark-theme diffuse glow sits deepest on mid (behind all clouds, inherits edge-fade mask).
+        if (glowActive && glowActive.drawPhase === 'mid-pre') {
+            this._drawCelestialGlow(mid, w, h);
+        }
+
         // Celestial accent clouds before main clouds — rays bleed through
         if (this._celestialClouds.length > 0) {
             this._drawCelestialClouds(mid, w, h, effectiveWind);
-        }
-
-        // Dark theme cloudy-sun on bg (behind clouds)
-        const showCloudySun = rs.showCloudySun;
-        if (showCloudySun) {
-            if (this._isThemeDark) {
-                this._drawCloudySun(bg, w, h);
-            }
         }
 		
 		// Wind vapor streaks
@@ -5508,9 +5779,9 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
 
         this._drawClouds(mid, this._clouds, w, h, effectiveWind, cloudGlobalOp);
 
-        // Light theme cloudy-sun on mid (diffuse glow through clouds)
-        if (showCloudySun && !this._isThemeDark) {
-            this._drawCloudySun(mid, w, h);
+        // Light-theme diffuse glow on mid post-clouds (backlight reads through thin clouds)
+        if (glowActive && glowActive.drawPhase === 'mid-post') {
+            this._drawCelestialGlow(mid, w, h);
         }
 
         // Birds sandwiched between bg and scud cloud layers
