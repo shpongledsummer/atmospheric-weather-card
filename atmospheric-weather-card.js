@@ -1,6 +1,6 @@
 /**
  * ATMOSPHERIC WEATHER CARD
- * Version: 3.9
+ * Version: 3.9.1
  * * A custom Home Assistant card that renders animated weather effects.
  * * https://github.com/shpongledsummer/atmospheric-weather-card
  */
@@ -2933,7 +2933,7 @@ const dayWeatherOp = { storm: 0.06, pouring: 0.08, rain: 0.10, snow: 0.16, mist:
     
     static async getConfigElement() {
         if (!customElements.get("atmospheric-weather-card-editor")) {
-            await import("./atmospheric-weather-card-editor.js?v=11.02");
+            await import("./atmospheric-weather-card-editor.js?v=11.31");
         }
         return document.createElement("atmospheric-weather-card-editor");
     }
