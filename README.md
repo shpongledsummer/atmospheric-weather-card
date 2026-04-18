@@ -169,7 +169,7 @@ chips:
 This example uses the `custom_cards` feature to embed a [scrollable forecast](https://github.com/shpongledsummer/minimal-forecast-card). The sun and moon follow a curved path, and you can customize all details and styles however you need.
 
 ```yaml
-type: custom:atmospheric-weather-card-refactored
+type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
 sun_entity: sun.sun
 moon_phase_entity:  sensor.moon_phase
@@ -193,7 +193,6 @@ chips_background: true
 tap_action:
   action: more-info
   entity: weather.your_weather_entity
-custom_cards_position: center-right
 chips:
   - entity: weather.your_weather_entity
     attribute: humidity
@@ -204,6 +203,7 @@ chips:
     attribute: wind_speed
   - entity: weather.your_weather_entity
     attribute: visibility
+custom_cards_position: center-right
 custom_cards:
   - custom_width: 200px
     type: custom:minimal-forecast-card
