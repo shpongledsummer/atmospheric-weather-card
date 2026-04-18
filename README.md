@@ -160,57 +160,70 @@ chips:
 
 
 <details>
-<summary><b>Example 3 — Vertical Forecast</b></summary>
+<summary><b>Example 3 — Forecast Card</b></summary>
 
 <br>
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/cfd16ab0-d639-4d55-92c6-6a74b717ef0e" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/181aabeb-455d-4fd0-a3a8-4b12ebc08941" />
 
-This example shows how to use the `custom_cards` feature to embed the Minimal Forecast Card (the little sister to this project, found [here](https://github.com/shpongledsummer/minimal-forecast-card)) in a vertical scroll. You can customize it however you'd like.
+This example uses the `custom_cards` feature to embed a [scrollable forecast](https://github.com/shpongledsummer/minimal-forecast-card). The sun and moon follow a curved path, and you can customize all details and styles however you need.
 
 ```yaml
-type: custom:atmospheric-weather-card
+type: custom:atmospheric-weather-card-refactored
 weather_entity: weather.your_weather_entity
-theme_entity: sun.sun # Makes the card follow your sun cycle. Remove this if you'd rather it follow your HA theme — whichever fits your setup best.
+sun_entity: sun.sun
+moon_phase_entity:  sensor.moon_phase
 card_style: standalone
-card_height: 136
+card_height: 140px
+card_padding: 20px
+sun_moon_size: 50
+celestial_position: dynamic_both
+sun_moon_x_position: "-60"
+sun_moon_y_position: "60"
 top_position: top-left
 chips_position: bottom-left
-sun_entity: sun.sun
-sun_moon_size: 50
-sun_moon_x_position: 100
-sun_moon_y_position: center
-moon_phase_entity: sensor.moon_phase
+top_font_size: 36px
+top_text_padding: 4px 8px
+chips_font_size: 14px
+chips_layout: scroll
+chips_width: 30%
+chips_padding: 10px 14px
+chips_gap: 8px
+chips_background: true
+tap_action:
+  action: more-info
+  entity: weather.your_weather_entity
+custom_cards_position: center-right
 chips:
   - entity: weather.your_weather_entity
-    icon: weather
-    icon_path: /local/weather-icons/
-tap_action:
-  action: none
-custom_cards_position: top-right
+    attribute: humidity
+  - entity: weather.your_weather_entity
+    attribute: uv_index
+    name: UV
+  - entity: weather.your_weather_entity
+    attribute: wind_speed
+  - entity: weather.your_weather_entity
+    attribute: visibility
 custom_cards:
-  - type: custom:minimal-forecast-card
-    custom_width: 170px
+  - custom_width: 200px
+    type: custom:minimal-forecast-card
     entity: weather.your_weather_entity
-    forecast_type: hourly
-    items_to_show: 12
-    visible: 2
-    style: glass
+    forecast_type: daily
+    items_to_show: 7
+    visible: 3
     hide_min_temp: true
-    dividers: true
-    divider_color: rgba(255,255,255,0.3)
-    divider_width: 2px
-    divider_inset: 0px
-    item_spacing: 4px
-    inner_spacing: 12px
+    item_spacing: 3px
+    inner_spacing: 6px
+    item_height: 100px
+    divider_width: 3px
+    divider_color: rgba(255, 255, 255, 0.1)
     card_padding: 0px
-    item_padding: 1em 20px
-    item_height: 50px
-    card_shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.15)
-    direction: vertical
-    font_size: 16px
-    icon_size: 22px
-    custom_icon_path: /local/weather-icons/ # for your own custom SVG icons (delete this if you want regular icons)
+    embedded: true
+    style: clean
+    font_size: 15px
+    sparkline: false
+    icon_size: 34px
+    icon_filter: brightness(0.95) drop-shadow(0px 3px 6px rgba(0, 0, 0, 0.1)
 ```
 
 </details>
