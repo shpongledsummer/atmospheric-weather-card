@@ -83,6 +83,8 @@ You can use either `card_style: standalone` for a self-contained card with dynam
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
+sun_entity: sun.sun
+moon_phase_entity: sensor.moon_phase
 theme_entity: sun.sun
 card_style: standalone
 card_height: 140px
@@ -97,8 +99,6 @@ chips_font_size: 16px
 top_text_background: false
 chips_background: true
 background_style: pill
-sun_entity: sun.sun
-moon_phase_entity: sensor.moon_phase
 chips:
   - entity: weather.your_weather_entity
     icon: weather
@@ -110,7 +110,58 @@ tap_action:
 </details>
 
 <details>
-<summary><b>Example 2 — Vertical Forecast</b></summary>
+<summary><b>Example 2 — Chips Slider Card</b></summary>
+
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/cbd285fa-75d0-4a83-98c3-f100c9c9d0bf" />
+
+<br>
+
+```yaml
+type: custom:atmospheric-weather-card
+weather_entity: weather.your_weather_entity
+sun_entity: sun.sun
+moon_phase_entity: sensor.moon_phase
+card_style: standalone
+card_height: 160px
+card_padding: 20px
+sun_moon_size: 50
+celestial_position: fixed
+sun_moon_x_position: "-60"
+sun_moon_y_position: "60"
+top_position: top-left
+chips_position: bottom-left
+top_font_size: 36px
+top_text_padding: 10px
+chips_font_size: 16px
+chips_layout: scroll
+chips_width: 100%
+chips_padding: 12px 16px
+chips_gap: 8px
+chips_background: true
+tap_action:
+  action: more-info
+  entity: weather.your_weather_entity
+custom_cards_position: top-right
+bottom_sensors_width: 100%
+chips:
+  - entity: weather.your_weather_entity
+    attribute: uv_index
+    name: UV-Index
+  - entity: weather.dwd
+    attribute: humidity
+  - entity: weather.your_weather_entity
+    attribute: wind_speed
+    name: Wind
+  - entity: weather.your_weather_entity
+    attribute: pressure
+
+```
+
+</details>
+
+
+<details>
+<summary><b>Example 3 — Vertical Forecast</b></summary>
 
 <br>
 
