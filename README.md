@@ -164,22 +164,22 @@ chips:
 
 <br>
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/181aabeb-455d-4fd0-a3a8-4b12ebc08941" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/d32a8b84-76b7-4baa-9dce-0b5826f7f441" />
 
-This example uses the `custom_cards` feature to embed a [scrollable forecast](https://github.com/shpongledsummer/minimal-forecast-card). The sun and moon follow a curved path, and you can customize all details and styles however you need.
+This example uses the `custom_cards` feature to embed a [scrollable forecast](https://github.com/shpongledsummer/minimal-forecast-card).
 
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
 sun_entity: sun.sun
-moon_phase_entity:  sensor.moon_phase
+moon_phase_entity: sensor.moon_phase
 card_style: standalone
-card_height: 140px
+card_height: 150px
 card_padding: 20px
 sun_moon_size: 50
-celestial_position: dynamic_both
-sun_moon_x_position: "-60"
-sun_moon_y_position: "60"
+celestial_position: fixed
+sun_moon_x_position: "80"
+sun_moon_y_position: center
 top_position: top-left
 chips_position: bottom-left
 top_font_size: 36px
@@ -187,43 +187,34 @@ top_text_padding: 4px 8px
 chips_font_size: 14px
 chips_layout: scroll
 chips_width: 30%
-chips_padding: 10px 14px
+chips_padding: 4px 8px
 chips_gap: 8px
-chips_background: true
-tap_action:
-  action: more-info
-  entity: weather.your_weather_entity
+chips_background: false
 chips:
   - entity: weather.your_weather_entity
-    attribute: humidity
-  - entity: weather.your_weather_entity
-    attribute: uv_index
-    name: UV
-  - entity: weather.your_weather_entity
-    attribute: wind_speed
-  - entity: weather.your_weather_entity
-    attribute: visibility
+    icon: weather
+    width: 100px
+    icon_path: /local/your-icon-path/
 custom_cards_position: center-right
 custom_cards:
-  - custom_width: 200px
+  - custom_width: 190px
     type: custom:minimal-forecast-card
     entity: weather.your_weather_entity
     forecast_type: daily
     items_to_show: 7
     visible: 3
     hide_min_temp: true
-    item_spacing: 3px
+    item_spacing: 8px
     inner_spacing: 6px
-    item_height: 100px
-    divider_width: 3px
-    divider_color: rgba(255, 255, 255, 0.1)
+    item_height: 110px
+    card_shadow: inset 0 2px 4px 0 var(--card-shadow-color)
     card_padding: 0px
     embedded: true
-    style: clean
+    style: glass
     font_size: 15px
-    sparkline: false
     icon_size: 34px
-    icon_filter: brightness(0.95) drop-shadow(0px 3px 6px rgba(0, 0, 0, 0.1)
+    icon_filter: brightness(0.95) drop-shadow(0px 3px 6px rgba(0, 0, 0, 0.1))
+    custom_icon_path: /local/your-icon-path/
 ```
 
 </details>
