@@ -4,23 +4,17 @@
  * https://github.com/shpongledsummer/atmospheric-weather-card
  */
 
+// Lit is imported directly from a pinned ESM CDN instead of borrowed from
+// Home Assistant's already-registered elements. The borrow pattern crashed
+// with "css is not a function" on the Android companion app and any other
+// context where the editor loaded before ha-panel-lovelace was registered.
+// v4.0 will replace this with a proper bundled import via Vite.
+import { LitElement, html, css } from "https://esm.sh/lit@3.2.1";
+
 console.info(
     "%c ATMOSPHERIC WEATHER CARD EDITOR ",
     "color: white; font-weight: 700; background: linear-gradient(90deg, #355C7D 0%, #6C5B7B 50%, #C06C84 100%); padding: 6px 12px; border-radius: 6px; font-family: sans-serif; letter-spacing: 0.5px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);"
 );
-
-// LitElement base, borrowed from HA's already-loaded elements.
-const LitElement =
-    window.LitElement ||
-    Object.getPrototypeOf(
-        customElements.get("ha-panel-lovelace") ||
-        customElements.get("hui-masonry-view") ||
-        customElements.get("hc-lovelace") ||
-        customElements.get("home-assistant-main")
-    );
-
-const html = LitElement.prototype.html;
-const css = LitElement.prototype.css;
 
 const LABELS = Object.freeze({
     weather_entity: "Weather Entity",
