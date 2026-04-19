@@ -108,12 +108,62 @@ tap_action:
 
 </details>
 
+
 <details>
-<summary><b>Example 2 — Chips Slider Card</b></summary>
+<summary><b>Example 2 — Chips Cards</b></summary>
+
+<br>
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/f5b0afbb-8f88-4a28-8cbc-34007c3d29c6" />
+
+<br>
+
+<details>
+<summary><b>View YAML</b></summary>
+
+```yaml
+type: custom:atmospheric-weather-card
+weather_entity: weather.your_weather_entity
+sun_entity: sun.sun
+moon_phase_entity: sensor.moon_phase
+card_style: standalone
+card_height: 120px
+card_padding: 20px
+sun_moon_size: 50
+celestial_position: fixed
+sun_moon_x_position: "100"
+sun_moon_y_position: center
+top_position: top-left
+chips_position: right
+top_font_size: 40px
+top_text_padding: 8px
+chips_font_size: 14px
+chips_width: 70%
+chips_padding: 8px 12px
+chips_gap: 8px
+chips_background: true
+background_style: pill
+chips:
+  - entity: weather.your_weather_entity
+    attribute: wind_speed
+  - entity: weather.your_weather_entity
+    attribute: humidity
+  - entity: sensor.header_subtext_2
+    icon: weather
+  - entity: weather.your_weather_entity
+    attribute: uv_index
+    name: UV
+```
+
+</details>
+
+<br>
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/cbd285fa-75d0-4a83-98c3-f100c9c9d0bf" />
 
 <br>
+
+<details>
+<summary><b>View YAML</b></summary>
 
 ```yaml
 type: custom:atmospheric-weather-card
@@ -153,8 +203,11 @@ chips:
     name: Wind
   - entity: weather.your_weather_entity
     attribute: pressure
-
 ```
+
+</details>
+
+<br>
 
 </details>
 
