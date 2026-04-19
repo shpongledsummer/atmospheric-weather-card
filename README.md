@@ -187,11 +187,6 @@ chips_width: 100%
 chips_padding: 12px 16px
 chips_gap: 8px
 chips_background: true
-tap_action:
-  action: more-info
-  entity: weather.your_weather_entity
-custom_cards_position: top-right
-bottom_sensors_width: 100%
 chips:
   - entity: weather.your_weather_entity
     attribute: uv_index
@@ -295,24 +290,20 @@ custom_cards:
 
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
-theme_entity: sun.sun
+sun_entity: sun.sun
 card_style: immersive
+moon_phase_entity: sensor.moon_phase
 card_height: 120px
 card_padding: 16px
-stack_order: 1
 sun_moon_size: 40
-top_position: left
+top_position: top-left
 top_text_sensor: sensor.time
 chips_position: bottom-left
 chips:
   - entity: weather.your_weather_entity
     icon: weather
-offset: 0px 0px 0px 0px
 sun_moon_x_position: -60
 sun_moon_y_position: center
-moon_phase_entity: sensor.moon_phase
-tap_action:
-  action: none
 
 
 ```
