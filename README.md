@@ -147,7 +147,7 @@ chips:
     attribute: wind_speed
   - entity: weather.your_weather_entity
     attribute: humidity
-  - entity: sensor.header_subtext_2
+  - entity: weather.your_weather_entity
     icon: weather
   - entity: weather.your_weather_entity
     attribute: uv_index
@@ -191,7 +191,7 @@ chips:
   - entity: weather.your_weather_entity
     attribute: uv_index
     name: UV-Index
-  - entity: weather.dwd
+  - entity: weather.your_weather_entity
     attribute: humidity
   - entity: weather.your_weather_entity
     attribute: wind_speed
@@ -278,7 +278,7 @@ custom_cards:
 <br>
 
 <details>
-<summary><b>Example 1 — Simple Header Card</b></summary>
+<summary><b>Example 1 — Header Card</b></summary>
 
 <br>
 
@@ -312,140 +312,48 @@ sun_moon_y_position: center
 </details>
 
 <details>
-<summary><strong>Example 2 — Full Setup (Advanced)</strong></summary>
+<summary><strong>Example 2 — Custom Image</strong></summary>
 
 <br>
 
-| Day | Night |
-| :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/11b74980-adb0-456e-a54b-548efbf908de" width="100%" /> | <img src="https://github.com/user-attachments/assets/1d9fb735-c7d5-479f-b4eb-a084d702f678" width="100%" /> |
-
-This example is a bit advanced and shows basically all the features of the card at once. It uses the `custom_cards` feature to overlay the fantastic `custom:paper-buttons-row` directly onto your own house image, complete with dynamic status images and custom-positioned sensors.
-
-To get this working in your setup, make sure you have `paper-buttons-row` installed via HACS, and remember to swap out the entities with your own. You can read how to get your own custom house image [here.](#custom-house-image)
-
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/305972c9-35f2-4705-94b1-30111ea07d03" />
 
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
-theme_entity: sun.sun # Makes the card follow your sun cycle. Remove this if you'd rather it follow your HA theme — whichever fits your setup best.
-full_width: true
-css_mask_horizontal: false
-css_mask_vertical: false
-disable_text: true
-sun_moon_size: 50
-card_height: 240
-image_scale: 90
-moon_style: blue
-image_alignment: bottom
-offset: 0px 0px 12px 0px
-sun_moon_x_position: 100
-sun_moon_y_position: 100
-stack_order: 0
 sun_entity: sun.sun
-moon_phase_entity: sensor.moon_phase
-day: /local/house-day.png
-night: /local/house-night.png
-status_entity: binary_sensor.front_door
-status_image_day: /local/house-day-door-open.png
-status_image_night: /local/house-night-door-open.png
-tap_action:
-  action: none
+moon_phase_entity: sensor.mond_phase
+card_padding: 24px
+sun_moon_size: 55
+celestial_position: fixed
+sun_moon_x_position: 100
+sun_moon_y_position: 80
+day: /local/images/dashboard/home-day.png
+night: /local/images/dashboard/home-night.png
+image_scale: 90
+status_entity: binary_sensor.contact_sensor_door
+top_text_sensor: sensor.time
+top_position: bottom-left
+chips_position: top-right
+disable_top_text: false
+top_text_padding: 0px 16px
+chips_width: 70%
+chips_padding: 10px 14px
+chips_background: true
 custom_cards_position: top-right
-custom_cards:
-  - type: custom:paper-buttons-row
-    custom_width: 100%
-    styles:
-      display: flex
-      justify-content: flex-end
-      flex-wrap: wrap
-      grid-gap: 8px
-      margin: 12px 12px 0px 0px
-    base_config:
-      layout: icon|state
-      tap_action:
-        action: more-info
-      styles:
-        button:
-          padding: 0px 10px
-          height: 34px
-          border-radius: var(--ha-card-border-radius)
-          background-color: rgba(255, 255, 255, 0.3)
-          backdrop-filter: blur(12px)
-          box-shadow: 0 1px 2px rgba(60, 50, 40, 0.15)
-        state:
-          font-weight: 700
-          font-size: 14px
-          color: var(--text-color)
-          white-space: nowrap
-        icon:
-          "--mdc-icon-size": 20px
-          color: var(--text-color)
-          opacity: 0.5
-          padding: 0px
-          margin-right: 4px
-    buttons:
-      - entity: sensor.your_subtext_sensor
-        layout: state
-        state:
-          case: first
-        styles:
-          button:
-            pointer-events: none
-            position: absolute
-            box-shadow: none
-            background-color: transparent
-            backdrop-filter: none
-            bottom: 70px
-            left: 24px
-          state:
-            font-size: 15px
-            text-align: left
-            max-width: 200px
-            white-space: wrap
-            opacity: 0.5
-            align-self: flex-end
-            margin-left: 0px
-      - entity: sensor.time
-        layout: state
-        state:
-          case: first
-          postfix: ""
-        styles:
-          button:
-            pointer-events: none
-            position: absolute
-            box-shadow: none
-            background-color: transparent
-            backdrop-filter: none
-            bottom: 24px
-            left: 24px
-          state:
-            font-size: 42px
-            font-weight: 800
-      - entity: sensor.indoor_temperature
-        icon: mdi:thermometer
-        state:
-          postfix: " °C"
-      - entity: sensor.indoor_humidity
-        icon: mdi:water
-        state:
-          postfix: " %"
-      - entity: sensor.indoor_air_quality
-        icon: mdi:leaf
-        state:
-          case: first
-        styles:
-          button:
-            position: absolute
-            background-color: rgba(59, 123, 69, 0.2)
-            bottom: 30px
-            right: 50px
-          state:
-            color: white
-          icon:
-            color: white
+chips:
+  - entity: sensor.temperature
+  - entity: sensor.humidity
+  - entity: sensor.open_windows
+    attribute: fenster_offen
+    icon: mdi:window-open-variant
+    name: Windows
+full_width: true
+status_image_day: /local/images/dashboard/home-day-door-open.png
+status_image_night: /local/images/dashboard/home-night-door-open.png
+
 ```
+
 
 </details>
 <br>
