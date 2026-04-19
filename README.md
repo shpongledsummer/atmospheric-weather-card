@@ -1,6 +1,6 @@
-![Contains](https://img.shields.io/badge/contains-★_shooting_stars-333?style=flat-square)<br>
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=flat-square)](https://github.com/hacs/integration)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/shpongledsummer/atmospheric-weather-card?style=flat-square)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/shpongledsummer/atmospheric-weather-card?style=flat-square)<br>
+![Contains](https://img.shields.io/badge/contains-★_shooting_stars-333?style=flat-square)
 
 ## Atmospheric Weather Card
 
