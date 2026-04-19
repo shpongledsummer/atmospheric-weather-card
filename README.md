@@ -322,14 +322,14 @@ sun_moon_y_position: center
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
 sun_entity: sun.sun
-moon_phase_entity: sensor.mond_phase
+moon_phase_entity: sensor.moon_phase
 card_padding: 24px
 sun_moon_size: 55
 celestial_position: fixed
 sun_moon_x_position: 100
 sun_moon_y_position: 80
-day: /local/images/dashboard/home-day.png
-night: /local/images/dashboard/home-night.png
+day: /local/home-day.png
+night: /local/home-night.png
 image_scale: 90
 status_entity: binary_sensor.contact_sensor_door
 top_text_sensor: sensor.time
@@ -349,8 +349,8 @@ chips:
     icon: mdi:window-open-variant
     name: Windows
 full_width: true
-status_image_day: /local/images/dashboard/home-day-door-open.png
-status_image_night: /local/images/dashboard/home-night-door-open.png
+status_image_day: /local/home-day-door-open.png
+status_image_night: /local/home-night-door-open.png
 
 ```
 
