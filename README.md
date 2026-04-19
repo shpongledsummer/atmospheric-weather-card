@@ -110,7 +110,7 @@ tap_action:
 
 
 <details>
-<summary><b>Example 2 — Chips Cards</b></summary>
+<summary><b>Example 2 — Chip Cards</b></summary>
 
 <br>
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/f5b0afbb-8f88-4a28-8cbc-34007c3d29c6" />
