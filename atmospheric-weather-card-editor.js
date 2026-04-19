@@ -4,11 +4,6 @@
  * https://github.com/shpongledsummer/atmospheric-weather-card
  */
 
-// Lit is imported directly from a pinned ESM CDN instead of borrowed from
-// Home Assistant's already-registered elements. The borrow pattern crashed
-// with "css is not a function" on the Android companion app and any other
-// context where the editor loaded before ha-panel-lovelace was registered.
-// v4.0 will replace this with a proper bundled import via Vite.
 import { LitElement, html, css } from "https://esm.sh/lit@3.2.1";
 
 console.info(
