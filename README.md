@@ -225,7 +225,6 @@ card_style: standalone
 card_height: 150px
 card_padding: 20px
 sun_moon_size: 50
-celestial_position: fixed
 sun_moon_x_position: "80"
 sun_moon_y_position: center
 top_position: top-left
@@ -291,6 +290,8 @@ custom_cards:
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
 sun_entity: sun.sun
+sun_moon_x_position: -60
+sun_moon_y_position: center
 card_style: immersive
 moon_phase_entity: sensor.moon_phase
 card_height: 120px
@@ -302,8 +303,6 @@ chips_position: bottom-left
 chips:
   - entity: weather.your_weather_entity
     icon: weather
-sun_moon_x_position: -60
-sun_moon_y_position: center
 
 
 ```
