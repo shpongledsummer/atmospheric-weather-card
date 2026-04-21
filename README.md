@@ -331,10 +331,11 @@ day: /local/home-day.png
 night: /local/home-night.png
 image_scale: 90
 status_entity: binary_sensor.contact_sensor_door
+status_image_day: /local/home-day-door-open.png
+status_image_night: /local/home-night-door-open.png
 top_text_sensor: sensor.time
 top_position: bottom-left
 chips_position: top-right
-disable_top_text: false
 top_text_padding: 0px 16px
 chips_width: 70%
 chips_padding: 10px 14px
@@ -344,12 +345,9 @@ chips:
   - entity: sensor.temperature
   - entity: sensor.humidity
   - entity: sensor.open_windows
-    attribute: fenster_offen
     icon: mdi:window-open-variant
     name: Windows
 full_width: true
-status_image_day: /local/home-day-door-open.png
-status_image_night: /local/home-night-door-open.png
 
 ```
 
