@@ -16,6 +16,7 @@ const LABELS = Object.freeze({
     sun_entity: "Sun Entity",
     moon_phase_entity: "Moon Phase Entity",
     theme_entity: "Theme Entity",
+    _color_mode: "Color Mode",
 
     card_style: "Card Style",
     square: "Square Mode",
@@ -30,10 +31,10 @@ const LABELS = Object.freeze({
     css_mask_horizontal: "Fade Left & Right Edges",
     disable_text: "Hide All Text",
 
-    sun_moon_size: "Sun / Moon Size (px)",
+    sun_moon_size: "Size (px)",
     celestial_position: "Position Mode",
-    sun_moon_x_position: "Sun / Moon X Position",
-    sun_moon_y_position: "Sun / Moon Y Position",
+    sun_moon_x_position: "X Position",
+    sun_moon_y_position: "Y Position",
     moon_style: "Moon Glow Color",
 
     day: "Day Image URL",
@@ -48,19 +49,26 @@ const LABELS = Object.freeze({
     disable_chips: "Disable Chips",
     top_text_sensor: "Top Sensor",
     top_position: "Top Text Position",
-    chips_position: "Chips Position",
+    chips_position: "Position",
     top_font_size: "Font Size",
     chips_font_size: "Font Size",
-    chips_layout: "Row Layout",
+    chips_layout: "Layout",
+    chip_format: "Display",
     chips_columns: "Columns",
-    chips_align: "Chip Alignment",
-    chips_width: "Row Width",
-    chips_padding: "Chip Padding",
-    chips_gap: "Chip Gap",
+    chips_visible: "Show at a time",
+    chips_align: "Alignment",
+    chips_width: "Row width",
+    chips_height: "Height",
+    chips_full_width: "Full width chips",
+    chips_padding: "Padding",
+    chip_gap: "Space between chips",
+    chip_inner_gap: "Space inside chips",
     top_text_padding: "Padding",
-    top_text_background: "Show background",
+    top_text_background: "Background",
     top_text_behind_weather: "Behind weather",
-    chips_background: "Show background",
+    chips_background: "Background",
+    chips_grouped: "One shared background",
+    chips_scroll_dots: "Scroll indicator dots",
     background_style: "Background Style",
 
     custom_cards_position: "Embedded Cards Position",
@@ -68,98 +76,79 @@ const LABELS = Object.freeze({
 });
 
 const HELPERS = Object.freeze({
-    weather_entity: "Your Home Assistant weather integration entity.",
-    sun_entity:
-        "Drives the sky — without it the moon and stars never appear and the card stays in permanent day.",
-    moon_phase_entity: "Renders the correct moon phase.",
-    theme_entity:
-        "Pick the entity that drives the dark/light cycle. Most setups use sun.sun, so if the sun sets, the moon shows up in its place and the card\'s colors turn dark.",
+    weather_entity: "Your weather integration entity.",
+    sun_entity: "Controls day/night cycle, moon and stars.",
+    moon_phase_entity: "Shows the correct moon phase.",
+    theme_entity: "Entity that drives light/dark switching.",
 
-    card_height: "Height in pixels, or click Auto to fill grid layouts.",
-    card_padding: "CSS padding value, e.g. 16px.",
-    offset: "Outer margin in pixels. Useful when layering cards.",
-    stack_order: "Raise above 0 to layer the card in front of others. Default: 1 for standalone, -1 for immersive.",
-    tap_action: "Action performed when the card is tapped.",
-    full_width: "Immersive only. Stretches the card edge-to-edge by removing side margins.",
-    css_mask_vertical: "Immersive only. Fades the top and bottom edges of the card.",
-    css_mask_horizontal: "Immersive only. Fades the left and right edges of the card.",
-    disable_text: "Hides the top text and chips row in one go.",
-    filter: "Optional visual filter applied to the entire weather canvas.",
+    card_height: "Pixels, or type 'auto' for grid layouts.",
+    card_padding: "e.g. 16px",
+    offset: "Outer margin for layering cards.",
+    stack_order: "Default: 1 (standalone), -1 (immersive).",
+    tap_action: "Action on card tap.",
+    full_width: "Remove side margins for edge-to-edge.",
+    css_mask_vertical: "Fades the top and bottom edges.",
+    css_mask_horizontal: "Fades the left and right edges.",
+    disable_text: "Hides all overlays at once.",
+    filter: "Visual filter on the weather canvas.",
 
     moon_style:
-        "Default follows the theme — a muted blue in light mode, white in dark mode. Picking a specific color applies it in both modes.",
-    sun_moon_x_position:
-        "Distance from the chosen edge, in pixels.",
-    sun_moon_y_position:
-        "Distance from the top of the card, in pixels.",
-    sun_moon_size: "Diameter in pixels.",
+        "Default follows the theme.",
+    sun_moon_x_position: "Distance from edge, in pixels.",
+    sun_moon_y_position: "Distance from top, in pixels.",
     celestial_position:
-        "Dynamic modes animate the sun (and optionally the moon) across the sky following the real solar arc.",
+        "Dynamic modes follow the real solar arc.",
 
-    night: "Falls back to the day image if left empty.",
-    image_scale: "Image height as a percentage of the card height.",
-    image_alignment:
-        "The image distance from the card edges follows the Card Padding — adjusting padding shifts the image accordingly.",
+    night: "Falls back to day image if empty.",
+    image_scale: "Height as % of card.",
+    image_alignment: "Follows card padding.",
 
-    status_entity:
-        "Swaps the background image when this entity is in an active state (on, true, open, unlocked, home, active).",
-    status_image_day: "Day image shown when the status entity is active.",
-    status_image_night: "Night image shown when the status entity is active.",
+    status_entity: "Swaps image when active (on, open, home…).",
+    status_image_day: "Day image when status is active.",
+    status_image_night: "Night image when status is active.",
 
-    top_text_sensor: "Defaults to the weather entity's temperature.",
-    top_position: "Where the top text anchors inside the card.",
-    top_text_behind_weather: "Places the top text behind the weather canvases. Text backgrounds are disabled while behind.",
-    chips_layout:
-        "Wrap moves overflowing chips to a second line, Scroll keeps chips on one line with a hidden scrollbar, Grid arranges them in equal columns.",
+    top_text_sensor: "Defaults to temperature.",
+    top_position: "Where the top text anchors.",
+    top_text_behind_weather: "Places text behind weather layers.",
     chips_columns:
-        "Number of equal-width columns in Grid layout.",
+        "Number of equal-width columns.",
     chips_align:
-        "How each chip aligns inside its grid cell.",
-    chips_width:
-        "Limit the full row width (e.g. 60% or 200px). Useful to place the chip row next to the top text instead of spanning the card.",
-    chips_padding:
-        "Inner padding of each chip (e.g. 5px 10px).",
-    chips_gap:
-        "Space between chips (e.g. 8px).",
+        "Content alignment within each chip.",
     top_text_padding:
-        "Inner padding around the top text (e.g. 8px 14px).",
+        "e.g. 8px 14px",
     background_style:
-        "Frosted is translucent glass with a thin border. Pill is opaque and high-contrast.",
+        "Frosted: translucent glass. Contrast: opaque, high contrast.",
 
     custom_cards_css_class:
-        "CSS class on the container — useful for targeting it with card_mod.",
-
-    custom_cards_position:
-        ""
+        "CSS class on the container — useful for targeting it with card_mod."
 });
 
-// Per-chip labels/helpers used inside the chips list.
 const CHIP_LABELS = Object.freeze({
-    entity: "Sensor",
+    entity: "Entity",
     attribute: "Attribute",
-    name: "Name",
-    width: "Container Width",
-    overflow: "Text Overflow",
-    marquee_speed: "Marquee Speed",
-    marquee_rtl: "Scroll Right-to-Left",
-    disable_icon: "Disable Icon",
+    name: "Label",
+    name_sensor: "Label Entity",
+    name_attribute: "Label Attribute",
+    width: "Width",
+    overflow: "When text is too long",
+    marquee_speed: "Scroll speed",
+    marquee_rtl: "Right-to-left",
+    disable_icon: "Hide icon",
     icon: "Icon",
-    icon_path: "Icon Folder Path",
-    tap_action: "Tap Action"
+    icon_path: "Icon folder",
+    tap_action: "Tap Action",
+    position: "Position"
 });
 
 const CHIP_HELPERS = Object.freeze({
-    entity: "Any sensor, binary_sensor, or weather entity. Use the weather entity to show its state (e.g. Sunny).",
-    attribute: "Optional. Read one of this entity's attributes instead of its state (e.g. humidity on a weather entity).",
-    name: "Optional label shown before the value, e.g. \"Wind\".",
-    width: "Limit this chip's width (e.g. 60% or 200px). Required for the Marquee overflow mode.",
-    overflow: "Behavior when this chip's text exceeds its width. Marquee scrolls horizontally like a ticker.",
-    marquee_speed: "Scroll speed in pixels per second. Higher values scroll faster.",
-    icon: "Pick an MDI icon, leave empty to inherit from the sensor, or type 'weather' for a dynamic weather icon.",
-    icon_path: "Folder for custom SVG icons. Example: /local/weather-icons/"
+    attribute: "e.g. humidity, temperature",
+    name: "Shown before the value.",
+    name_sensor: "Use a sensor value as the label instead of static text.",
+    name_attribute: "Attribute of the label entity.",
+    width: "e.g. 200px or 60%. Required for scrolling text.",
+    icon: "MDI icon, or type 'weather' for a dynamic icon.",
+    icon_path: "e.g. /local/weather-icons/"
 });
-
-// Display defaults. Stripped on save so persisted YAML only contains user overrides.
 
 const KEY_ORDER = Object.freeze([
     "type",
@@ -177,8 +166,9 @@ const KEY_ORDER = Object.freeze([
     "disable_text", "disable_top_text", "disable_chips",
     "top_font_size", "top_text_padding",
     "chips_font_size",
-    "chips_layout", "chips_columns", "chips_align", "chips_width", "chips_padding", "chips_gap",
-    "top_text_background", "chips_background", "background_style",
+    "chips_layout", "chips_columns", "chips_visible", "chips_align", "chips_width", "chips_height", "chips_full_width", "chips_padding", "chip_gap", "chip_inner_gap", "chip_format",
+    "chips_scroll_dots", "chips_scroll_dots_position", "chips_scroll_dots_spacing", "chips_scroll_dots_anchor", "chips_scroll_dots_x", "chips_scroll_dots_y",
+    "top_text_background", "chips_background", "chips_grouped", "background_style",
     "tap_action", "hold_action", "double_tap_action",
     "offset",
     "custom_cards_position", "custom_cards_css_class",
@@ -194,14 +184,11 @@ const DISPLAY_DEFAULTS = Object.freeze({
     image_alignment: "top-right",
     background_style: "frosted",
     chips_layout: "wrap",
+    chip_format: "inline",
     chips_align: "start"
 });
 
 const OPT = Object.freeze({
-    card_style: [
-        { value: "immersive", label: "Immersive (no background)" },
-        { value: "standalone", label: "Standalone (dynamic background)" }
-    ],
     color_mode: [
         { value: "ha_theme",    label: "Follow my Home Assistant theme" },
         { value: "entity",      label: "Follow another entity (e.g. the sun)" },
@@ -223,25 +210,24 @@ const OPT = Object.freeze({
         { value: "grey",    label: "Grey" }
     ],
     chip_overflow: [
-        { value: "ellipsis", label: "Ellipsis" },
-        { value: "marquee", label: "Marquee (scrolling ticker)" },
+        { value: "ellipsis", label: "Ellipsis (…)" },
+        { value: "marquee", label: "Scrolling text" },
         { value: "clip", label: "Clip" },
         { value: "wrap", label: "Wrap" }
     ],
     chips_layout: [
-        { value: "wrap",   label: "Wrap" },
-        { value: "scroll", label: "Scroll" },
-        { value: "grid",   label: "Grid" }
+        { value: "wrap",              label: "Wrap" },
+        { value: "grid",              label: "Grid" },
+        { value: "horizontal-scroll", label: "Scroll X" },
+        { value: "vertical-scroll",   label: "Scroll Y" }
     ],
     chips_align: [
-        { value: "start",  label: "Start" },
+        { value: "start",  label: "Left" },
         { value: "center", label: "Center" },
-        { value: "end",    label: "End" }
+        { value: "end",    label: "Right" }
     ]
 });
 
-// 3x3 corner pickers: cells is a 3x3 matrix (null = empty cell),
-// disabled dims non-interactive values, extras renders buttons below the grid.
 const POSITION_GRIDS = Object.freeze({
     image_alignment: {
         cells: [
@@ -252,11 +238,7 @@ const POSITION_GRIDS = Object.freeze({
         valueMap: { "left": "center-left", "right": "center-right" }
     },
     custom_cards_position: {
-        cells: [
-            ["top-left",    "top-center",    "top-right"],
-            ["left",        "center",        "right"],
-            ["bottom-left", "bottom-center", "bottom-right"]
-        ],
+        cells: [["top-left","top-center","top-right"],["left","center","right"],["bottom-left","bottom-center","bottom-right"]],
         valueMap: { "left": "center-left", "right": "center-right" }
     },
     top_position: {
@@ -266,112 +248,8 @@ const POSITION_GRIDS = Object.freeze({
             ["bottom-left", "bottom-center", "bottom-right"]
         ]
     },
-    chips_position: {
-        cells: [
-            ["top-left",    "top-center",    "top-right"],
-            ["left",        "center",        "right"],
-            ["bottom-left", "bottom-center", "bottom-right"]
-        ]
-    }
+    chips_position: { cells: [["top-left","top-center","top-right"],["left","center","right"],["bottom-left","bottom-center","bottom-right"]] }
 });
-
-// ============================================================================
-// LEGACY MIGRATION — remove entirely in v4.0
-// Migrates configs from pre-chips schema. All key renames, derivations, and
-// chip synthesis live here. Downstream code reads only current-schema keys.
-// Intentionally duplicated in card.js — keeps both entry points self-contained
-// without a build step, and deletion later is one grep-and-cut per file.
-// ============================================================================
-
-const LEGACY_STRIP_KEYS = Object.freeze([
-    "mode", "text_background_style",
-    "combine_text", "combine_texts",
-    "image_type", "image_icon_path", "image_icon_scale", "image_background",
-    "bottom_font_size", "bottom_text_background", "disable_bottom_text", "bottom_position", "bottom_sensors",
-    "bottom_text_sensor", "bottom_text_icon", "bottom_text_icon_path",
-    "bottom_text_width", "bottom_text_overflow",
-    "bottom_text_marquee_speed", "bottom_text_marquee_rtl", "disable_bottom_icon",
-    "text_position", "text_alignment", "text_layout_mode", "swap_text", "swap_texts"
-]);
-
-function _deriveLegacyPositions(c) {
-    const pos = (c.text_position || "").toString().toLowerCase().trim();
-    const align = (c.text_alignment || "").toString().toLowerCase().trim();
-    const swap = (c.swap_text ?? c.swap_texts) === true;
-    if (!pos && !align && !swap) return null;
-
-    if (pos === "split-top")    return { top: "top-left",    chips: "top-right" };
-    if (pos === "split-bottom") return { top: "bottom-left", chips: "bottom-right" };
-
-    let h;
-    if      (pos.includes("left"))   h = "left";
-    else if (pos.includes("right"))  h = "right";
-    else if (pos.includes("center")) h = "center";
-    else {
-        const sunX = parseInt(c.sun_moon_x_position, 10);
-        h = (!isNaN(sunX) ? sunX >= 0 : true) ? "right" : "left";
-    }
-
-    let topV, chipsV;
-    if      (align === "top")        { topV = "top";    chipsV = "top"; }
-    else if (align === "center")     { topV = "center"; chipsV = "center"; }
-    else if (align === "bottom")     { topV = "bottom"; chipsV = "bottom"; }
-    else if (pos.includes("top"))    { topV = "top";    chipsV = "top"; }
-    else if (pos.includes("bottom")) { topV = "bottom"; chipsV = "bottom"; }
-    else                             { topV = "top";    chipsV = "bottom"; }
-
-    const cell = (v, hAxis) => {
-        if (v === "center" && hAxis === "center") return "center";
-        if (v === "center") return hAxis;
-        if (hAxis === "center") return `${v}-center`;
-        return `${v}-${hAxis}`;
-    };
-
-    let top = cell(topV, h);
-    let chips = cell(chipsV, h);
-    if (swap) [top, chips] = [chips, top];
-    return { top, chips };
-}
-
-function _migrateLegacyConfig(config) {
-    if (!config || typeof config !== "object") return config;
-    const c = { ...config };
-
-    if (c.mode !== undefined && c.theme === undefined) c.theme = c.mode;
-    if (c.text_background_style !== undefined && c.background_style === undefined) c.background_style = c.text_background_style;
-    if (c.bottom_font_size !== undefined && c.chips_font_size === undefined) c.chips_font_size = c.bottom_font_size;
-    if (c.bottom_text_background !== undefined && c.chips_background === undefined) c.chips_background = c.bottom_text_background;
-    if (c.disable_bottom_text !== undefined && c.disable_chips === undefined) c.disable_chips = c.disable_bottom_text;
-    if (c.bottom_position !== undefined && c.chips_position === undefined) c.chips_position = c.bottom_position;
-    if (Array.isArray(c.bottom_sensors) && !Array.isArray(c.chips)) c.chips = c.bottom_sensors;
-
-    if (!Array.isArray(c.chips) && c.bottom_text_sensor) {
-        const chip = { entity: c.bottom_text_sensor };
-        if (c.bottom_text_icon)                          chip.icon = c.bottom_text_icon;
-        if (c.bottom_text_icon_path)                     chip.icon_path = c.bottom_text_icon_path;
-        if (c.bottom_text_width)                         chip.width = c.bottom_text_width;
-        if (c.bottom_text_overflow)                      chip.overflow = c.bottom_text_overflow;
-        if (c.bottom_text_marquee_speed !== undefined)   chip.marquee_speed = c.bottom_text_marquee_speed;
-        if (c.bottom_text_marquee_rtl === true)          chip.marquee_rtl = true;
-        if (c.disable_bottom_icon === true)              chip.disable_icon = true;
-        c.chips = [chip];
-    }
-
-    if (!c.top_position && !c.chips_position) {
-        const derived = _deriveLegacyPositions(c);
-        if (derived) {
-            c.top_position = derived.top;
-            c.chips_position = derived.chips;
-        }
-    }
-
-    for (const k of LEGACY_STRIP_KEYS) delete c[k];
-    return c;
-}
-
-// ============================================================================
-// END LEGACY MIGRATION
-// ============================================================================
 
 class AtmosphericWeatherCardEditor extends LitElement {
     static get properties() {
@@ -388,467 +266,216 @@ class AtmosphericWeatherCardEditor extends LitElement {
     static get styles() {
         return css`
             :host {
-                /* Spacing rhythm (4px base). Used for padding, margin, gap. */
-                --awc-e-s1: 4px;
-                --awc-e-s2: 8px;
-                --awc-e-s3: 12px;
-                --awc-e-s4: 16px;
-
-                /* Radius scale */
-                --awc-e-r-box:   10px;
-                --awc-e-r-ctrl:   8px;
-                --awc-e-r-inline: 6px;
-
-                /* Typography scale */
-                --awc-e-f-meta:   12px;
-                --awc-e-f-label:  13px;
-                --awc-e-f-body:   14px;
-                --awc-e-f-header: 15px;
-
-                /* Motion — single system-wide transition */
+                --awc-e-s1: 4px; --awc-e-s2: 8px; --awc-e-s3: 12px; --awc-e-s4: 16px;
+                --awc-e-r-box: 10px; --awc-e-r-ctrl: 8px; --awc-e-r-inline: 6px;
+                --awc-e-f-meta: 12px; --awc-e-f-label: 13px; --awc-e-f-body: 14px; --awc-e-f-header: 15px;
                 --awc-e-t: 150ms ease;
-
                 display: block;
             }
             ha-form { display: block; }
-
-            /* ============ Panels (top-level HA chrome) ============ */
             ha-expansion-panel {
-                display: block;
-                margin-top: var(--awc-e-s3);
+                display: block; margin-top: var(--awc-e-s3);
                 --ha-card-border-radius: var(--awc-e-r-box);
+                & ha-form { margin-top: var(--awc-e-s2); }
             }
-            ha-expansion-panel ha-form { margin-top: var(--awc-e-s2); }
             ha-form + ha-form { margin-top: var(--awc-e-s1); }
             .panel-header {
-                display: flex;
-                align-items: center;
-                gap: var(--awc-e-s2);
-                font-size: var(--awc-e-f-header);
-                font-weight: 500;
-                color: var(--primary-text-color);
+                display: flex; align-items: center; gap: var(--awc-e-s2);
+                font-size: var(--awc-e-f-header); font-weight: 500; color: var(--primary-text-color);
+                & ha-icon { --mdc-icon-size: 20px; color: var(--secondary-text-color); }
             }
-            .panel-header ha-icon {
-                --mdc-icon-size: 20px;
-                color: var(--secondary-text-color);
-            }
-
-            /* ============ VISUAL TIERS ============
-               Consistent surfaces. Hierarchy comes from nesting.
-               Tier A (secondary-bg): structural panels — info banners,
-                    outer disclosures, card list rows, empty states.
-               Tier A+ (secondary-bg + 5% overlay): nested disclosures.
-               Tier B (9% overlay): grouped option containers —
-                    composite, grid-picker, toggle-group.
-               Tier C (16% overlay): interactive tiles inside Tier B —
-                    grid-cell, inactive segmented buttons. */
-            .info,
-            .cards-empty,
-            .card-row,
-            details.disclosure {
-                background: var(--secondary-background-color);
-                border-radius: var(--awc-e-r-box);
+            .info, .cards-empty, .card-row, details.disclosure {
+                background: var(--secondary-background-color); border-radius: var(--awc-e-r-box);
             }
             details.disclosure details.disclosure {
-                background:
-                    linear-gradient(
-                        rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.05),
-                        rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.05)
-                    ),
-                    var(--secondary-background-color);
+                background: linear-gradient(rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.05), rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.05)), var(--secondary-background-color);
             }
-            .composite,
-            .grid-picker,
-            .toggle-group {
-                background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.09);
-                border-radius: var(--awc-e-r-box);
+            .composite, .grid-picker, .toggle-group {
+                background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.09); border-radius: var(--awc-e-r-box);
             }
-
-            /* ============ Info banner ============ */
             .info {
-                padding: var(--awc-e-s3) var(--awc-e-s4);
-                margin: 0 0 var(--awc-e-s3) 0;
-                font-size: var(--awc-e-f-label);
-                line-height: 1.5;
-                color: var(--secondary-text-color);
+                padding: var(--awc-e-s3) var(--awc-e-s4); margin: 0 0 var(--awc-e-s3) 0;
+                font-size: var(--awc-e-f-label); line-height: 1.5; color: var(--secondary-text-color);
+                & b { color: var(--primary-text-color); font-weight: 500; }
+                & code { background: var(--primary-background-color); padding: 1px 6px; border-radius: 4px; font-size: var(--awc-e-f-meta); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+                &.inline-action { display: flex; align-items: center; gap: var(--awc-e-s3); justify-content: space-between; & > span { flex: 1; } }
             }
-            .info b { color: var(--primary-text-color); font-weight: 500; }
-            .info code {
-                background: var(--primary-background-color);
-                padding: 1px 6px;
-                border-radius: 4px;
-                font-size: var(--awc-e-f-meta);
-                font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-            }
-            .info.inline-action {
-                display: flex;
-                align-items: center;
-                gap: var(--awc-e-s3);
-                justify-content: space-between;
-            }
-            .info.inline-action > span { flex: 1; }
-
-            /* ============ Inline action button (primary CTA, e.g. "Set to 90px") ============ */
             .inline-action-btn {
-                flex-shrink: 0;
-                padding: var(--awc-e-s2) var(--awc-e-s3);
-                border: 0;
-                background: var(--primary-color);
-                color: var(--text-primary-color, white);
-                border-radius: var(--awc-e-r-ctrl);
-                font-size: var(--awc-e-f-label);
-                font-weight: 500;
-                cursor: pointer;
-                white-space: nowrap;
-                transition: opacity var(--awc-e-t);
+                flex-shrink: 0; padding: var(--awc-e-s2) var(--awc-e-s3); border: 0;
+                background: var(--primary-color); color: var(--text-primary-color, white);
+                border-radius: var(--awc-e-r-ctrl); font-size: var(--awc-e-f-label); font-weight: 500;
+                cursor: pointer; white-space: nowrap; transition: opacity var(--awc-e-t);
+                &:hover { opacity: 0.85; }
             }
-            .inline-action-btn:hover { opacity: 0.85; }
-
-            /* ============ Labels & helpers ============ */
-            .grid-picker-label,
-            .composite-label {
-                display: block;
-                font-size: var(--awc-e-f-label);
-                font-weight: 500;
-                margin-bottom: var(--awc-e-s2);
-                color: var(--primary-text-color);
+            .grid-picker-label, .composite-label {
+                display: block; font-size: var(--awc-e-f-label); font-weight: 500;
+                margin-bottom: var(--awc-e-s2); color: var(--primary-text-color);
             }
-            .grid-helper,
-            .composite-helper {
-                margin-top: var(--awc-e-s2);
-                font-size: var(--awc-e-f-meta);
-                color: var(--secondary-text-color);
-                line-height: 1.5;
+            .grid-helper, .composite-helper {
+                margin-top: var(--awc-e-s2); font-size: var(--awc-e-f-meta);
+                color: var(--secondary-text-color); line-height: 1.5;
             }
             .scope-note {
-                margin-top: var(--awc-e-s1);
-                font-size: var(--awc-e-f-meta);
-                color: var(--secondary-text-color);
-                display: flex;
-                align-items: center;
-                gap: var(--awc-e-s1);
+                margin-top: var(--awc-e-s1); font-size: var(--awc-e-f-meta); color: var(--secondary-text-color);
+                display: flex; align-items: center; gap: var(--awc-e-s1);
+                & ha-icon { --mdc-icon-size: 14px; }
             }
-            .scope-note ha-icon { --mdc-icon-size: 14px; }
-
-            /* ============ Card size row (top-level 2-col) ============ */
             .card-size-row {
-                display: grid;
-                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-                gap: var(--awc-e-s2);
-                margin-bottom: var(--awc-e-s3);
+                display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                gap: var(--awc-e-s2); margin-bottom: var(--awc-e-s3);
+                & ha-textfield { display: block; width: 100%; min-width: 0; }
             }
-            .card-size-row ha-textfield { display: block; width: 100%; min-width: 0; }
-
-            /* ============ 3x3 position grid picker ============ */
-            .grid-picker {
-                margin: var(--awc-e-s3) 0 var(--awc-e-s4) 0;
-                padding: var(--awc-e-s3) var(--awc-e-s4);
-            }
-            .grid-3x3 {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: var(--awc-e-s1);
-                width: 144px;
-                aspect-ratio: 1;
-            }
+            .grid-picker { margin: var(--awc-e-s3) 0 var(--awc-e-s4) 0; padding: var(--awc-e-s3) var(--awc-e-s4); }
+            .grid-3x3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--awc-e-s1); width: 144px; aspect-ratio: 1; }
             .grid-cell {
-                border: 0;
-                background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.16);
-                border-radius: var(--awc-e-r-inline);
-                cursor: pointer;
-                padding: 0;
-                transition: background var(--awc-e-t);
+                border: 0; background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.16);
+                border-radius: var(--awc-e-r-inline); cursor: pointer; padding: 0; transition: background var(--awc-e-t);
+                &:hover:not(.disabled):not(.active) { background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.28); }
+                &.active { background: var(--primary-color); }
+                &.empty { visibility: hidden; pointer-events: none; }
+                &.disabled { opacity: 0.4; cursor: not-allowed; background: repeating-linear-gradient(45deg, rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.16) 0 6px, var(--divider-color) 6px 7px); }
             }
-            .grid-cell:hover:not(.disabled):not(.active) { background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.28); }
-            .grid-cell.active { background: var(--primary-color); }
-            .grid-cell.empty { visibility: hidden; pointer-events: none; }
-            .grid-cell.disabled {
-                opacity: 0.4;
-                cursor: not-allowed;
-                background:
-                    repeating-linear-gradient(
-                        45deg,
-                        rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.16) 0 6px,
-                        var(--divider-color) 6px 7px
-                    );
-            }
-            .grid-extras {
-                display: flex;
-                gap: var(--awc-e-s1);
-                margin-top: var(--awc-e-s2);
-                flex-wrap: wrap;
-            }
+            .grid-extras { display: flex; gap: var(--awc-e-s1); margin-top: var(--awc-e-s2); flex-wrap: wrap; }
             .grid-extra {
-                flex: 1;
-                min-width: 100px;
-                padding: var(--awc-e-s2) var(--awc-e-s3);
-                border: 0;
-                background: var(--secondary-background-color);
-                border-radius: var(--awc-e-r-inline);
-                color: var(--primary-text-color);
-                font-size: var(--awc-e-f-label);
-                cursor: pointer;
+                flex: 1; min-width: 100px; padding: var(--awc-e-s2) var(--awc-e-s3); border: 0;
+                background: var(--secondary-background-color); border-radius: var(--awc-e-r-inline);
+                color: var(--primary-text-color); font-size: var(--awc-e-f-label); cursor: pointer;
                 transition: background var(--awc-e-t), color var(--awc-e-t);
+                &:hover:not(.active) { background: var(--divider-color); }
+                &.active { background: var(--primary-color); color: var(--text-primary-color, white); }
             }
-            .grid-extra:hover:not(.active) { background: var(--divider-color); }
-            .grid-extra.active {
-                background: var(--primary-color);
-                color: var(--text-primary-color, white);
-            }
-
-            /* ============ Composite field group ============ */
-            .composite {
-                margin: var(--awc-e-s3) 0 var(--awc-e-s4) 0;
-                padding: var(--awc-e-s3) var(--awc-e-s4);
-            }
-            .composite-row {
-                display: flex;
-                align-items: center;
-                gap: var(--awc-e-s2);
-                flex-wrap: wrap;
-            }
-            .composite-unit {
-                font-size: var(--awc-e-f-label);
-                color: var(--secondary-text-color);
-            }
-            .composite-number,
-            .composite-grid-4 input {
-                flex: 1;
-                min-width: 120px;
-                padding: var(--awc-e-s2) var(--awc-e-s3);
-                border: 1px solid transparent;
-                background: var(--primary-background-color);
-                color: var(--primary-text-color);
-                border-radius: var(--awc-e-r-ctrl);
-                font-size: var(--awc-e-f-body);
-                box-sizing: border-box;
-                transition: border-color var(--awc-e-t);
-            }
-            .composite-number:focus,
-            .composite-grid-4 input:focus {
-                outline: none;
-                border-color: var(--primary-color);
+            .composite { margin: var(--awc-e-s3) 0 var(--awc-e-s4) 0; padding: var(--awc-e-s3) var(--awc-e-s4); }
+            .composite-row { display: flex; align-items: center; gap: var(--awc-e-s2); flex-wrap: wrap; }
+            .composite-unit { font-size: var(--awc-e-f-label); color: var(--secondary-text-color); }
+            .composite-number, .composite-grid-4 input {
+                flex: 1; min-width: 120px; padding: var(--awc-e-s2) var(--awc-e-s3);
+                border: 1px solid transparent; background: var(--primary-background-color);
+                color: var(--primary-text-color); border-radius: var(--awc-e-r-ctrl);
+                font-size: var(--awc-e-f-body); box-sizing: border-box; transition: border-color var(--awc-e-t);
+                &:focus { outline: none; border-color: var(--primary-color); }
             }
             .composite-number:disabled { opacity: 0.5; cursor: not-allowed; }
             .composite-grid-4 {
-                display: grid;
-                grid-template-columns: repeat(4, 1fr);
-                gap: var(--awc-e-s2);
+                display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--awc-e-s2);
+                & label { display: flex; flex-direction: column; gap: var(--awc-e-s1); font-size: var(--awc-e-f-meta); color: var(--secondary-text-color); }
+                & input { flex: none; min-width: 0; width: 100%; }
             }
-            .composite-grid-4 label {
-                display: flex;
-                flex-direction: column;
-                gap: var(--awc-e-s1);
-                font-size: var(--awc-e-f-meta);
-                color: var(--secondary-text-color);
-            }
-            .composite-grid-4 input { flex: none; min-width: 0; width: 100%; }
             .composite-textfield { flex: 1; min-width: 0; }
             .composite-chip {
-                padding: var(--awc-e-s2) var(--awc-e-s3);
-                border: 0;
-                background: var(--primary-background-color);
-                color: var(--primary-text-color);
-                border-radius: var(--awc-e-r-ctrl);
-                font-size: var(--awc-e-f-body);
-                cursor: pointer;
-                transition: background var(--awc-e-t), color var(--awc-e-t);
-                white-space: nowrap;
+                padding: var(--awc-e-s2) var(--awc-e-s3); border: 0;
+                background: var(--primary-background-color); color: var(--primary-text-color);
+                border-radius: var(--awc-e-r-ctrl); font-size: var(--awc-e-f-body);
+                cursor: pointer; transition: background var(--awc-e-t), color var(--awc-e-t); white-space: nowrap;
+                &:hover:not(.active) { background: var(--divider-color); }
+                &.active { background: var(--primary-color); color: var(--text-primary-color, white); }
             }
-            .composite-chip:hover:not(.active) { background: var(--divider-color); }
-            .composite-chip.active {
-                background: var(--primary-color);
-                color: var(--text-primary-color, white);
-            }
-
-            /* ============ Segmented control (Apple-style pill, padded track + inner buttons) ============ */
             .segmented {
-                display: flex;
-                flex-wrap: wrap;
-                width: 100%;
-                background: var(--primary-background-color);
-                border-radius: var(--awc-e-r-ctrl);
-                padding: 3px;
-                gap: 2px;
-                box-sizing: border-box;
-            }
-            .segmented button {
-                flex: 1 1 0;
-                min-width: 0;
-                padding: var(--awc-e-s2) var(--awc-e-s3);
-                border: 0;
-                background: transparent;
-                color: var(--primary-text-color);
-                font-size: var(--awc-e-f-body);
-                cursor: pointer;
-                transition: background var(--awc-e-t), color var(--awc-e-t);
-                text-align: center;
-                border-radius: calc(var(--awc-e-r-ctrl) - 3px);
-            }
-            .segmented button:hover:not(.active) { background: var(--divider-color); }
-            .segmented button.active {
-                background: var(--primary-color);
-                color: var(--text-primary-color, white);
+                display: flex; flex-wrap: wrap; width: 100%;
+                background: var(--primary-background-color); border-radius: var(--awc-e-r-ctrl);
+                padding: 3px; gap: 2px; box-sizing: border-box;
+                & button {
+                    flex: 1 1 0; min-width: 0; padding: var(--awc-e-s2) var(--awc-e-s3); border: 0;
+                    background: transparent; color: var(--primary-text-color); font-size: var(--awc-e-f-body);
+                    cursor: pointer; transition: background var(--awc-e-t), color var(--awc-e-t);
+                    text-align: center; border-radius: calc(var(--awc-e-r-ctrl) - 3px);
+                    &:hover:not(.active) { background: var(--divider-color); }
+                    &.active { background: var(--primary-color); color: var(--text-primary-color, white); }
+                }
+                &.segmented-2col { display: grid; grid-template-columns: 1fr 1fr; }
             }
             .composite-row .segmented { flex: 1; min-width: 0; }
-
-            /* ============ Disclosures (nested grouping inside panels) ============ */
             details.disclosure {
-                margin-top: var(--awc-e-s3);
-                overflow: hidden;
+                margin-top: var(--awc-e-s3); overflow: hidden;
+                & > summary {
+                    list-style: none; cursor: pointer; display: flex; align-items: center;
+                    gap: var(--awc-e-s2); padding: var(--awc-e-s3) var(--awc-e-s4);
+                    font-size: var(--awc-e-f-label); font-weight: 500; color: var(--primary-text-color);
+                    user-select: none; transition: background var(--awc-e-t);
+                    &::-webkit-details-marker { display: none; }
+                    &:hover { background: var(--divider-color); }
+                    & ha-icon { --mdc-icon-size: 18px; color: var(--secondary-text-color); }
+                    & .chevron { transition: transform var(--awc-e-t); }
+                }
+                &[open] > summary .chevron { transform: rotate(90deg); }
+                & > .disclosure-body { padding: 0 var(--awc-e-s4) var(--awc-e-s3) var(--awc-e-s4); }
             }
-            details.disclosure > summary {
-                list-style: none;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                gap: var(--awc-e-s2);
-                padding: var(--awc-e-s3) var(--awc-e-s4);
-                font-size: var(--awc-e-f-label);
-                font-weight: 500;
-                color: var(--primary-text-color);
-                user-select: none;
-                transition: background var(--awc-e-t);
-            }
-            details.disclosure > summary::-webkit-details-marker { display: none; }
-            details.disclosure > summary:hover { background: var(--divider-color); }
-            details.disclosure > summary ha-icon {
-                --mdc-icon-size: 18px;
-                color: var(--secondary-text-color);
-                transition: transform var(--awc-e-t);
-            }
-            details.disclosure[open] > summary ha-icon { transform: rotate(90deg); }
-            details.disclosure > .disclosure-body {
-                padding: 0 var(--awc-e-s4) var(--awc-e-s3) var(--awc-e-s4);
-            }
-
-            /* ============ Empty state ============ */
             .cards-empty {
-                padding: var(--awc-e-s4);
-                text-align: center;
-                font-size: var(--awc-e-f-label);
-                color: var(--secondary-text-color);
-                margin-bottom: var(--awc-e-s3);
+                padding: var(--awc-e-s4); text-align: center;
+                font-size: var(--awc-e-f-label); color: var(--secondary-text-color); margin-bottom: var(--awc-e-s3);
             }
-
-            /* ============ Expandable list rows (embedded cards, chips) ============ */
             .card-row {
-                margin-bottom: var(--awc-e-s2);
-                overflow: hidden;
+                margin-bottom: var(--awc-e-s2); overflow: hidden;
+                & .card-row-head {
+                    display: flex; align-items: center; gap: var(--awc-e-s2);
+                    padding: var(--awc-e-s3) var(--awc-e-s4); cursor: pointer; user-select: none;
+                    transition: background var(--awc-e-t);
+                    &:hover { background: var(--divider-color); }
+                    & > .chevron { --mdc-icon-size: 20px; color: var(--secondary-text-color); transition: transform var(--awc-e-t); }
+                }
+                &.expanded .card-row-head > .chevron { transform: rotate(90deg); }
+                & .card-row-title {
+                    flex: 1; font-size: var(--awc-e-f-body); font-weight: 500; color: var(--primary-text-color);
+                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                }
+                & .card-row-actions {
+                    display: flex; gap: 2px;
+                    & button {
+                        width: 32px; height: 32px; border: 0; background: transparent;
+                        color: var(--secondary-text-color); border-radius: var(--awc-e-r-inline);
+                        cursor: pointer; display: flex; align-items: center; justify-content: center;
+                        transition: background var(--awc-e-t), color var(--awc-e-t);
+                        &:hover:not(:disabled) { background: var(--primary-background-color); color: var(--primary-text-color); }
+                        &:disabled { opacity: 0.3; cursor: not-allowed; }
+                    }
+                    & ha-icon { --mdc-icon-size: 18px; }
+                }
+                & .card-row-body { padding: var(--awc-e-s3) var(--awc-e-s4) var(--awc-e-s4); background: var(--primary-background-color); }
             }
-            .card-row-head {
-                display: flex;
-                align-items: center;
-                gap: var(--awc-e-s2);
-                padding: var(--awc-e-s3) var(--awc-e-s4);
-                cursor: pointer;
-                user-select: none;
-                transition: background var(--awc-e-t);
-            }
-            .card-row-head:hover { background: var(--divider-color); }
-            .card-row-head > ha-icon:first-child {
-                --mdc-icon-size: 20px;
-                color: var(--secondary-text-color);
-                transition: transform var(--awc-e-t);
-            }
-            .card-row.expanded .card-row-head > ha-icon:first-child {
-                transform: rotate(90deg);
-            }
-            .card-row-title {
-                flex: 1;
-                font-size: var(--awc-e-f-body);
-                font-weight: 500;
-                color: var(--primary-text-color);
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            .card-row-actions { display: flex; gap: 2px; }
-            .card-row-actions button {
-                width: 32px;
-                height: 32px;
-                border: 0;
-                background: transparent;
-                color: var(--secondary-text-color);
-                border-radius: var(--awc-e-r-inline);
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: background var(--awc-e-t), color var(--awc-e-t);
-            }
-            .card-row-actions button:hover:not(:disabled) {
-                background: var(--primary-background-color);
-                color: var(--primary-text-color);
-            }
-            .card-row-actions button:disabled {
-                opacity: 0.3;
-                cursor: not-allowed;
-            }
-            .card-row-actions ha-icon { --mdc-icon-size: 18px; }
-            .card-row-body {
-                padding: var(--awc-e-s3) var(--awc-e-s4) var(--awc-e-s4);
-                background: var(--primary-background-color);
-            }
-
-            /* ============ Add button (dashed CTA, "empty action slot") ============ */
             .add-card-btn {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: var(--awc-e-s2);
-                width: 100%;
-                padding: var(--awc-e-s3);
-                border: 1.5px dashed var(--divider-color);
-                background: transparent;
-                color: var(--secondary-text-color);
-                border-radius: var(--awc-e-r-box);
-                font-size: var(--awc-e-f-body);
-                font-weight: 500;
-                cursor: pointer;
+                display: flex; align-items: center; justify-content: center; gap: var(--awc-e-s2);
+                width: 100%; padding: var(--awc-e-s3);
+                border: 1.5px dashed var(--divider-color); background: transparent;
+                color: var(--secondary-text-color); border-radius: var(--awc-e-r-box);
+                font-size: var(--awc-e-f-body); font-weight: 500; cursor: pointer;
                 transition: background var(--awc-e-t), border-color var(--awc-e-t), color var(--awc-e-t);
+                &:hover { border-color: var(--primary-color); color: var(--primary-color); background: var(--secondary-background-color); }
+                & ha-icon { --mdc-icon-size: 20px; }
             }
-            .add-card-btn:hover {
-                border-color: var(--primary-color);
-                color: var(--primary-color);
-                background: var(--secondary-background-color);
+            .sensor-list { margin-top: var(--awc-e-s3); &:empty { display: none; } }
+            .compact-fields {
+                display: grid; grid-template-columns: 1fr 1fr; gap: var(--awc-e-s2); margin: var(--awc-e-s3) 0;
             }
-            .add-card-btn ha-icon { --mdc-icon-size: 20px; }
-
-            .sensor-list { margin-top: var(--awc-e-s3); }
-            .sensor-list:empty { display: none; }
-
-            /* Grouped toggles — compact, boxed, iOS-style. Replaces ha-form booleans
-               where we want tight pairs like "Disable / Show background". */
+            .compact-field {
+                display: flex; flex-direction: column; gap: 2px;
+                & .compact-field-label { font-size: var(--awc-e-f-meta); color: var(--secondary-text-color); padding-left: 2px; }
+                & input, & ha-textfield { width: 100%; min-width: 0; box-sizing: border-box; }
+                & input {
+                    padding: var(--awc-e-s2) var(--awc-e-s3); border: 1px solid transparent;
+                    background: var(--primary-background-color); color: var(--primary-text-color);
+                    border-radius: var(--awc-e-r-ctrl); font-size: var(--awc-e-f-body); transition: border-color var(--awc-e-t);
+                    &:focus { outline: none; border-color: var(--primary-color); }
+                }
+            }
+            .section-head {
+                display: flex; align-items: center; gap: var(--awc-e-s2);
+                & ha-icon { --mdc-icon-size: 16px; color: var(--secondary-text-color); }
+            }
             .toggle-group {
                 background: rgba(var(--rgb-primary-text-color, 0, 0, 0), 0.09);
-                border-radius: var(--awc-e-r-box);
-                overflow: hidden;
-                margin: var(--awc-e-s3) 0 var(--awc-e-s4) 0;
+                border-radius: var(--awc-e-r-box); overflow: hidden; margin: var(--awc-e-s3) 0 var(--awc-e-s4) 0;
             }
             .toggle-row {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: var(--awc-e-s3);
-                padding: var(--awc-e-s2) var(--awc-e-s4);
-                cursor: pointer;
-                min-height: 44px;
-                box-sizing: border-box;
-            }
-            .toggle-row + .toggle-row {
-                border-top: 1px solid var(--divider-color);
-            }
-            .toggle-row > span {
-                font-size: var(--awc-e-f-body);
-                color: var(--primary-text-color);
+                display: flex; align-items: center; justify-content: space-between;
+                gap: var(--awc-e-s3); padding: var(--awc-e-s2) var(--awc-e-s4);
+                cursor: pointer; min-height: 44px; box-sizing: border-box;
+                & + .toggle-row { border-top: 1px solid var(--divider-color); }
+                & > span { font-size: var(--awc-e-f-body); color: var(--primary-text-color); }
             }
         `;
     }
 
     setConfig(config) {
-        const c = _migrateLegacyConfig(config);
-
+        const c = { ...(config || {}) };
         let autofilled = false;
         if (!c.weather_entity && this.hass && this.hass.states) {
             const firstWeather = Object.keys(this.hass.states).find((id) => id.startsWith("weather."));
@@ -858,17 +485,12 @@ class AtmosphericWeatherCardEditor extends LitElement {
             c.sun_entity = "sun.sun";
             autofilled = true;
         }
-
         this._config = this._cleanConfig(c);
-
         if (c.theme === "light")      this._colorModeState = "force_light";
         else if (c.theme === "dark")  this._colorModeState = "force_dark";
         else if (c.theme_entity)      this._colorModeState = "entity";
         else                          this._colorModeState = "ha_theme";
-
-        if (autofilled) {
-            Promise.resolve().then(() => this._emit());
-        }
+        if (autofilled) Promise.resolve().then(() => this._emit());
     }
 
     get _formData() {
@@ -881,7 +503,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
         return c;
     }
 
-    // Required entities only.
     _weatherEntitySchema() {
         return [
             { name: "weather_entity", selector: { entity: { domain: "weather" } } }
@@ -900,7 +521,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
         ];
     }
 
-    // Color Mode select + conditional theme entity. Info boxes are rendered in render().
     _colorModeSchema() {
         const c = this._formData;
         const showThemeEntity = c._color_mode === "entity";
@@ -913,14 +533,12 @@ class AtmosphericWeatherCardEditor extends LitElement {
         ];
     }
 
-    // Visual filter grouped with color decisions.
     _colorModeAdvancedSchema() {
         return [
             { name: "filter", selector: { select: { mode: "dropdown", options: OPT.filter } } }
         ];
     }
 
-    // card_height is a composite (see render) and not part of this schema.
     _tapActionSchema() {
         return [
             { name: "tap_action", selector: { ui_action: {} } }
@@ -956,7 +574,7 @@ class AtmosphericWeatherCardEditor extends LitElement {
         const current = this._formData.background_style || "frosted";
         const styles = [
             { value: "frosted", label: "Frosted" },
-            { value: "pill",    label: "Pill" },
+            { value: "contrast",    label: "Contrast" },
             { value: "theme",   label: "Theme" }
         ];
         return html`
@@ -966,7 +584,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
                     ${styles.map(s => html`
                         <button type="button" role="radio"
                             class=${current === s.value ? "active" : ""}
-                            aria-checked=${current === s.value ? "true" : "false"}
                             @click=${() => this._updateField("background_style", s.value)}
                         >${s.label}</button>
                     `)}
@@ -975,8 +592,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
         `;
     }
 
-    // Compact iOS-style grouped toggles; one box, rows separated by hairlines.
-    // Uses ha-switch directly — avoids the tall vertical rhythm of ha-form booleans.
     _renderToggleGroup(toggles) {
         return html`
             <div class="toggle-group">
@@ -1007,23 +622,33 @@ class AtmosphericWeatherCardEditor extends LitElement {
         return [{}];
     }
 
-    _chipSchema(chip) {
-        const isMarquee = (chip.overflow || "").toString().toLowerCase() === "marquee";
-        const iconDisabled = chip.disable_icon === true;
+    _chipPrimarySchema(chip) {
         const entityId = (chip.entity || "").toString().trim();
+        const nameSensorId = (chip.name_sensor || "").toString().trim();
         return [
             { name: "entity", selector: { entity: {} } },
             ...(entityId
                 ? [{ name: "attribute", selector: { attribute: { entity_id: entityId } } }]
                 : []
             ),
-            { name: "name",   selector: { text: {} } },
-            { name: "width",  selector: { text: {} } },
-            { name: "overflow", selector: { select: { mode: "dropdown", options: OPT.chip_overflow } } },
-            ...(isMarquee ? [
-                { name: "marquee_speed", selector: { number: { mode: "box", min: 5, step: 1 } } },
-                { name: "marquee_rtl",   selector: { boolean: {} } }
-            ] : []),
+            {
+                type: "grid", name: "",
+                schema: [
+                    { name: "name", selector: { text: {} } },
+                    { name: "width", selector: { text: {} } }
+                ]
+            },
+            { name: "name_sensor", selector: { entity: {} } },
+            ...(nameSensorId
+                ? [{ name: "name_attribute", selector: { attribute: { entity_id: nameSensorId } } }]
+                : []
+            )
+        ];
+    }
+
+    _chipIconSchema(chip) {
+        const iconDisabled = chip.disable_icon === true;
+        return [
             { name: "disable_icon", selector: { boolean: {} } },
             ...(iconDisabled ? [] : [
                 {
@@ -1033,41 +658,28 @@ class AtmosphericWeatherCardEditor extends LitElement {
                         { name: "icon_path", selector: { text: {} } }
                     ]
                 }
-            ]),
+            ])
+        ];
+    }
+
+    _chipAdvancedSchema(chip) {
+        const isMarquee = (chip.overflow || "").toString().toLowerCase() === "marquee";
+        return [
+            { name: "overflow", selector: { select: { mode: "dropdown", options: OPT.chip_overflow } } },
+            ...(isMarquee ? [
+                {
+                    type: "grid", name: "",
+                    schema: [
+                        { name: "marquee_speed", selector: { number: { mode: "box", min: 5, step: 1 } } },
+                        { name: "marquee_rtl",   selector: { boolean: {} } }
+                    ]
+                }
+            ] : []),
             { name: "tap_action", selector: { ui_action: {} } }
         ];
     }
 
-    // Card accepts bare integers or "Npx" on read; editor always writes "Npx".
-    _renderSunMoonSize() {
-        const raw = String(this._formData.sun_moon_size || "").trim();
-        const numeric = raw.replace(/px$/i, "");
-        return html`
-            <div class="composite">
-                <div class="composite-label">${LABELS.sun_moon_size}</div>
-                <div class="composite-row">
-                    <input
-                        type="number"
-                        class="composite-number"
-                        min="0"
-                        step="1"
-                        placeholder="e.g. 50"
-                        .value=${numeric}
-                        @change=${(e) => {
-                            const v = e.target.value;
-                            this._updateField("sun_moon_size", v ? `${parseInt(v, 10)}px` : "");
-                        }}
-                    >
-                    <span class="composite-unit">px</span>
-                </div>
-                ${HELPERS.sun_moon_size
-                    ? html`<div class="composite-helper">${HELPERS.sun_moon_size}</div>`
-                    : ""}
-            </div>
-        `;
-    }
-
-    _renderCelestialPosition() {
+        _renderCelestialPosition() {
         const mode = this._formData.celestial_position || "fixed";
         const set = (v) => this._updateField("celestial_position", v);
         return html`
@@ -1118,7 +730,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
         ];
     }
 
-    // status_entity always present; image fields appear once an entity is picked.
     _imageStatusSchema() {
         const c = this._formData;
         const hasStatus = !!c.status_entity;
@@ -1158,7 +769,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
         const prev = this._config;
         const incoming = { ...((ev.detail && ev.detail.value) || {}) };
         const strip = [];
-
         if (incoming._color_mode !== undefined) {
             this._colorModeState = incoming._color_mode;
             switch (incoming._color_mode) {
@@ -1182,22 +792,12 @@ class AtmosphericWeatherCardEditor extends LitElement {
                     break;
             }
         }
-        // _color_mode is a virtual UI-only key; it never persists to YAML.
-        delete incoming._color_mode;
-
+            delete incoming._color_mode;
         if (incoming.status_entity && !prev.status_entity) {
-            if (!incoming.status_image_day && incoming.day) {
-                incoming.status_image_day = incoming.day;
-            }
-            if (!incoming.status_image_night && incoming.night) {
-                incoming.status_image_night = incoming.night;
-            }
+            if (!incoming.status_image_day && incoming.day) incoming.status_image_day = incoming.day;
+            if (!incoming.status_image_night && incoming.night) incoming.status_image_night = incoming.night;
         }
-
-        if (incoming.square === true && prev.square !== true) {
-            strip.push("card_height");
-        }
-
+        if (incoming.square === true && prev.square !== true) strip.push("card_height");
         this._patch(incoming, { replace: true, strip });
     }
 
@@ -1214,28 +814,30 @@ class AtmosphericWeatherCardEditor extends LitElement {
 
     _computeInactiveKeys(c) {
         const out = new Set();
-
-        if (c.theme === "light" || c.theme === "dark") {
-            out.add("theme_entity");
+        if (c.theme === "light" || c.theme === "dark") out.add("theme_entity");
+        if (c.top_text_background !== true && c.chips_background !== true) out.add("background_style");
+        const chipLayout = (c.chips_layout === "scroll" ? "horizontal-scroll" : c.chips_layout) || "wrap";
+        if (chipLayout !== "grid") out.add("chips_columns");
+        if (chipLayout !== "horizontal-scroll" && chipLayout !== "vertical-scroll") out.add("chips_visible");
+        if (chipLayout !== "vertical-scroll") {
+            out.add("chips_height");
+            out.add("chips_full_width");
         }
-
-        // background_style has no effect unless at least one surface opted in.
-        if (c.top_text_background !== true && c.chips_background !== true) {
-            out.add("background_style");
+        const isScroll = chipLayout === "horizontal-scroll" || chipLayout === "vertical-scroll";
+        if (!isScroll || c.chips_scroll_dots !== true) {
+            out.add("chips_scroll_dots_position");
+            out.add("chips_scroll_dots_spacing");
+            out.add("chips_scroll_dots_anchor");
+            out.add("chips_scroll_dots_x");
+            out.add("chips_scroll_dots_y");
         }
-
-        // Chip layout modifiers are meaningless outside grid mode.
-        if (c.chips_layout !== "grid") {
-            out.add("chips_columns");
-            out.add("chips_align");
-        }
+        if (!isScroll) out.add("chips_scroll_dots");
 
         return out;
     }
 
     _cleanConfig(config) {
         const out = { ...config };
-
         for (const key of Object.keys(out)) {
             const v = out[key];
             if (v === "" || v === null || v === undefined) {
@@ -1246,21 +848,14 @@ class AtmosphericWeatherCardEditor extends LitElement {
                 delete out[key];
                 continue;
             }
-            if (typeof v === "object" && !Array.isArray(v) && Object.keys(v).length === 0) {
-                delete out[key];
-            }
+            if (typeof v === "object" && !Array.isArray(v) && Object.keys(v).length === 0) delete out[key];
         }
-
         for (const [k, defVal] of Object.entries(DISPLAY_DEFAULTS)) {
             if (out[k] === defVal) delete out[k];
         }
-
         const inactive = this._computeInactiveKeys(out);
         for (const k of inactive) delete out[k];
-
-        // _color_mode is editor-only UI state, never persisted.
         delete out._color_mode;
-
         const ordered = {};
         for (const k of KEY_ORDER) {
             if (k === "custom_cards") continue;
@@ -1296,13 +891,12 @@ class AtmosphericWeatherCardEditor extends LitElement {
         `;
     }
 
-    // Native <details>; toggle handler closes sibling disclosures.
     _renderDisclosure(label, content) {
         const isAdvanced = label === "Advanced options";
         return html`
             <details class="disclosure" @toggle=${this._onDisclosureToggle}>
                 <summary>
-                    <ha-icon icon="mdi:chevron-right"></ha-icon>
+                    <ha-icon class="chevron" icon="mdi:chevron-right"></ha-icon>
                     ${isAdvanced ? html`<ha-icon icon="mdi:cog-outline"></ha-icon>` : ""}
                     <span>${label}</span>
                 </summary>
@@ -1321,8 +915,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
         });
     }
 
-    // 3x3 position grid picker. Reads from _formData so DISPLAY_DEFAULTS are
-    // reflected in the active cell on a fresh config.
     _renderPositionGrid(field, gridDef) {
         const valueMap = gridDef.valueMap || {};
         const reverseMap = Object.fromEntries(Object.entries(valueMap).map(([k, v]) => [v, k]));
@@ -1338,9 +930,7 @@ class AtmosphericWeatherCardEditor extends LitElement {
                 <div class="grid-picker-label">${labelText}</div>
                 <div class="grid-3x3" role="radiogroup" aria-label=${labelText}>
                     ${cells.map((val) => {
-                        if (val === null) {
-                            return html`<div class="grid-cell empty"></div>`;
-                        }
+                        if (val === null) return html`<div class="grid-cell empty"></div>`;
                         const isDisabled = disabledSet.has(val);
                         return html`
                             <button
@@ -1350,7 +940,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
                                 ?disabled=${isDisabled}
                                 title=${isDisabled ? `${val} (not supported here)` : val}
                                 aria-label=${val}
-                                aria-checked=${value === val ? "true" : "false"}
                                 @click=${isDisabled ? null : () => this._setField(field, valueMap[val] || val)}
                             ></button>
                         `;
@@ -1379,8 +968,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
         `;
     }
 
-    // Toggle-on-click setter used by the grid picker: clicking the active
-    // cell clears the field back to its default.
     _setField(field, value) {
         const current = this._config || {};
         if (current[field] === value) {
@@ -1390,7 +977,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
         this._patch({ [field]: value });
     }
 
-    // Plain setter used by the composite pickers.
     _updateField(field, value) {
         if (value === "" || value === null || value === undefined) {
             this._patch({}, { strip: [field] });
@@ -1399,45 +985,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
         this._patch({ [field]: value });
     }
 
-    // Stored as "Npx" or literal "auto". Accepts bare numbers on read, writes "Npx".
-    _renderCardHeightField() {
-        const current = String(this._formData.card_height || "").trim();
-        const isAuto = current === "auto";
-        const numeric = isAuto ? "" : current.replace(/px$/i, "");
-
-        return html`
-            <div class="composite">
-                <div class="composite-label">${LABELS.card_height}</div>
-                <div class="composite-row">
-                    <input
-                        type="number"
-                        class="composite-number"
-                        min="0"
-                        step="1"
-                        placeholder="e.g. 220"
-                        .value=${numeric}
-                        ?disabled=${isAuto}
-                        @change=${(e) => {
-                            const v = e.target.value;
-                            this._updateField("card_height", v ? `${parseInt(v, 10)}px` : "");
-                        }}
-                    >
-                    <span class="composite-unit">px</span>
-                    <button
-                        type="button"
-                        class="composite-chip ${isAuto ? "active" : ""}"
-                        @click=${() => this._updateField("card_height", isAuto ? "" : "auto")}
-                    >Auto</button>
-                </div>
-                ${HELPERS.card_height
-                    ? html`<div class="composite-helper">${HELPERS.card_height}</div>`
-                    : ""}
-            </div>
-        `;
-    }
-
-    // Shared renderer for flexible CSS-value inputs (font size, width, padding).
-    // Accepts px, %, em, rem, or shorthand — same composite wrapper as px-only fields.
     _renderCssTextField(field, placeholder) {
         const current = String(this._formData[field] || "");
         const label = LABELS[field] || field;
@@ -1463,12 +1010,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
         `;
     }
 
-    _renderCardPaddingField() {
-        return this._renderCssTextField("card_padding", "e.g. 16px.");
-    }
-
-    // full_width and edge-fade masks are immersive-only; strip on switch to standalone
-    // to avoid stale true values leaking into the other mode.
     _setCardStyle(value) {
         if (value === "standalone") {
             this._patch(
@@ -1485,7 +1026,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
         else if (this._openPanel === id) this._openPanel = null;
     }
 
-    // Segmented buttons for the two mutually-exclusive card styles.
     _renderCardStyleSegmented() {
         const current = this._formData.card_style || "immersive";
         const opts = [
@@ -1500,19 +1040,17 @@ class AtmosphericWeatherCardEditor extends LitElement {
                             type="button"
                             role="radio"
                             class=${current === o.value ? "active" : ""}
-                            aria-checked=${current === o.value ? "true" : "false"}
                             @click=${() => this._setCardStyle(o.value)}
                         >${o.label}</button>
                     `)}
                 </div>
                 <div class="composite-helper">
-                    Immersive has no background. Standalone gives the card its own dynamic background.
+                    Immersive: no background. Standalone: own sky background.
                 </div>
             </div>
         `;
     }
 
-    // Returns "center" | number (pixels) | null (unset).
     _parseSunMoonAxis(raw) {
         if (raw === undefined || raw === null || raw === "") return null;
         if (String(raw).trim().toLowerCase() === "center") return "center";
@@ -1548,7 +1086,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
         const isCenter = parsed === "center";
         const anchor = this._getAxisAnchor(field, axis) || (axis === "x" ? "left" : "top");
         const numericAbs = typeof parsed === "number" ? String(Math.abs(parsed)) : "";
-
         const opts = axis === "x"
             ? [
                 { value: "left",   label: "Left edge" },
@@ -1570,7 +1107,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
                                 type="button"
                                 role="radio"
                                 class=${(isCenter ? "center" : anchor) === o.value ? "active" : ""}
-                                aria-checked=${(isCenter ? "center" : anchor) === o.value ? "true" : "false"}
                                 @click=${() => this._setAxisAnchor(field, axis, o.value)}
                             >${o.label}</button>
                         `)}
@@ -1604,8 +1140,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
         `;
     }
 
-    // Four per-edge inputs serialised to CSS margin shorthand. Reads 1/2/3/4-value
-    // forms for legacy YAML compatibility.
     _parseOffset(raw) {
         if (!raw || typeof raw !== "string") return [0, 0, 0, 0];
         const parts = raw.trim().split(/\s+/).map((p) => parseInt(p, 10) || 0);
@@ -1658,7 +1192,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
         `;
     }
 
-    // Inline YAML editing per card; hui-card-picker avoided (inconsistent across HA versions).
     _renderCustomCardsEditor() {
         const cards = Array.isArray(this._config && this._config.custom_cards)
             ? this._config.custom_cards
@@ -1672,13 +1205,11 @@ class AtmosphericWeatherCardEditor extends LitElement {
         `;
     }
 
-    // Shared row chrome for reorderable lists. Consumers pass in the title and
-    // body content; CRUD and expand handlers are wired through callbacks.
     _renderListRow({ idx, total, expanded, title, onToggle, onMoveUp, onMoveDown, onRemove, body }) {
         return html`
             <div class="card-row ${expanded ? "expanded" : ""}">
                 <div class="card-row-head" @click=${onToggle}>
-                    <ha-icon icon="mdi:chevron-right"></ha-icon>
+                    <ha-icon class="chevron" icon="mdi:chevron-right"></ha-icon>
                     <span class="card-row-title">${title}</span>
                     <div class="card-row-actions" @click=${(e) => e.stopPropagation()}>
                         <button
@@ -1708,7 +1239,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
     _renderCardRow(card, idx, total) {
         const expanded = this._expandedCard === idx;
         const title = (card && card.type) ? String(card.type).replace(/^custom:/, "") : "card";
-
         const body = html`
             <div class="card-size-row">
                 <div class="composite">
@@ -1804,7 +1334,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
         const name = (chip && chip.name || "").toString().trim();
         const entity = (chip && chip.entity || "").toString().trim();
         const attribute = (chip && chip.attribute || "").toString().trim();
-
         if (!entity) return name ? `${name} — (no entity)` : "(choose an entity)";
         const st = this.hass && this.hass.states && this.hass.states[entity];
         const friendly = st && st.attributes && st.attributes.friendly_name;
@@ -1815,13 +1344,10 @@ class AtmosphericWeatherCardEditor extends LitElement {
 
     _cleanChip(chip) {
         const out = { ...chip };
-        // attribute only meaningful when an entity is set.
         if (!out.entity) delete out.attribute;
         for (const k of Object.keys(out)) {
             const v = out[k];
-            if (v === "" || v === null || v === undefined || v === false) {
-                delete out[k];
-            }
+            if (v === "" || v === null || v === undefined || v === false) delete out[k];
         }
         return out;
     }
@@ -1886,19 +1412,92 @@ class AtmosphericWeatherCardEditor extends LitElement {
 
     _renderChipRow(chip, idx, total) {
         const expanded = this._expandedChip === idx;
-
-        const body = html`
+        const isFree = (chip.position || "").toString().toLowerCase() === "custom";
+        const chipChanged = (e) => {
+            e.stopPropagation();
+            this._updateChipAt(idx, (e.detail && e.detail.value) || {});
+        };
+        const mkForm = (schema) => html`
             <ha-form
                 .hass=${this.hass}
                 .data=${chip}
-                .schema=${this._chipSchema(chip)}
+                .schema=${schema}
                 .computeLabel=${this._chipLabel}
                 .computeHelper=${this._chipHelper}
-                @value-changed=${(e) => {
-                    e.stopPropagation();
-                    this._updateChipAt(idx, (e.detail && e.detail.value) || {});
-                }}
+                @value-changed=${chipChanged}
             ></ha-form>
+        `;
+        const positionBody = html`
+            <div class="grid-picker">
+                <div class="segmented" role="radiogroup" aria-label=${CHIP_LABELS.position}>
+                    ${[
+                        { value: "row", label: "In Row" },
+                        { value: "custom", label: "Free" }
+                    ].map(o => html`
+                        <button
+                            type="button"
+                            role="radio"
+                            class=${(isFree ? "custom" : "row") === o.value ? "active" : ""}
+                            @click=${() => {
+                                const next = { ...chip };
+                                if (o.value === "custom") { next.position = "custom"; }
+                                else { delete next.position; delete next.position_anchor; delete next.position_x; delete next.position_y; }
+                                this._updateChipAt(idx, next);
+                            }}
+                        >${o.label}</button>
+                    `)}
+                </div>
+            </div>
+            ${isFree ? html`
+                <div class="grid-picker">
+                    <div class="grid-picker-label">Anchor</div>
+                    <div class="grid-3x3" role="radiogroup" aria-label="Anchor">
+                        ${["top-left","top-center","top-right","left","center","right","bottom-left","bottom-center","bottom-right"].map(v => html`
+                            <button type="button" role="radio"
+                                class="grid-cell ${(chip.position_anchor || "top-left") === v ? "active" : ""}"
+                                aria-label=${v}
+                                @click=${() => {
+                                    const next = { ...chip, position_anchor: v };
+                                    this._updateChipAt(idx, next);
+                                }}
+                            ></button>
+                        `)}
+                    </div>
+                </div>
+                <div class="composite">
+                    <div class="composite-label">Offset</div>
+                    <div class="composite-row" style="flex-wrap:nowrap">
+                        <span class="composite-unit">X</span>
+                        <ha-textfield class="composite-textfield" placeholder="0" style="flex:1;min-width:0"
+                            .value=${String(chip.position_x || "")}
+                            @change=${(e) => {
+                                const next = { ...chip };
+                                const v = e.target.value.trim();
+                                if (!v) delete next.position_x; else next.position_x = v;
+                                this._updateChipAt(idx, next);
+                            }}
+                        ></ha-textfield>
+                        <span class="composite-unit">Y</span>
+                        <ha-textfield class="composite-textfield" placeholder="0" style="flex:1;min-width:0"
+                            .value=${String(chip.position_y || "")}
+                            @change=${(e) => {
+                                const next = { ...chip };
+                                const v = e.target.value.trim();
+                                if (!v) delete next.position_y; else next.position_y = v;
+                                this._updateChipAt(idx, next);
+                            }}
+                        ></ha-textfield>
+                    </div>
+                </div>
+            ` : ""}
+        `;
+        const body = html`
+            ${mkForm(this._chipPrimarySchema(chip))}
+            ${this._renderDisclosure("Icon", mkForm(this._chipIconSchema(chip)))}
+            ${this._renderDisclosure("Advanced", html`
+                ${mkForm(this._chipAdvancedSchema(chip))}
+                ${positionBody}
+            `)}
         `;
 
         return this._renderListRow({
@@ -1911,72 +1510,106 @@ class AtmosphericWeatherCardEditor extends LitElement {
         });
     }
 
-    _renderChipsEditor() {
-        const c = this._formData;
-        const list = this._getChips();
-        const multi = list.length > 1;
-        const layout = (c.chips_layout || "wrap").toString().toLowerCase();
-        const align = (c.chips_align || "start").toString().toLowerCase();
-        const layoutOpts = OPT.chips_layout;
+    _renderCompactField(field, placeholder) {
+        const current = String(this._formData[field] || "");
+        const label = LABELS[field] || field;
+        return html`
+            <div class="compact-field">
+                <span class="compact-field-label">${label}</span>
+                <input
+                    type="text"
+                    placeholder=${placeholder}
+                    .value=${current}
+                    @change=${(e) => this._updateField(field, e.target.value || "")}
+                >
+            </div>
+        `;
+    }
 
-        const settingsBody = this._renderToggleGroup([
-            { key: "disable_chips", label: LABELS.disable_chips }
-        ]);
+    _renderScrollDotsUI(c) {
+        const enabled = c.chips_scroll_dots === true;
+        const isFree = (c.chips_scroll_dots_position || '').toLowerCase() === 'custom';
+        const anchor = c.chips_scroll_dots_anchor || 'bottom-center';
 
-        const stylesBody = html`
+        return html`
             ${this._renderToggleGroup([
-                { key: "chips_background", label: LABELS.chips_background }
+                { key: "chips_scroll_dots", label: "Scroll indicator dots" }
             ])}
-            ${c.chips_background === true ? this._renderBgStylePicker() : ""}
-            ${this._renderPositionGrid("chips_position", POSITION_GRIDS.chips_position)}
-            ${this._renderCssTextField("chips_font_size", "e.g. 16px or 1em")}
-            ${this._renderCssTextField("chips_width", "e.g. 60% or 300px (default: full width)")}
-            ${this._renderCssTextField("chips_padding", "e.g. 5px 10px (default)")}
-            ${this._renderCssTextField("chips_gap", "e.g. 8px (default)")}
-            ${multi ? html`
+            ${enabled ? html`
                 <div class="grid-picker">
-                    <div class="grid-picker-label">${LABELS.chips_layout}</div>
-                    <div class="segmented" role="radiogroup" aria-label=${LABELS.chips_layout}>
-                        ${layoutOpts.map(o => html`
-                            <button
-                                type="button"
-                                role="radio"
-                                class=${layout === o.value ? "active" : ""}
-                                aria-checked=${layout === o.value ? "true" : "false"}
-                                @click=${() => this._setChipsLayout(o.value)}
+                    <div class="grid-picker-label">Dots position</div>
+                    <div class="segmented segmented-2col" role="radiogroup" aria-label="Dots position">
+                        ${[
+                            { value: "inline", label: "Below chips" },
+                            { value: "custom", label: "Free" }
+                        ].map(o => html`
+                            <button type="button" role="radio"
+                                class=${(isFree ? "custom" : "inline") === o.value ? "active" : ""}
+                                @click=${() => this._updateField("chips_scroll_dots_position", o.value === "custom" ? "custom" : "")}
                             >${o.label}</button>
                         `)}
                     </div>
-                    ${HELPERS.chips_layout
-                        ? html`<div class="composite-helper">${HELPERS.chips_layout}</div>`
-                        : ""}
                 </div>
-                ${layout === "grid" ? html`
-                    ${this._renderForm([{
-                        name: "chips_columns",
-                        selector: { number: { mode: "box", min: 1, max: 12, step: 1 } }
-                    }])}
+                ${isFree ? html`
                     <div class="grid-picker">
-                        <div class="grid-picker-label">${LABELS.chips_align}</div>
-                        <div class="segmented" role="radiogroup" aria-label=${LABELS.chips_align}>
-                            ${OPT.chips_align.map(o => html`
-                                <button
-                                    type="button"
-                                    role="radio"
-                                    class=${align === o.value ? "active" : ""}
-                                    aria-checked=${align === o.value ? "true" : "false"}
-                                    @click=${() => this._updateField("chips_align", o.value)}
-                                >${o.label}</button>
+                        <div class="grid-picker-label">Anchor</div>
+                        <div class="grid-3x3" role="radiogroup" aria-label="Dots anchor">
+                            ${["top-left","top-center","top-right","left","center","right","bottom-left","bottom-center","bottom-right"].map(v => html`
+                                <button type="button" role="radio"
+                                    class="grid-cell ${anchor === v ? "active" : ""}"
+                                    aria-label=${v}
+                                    @click=${() => this._updateField("chips_scroll_dots_anchor", v)}
+                                ></button>
                             `)}
                         </div>
-                        ${HELPERS.chips_align
-                            ? html`<div class="composite-helper">${HELPERS.chips_align}</div>`
-                            : ""}
                     </div>
-                ` : ""}
+                    <div class="composite">
+                        <div class="composite-label">Offset</div>
+                        <div class="composite-row" style="flex-wrap:nowrap">
+                            <span class="composite-unit">X</span>
+                            <ha-textfield class="composite-textfield" placeholder="0" style="flex:1;min-width:0"
+                                .value=${String(c.chips_scroll_dots_x || "")}
+                                @change=${(e) => this._updateField("chips_scroll_dots_x", e.target.value.trim() || "")}
+                            ></ha-textfield>
+                            <span class="composite-unit">Y</span>
+                            <ha-textfield class="composite-textfield" placeholder="0" style="flex:1;min-width:0"
+                                .value=${String(c.chips_scroll_dots_y || "")}
+                                @change=${(e) => this._updateField("chips_scroll_dots_y", e.target.value.trim() || "")}
+                            ></ha-textfield>
+                        </div>
+                    </div>
+                ` : html`
+                    <div class="compact-fields" style="grid-template-columns: 1fr">
+                        <div class="compact-field">
+                            <span class="compact-field-label">Spacing from chips</span>
+                            <input type="text"
+                                placeholder="auto (e.g. 16px)"
+                                .value=${String(c.chips_scroll_dots_spacing || "")}
+                                @change=${(e) => this._updateField("chips_scroll_dots_spacing", e.target.value.trim() || "")}
+                            >
+                        </div>
+                    </div>
+                `}
             ` : ""}
         `;
+    }
 
+    _renderChipsEditor() {
+        const c = this._formData;
+        const list = this._getChips();
+        let layout = (c.chips_layout || "wrap").toString().toLowerCase();
+        if (layout === "scroll") layout = "horizontal-scroll";
+        const align = (c.chips_align || "start").toString().toLowerCase();
+        const layoutOpts = OPT.chips_layout;
+        const isGrid = layout === "grid";
+        const isVertical = layout === "vertical-scroll";
+        const isScroll = layout === "horizontal-scroll" || isVertical;
+        if (c.disable_chips === true) {
+            return this._renderToggleGroup([{ key: "disable_chips", label: LABELS.disable_chips }]);
+        }
+        const chipFormat = (c.chip_format || "inline").toString().toLowerCase();
+
+        // ── Chip list (primary task, shown first) ──
         const listBody = html`
             <div class="sensor-list">
                 ${list.map((chip, idx) => this._renderChipRow(chip, idx, list.length))}
@@ -1987,24 +1620,109 @@ class AtmosphericWeatherCardEditor extends LitElement {
             </button>
         `;
 
+        // ── Position & Layout ──
+        const layoutBody = html`
+            ${this._renderPositionGrid("chips_position", POSITION_GRIDS.chips_position)}
+            <div class="grid-picker">
+                <div class="grid-picker-label">${LABELS.chip_format}</div>
+                <div class="segmented" role="radiogroup" aria-label=${LABELS.chip_format}>
+                    ${[
+                        { value: "inline", label: "Inline" },
+                        { value: "stacked", label: "Stacked" },
+                        { value: "vertical", label: "Vertical" }
+                    ].map(o => html`
+                        <button type="button" role="radio"
+                            class=${chipFormat === o.value ? "active" : ""}
+                            @click=${() => this._updateField("chip_format", o.value)}
+                        >${o.label}</button>
+                    `)}
+                </div>
+            </div>
+            <div class="grid-picker">
+                <div class="grid-picker-label">${LABELS.chips_layout}</div>
+                <div class="segmented" role="radiogroup" aria-label=${LABELS.chips_layout}>
+                    ${layoutOpts.map(o => html`
+                        <button type="button" role="radio"
+                            class=${layout === o.value ? "active" : ""}
+                            @click=${() => this._setChipsLayout(o.value)}
+                        >${o.label}</button>
+                    `)}
+                </div>
+            </div>
+            ${isGrid ? this._renderForm([{
+                name: "chips_columns",
+                selector: { number: { mode: "box", min: 1, max: 12, step: 1 } }
+            }]) : ""}
+            ${isScroll ? this._renderForm([{
+                name: "chips_visible",
+                selector: { number: { mode: "slider", min: 1, max: 10, step: 1 } }
+            }]) : ""}
+            ${isVertical ? html`
+                ${this._renderCssTextField("chips_height", "auto (e.g. 120px)")}
+                ${this._renderToggleGroup([
+                    { key: "chips_full_width", label: LABELS.chips_full_width }
+                ])}
+            ` : ""}
+            ${isGrid || (isVertical && c.chips_full_width) || (isScroll && c.chips_visible) ? html`
+                <div class="grid-picker">
+                    <div class="grid-picker-label">${LABELS.chips_align}</div>
+                    <div class="segmented" role="radiogroup" aria-label=${LABELS.chips_align}>
+                        ${OPT.chips_align.map(o => html`
+                            <button type="button" role="radio"
+                                class=${align === o.value ? "active" : ""}
+                                @click=${() => this._updateField("chips_align", o.value)}
+                            >${o.label}</button>
+                        `)}
+                    </div>
+                </div>
+            ` : ""}
+            ${isScroll ? this._renderScrollDotsUI(c) : ""}
+        `;
+
+        // ── Appearance (background + spacing in compact grid) ──
+        const appearanceBody = html`
+            ${this._renderToggleGroup([
+                { key: "chips_background", label: LABELS.chips_background }
+            ])}
+            ${c.chips_background === true ? html`
+                ${this._renderBgStylePicker()}
+                ${this._renderToggleGroup([
+                    { key: "chips_grouped", label: LABELS.chips_grouped }
+                ])}
+            ` : ""}
+            <div class="compact-fields">
+                ${this._renderCompactField("chips_font_size", "inherit")}
+                ${this._renderCompactField("chips_padding", "default")}
+                ${this._renderCompactField("chip_gap", "8px")}
+                ${this._renderCompactField("chip_inner_gap", "6px")}
+            </div>
+            ${this._renderCompactField("chips_width", "auto (e.g. 300px)")}
+        `;
+
         return html`
-            ${this._renderDisclosure("Chip Settings", settingsBody)}
-            ${this._renderDisclosure("Chip Styles", stylesBody)}
-            ${this._renderDisclosure("Chip List", listBody)}
+            ${this._renderToggleGroup([{ key: "disable_chips", label: LABELS.disable_chips }])}
+            ${this._renderDisclosure(
+                html`<span class="section-head"><ha-icon icon="mdi:format-list-bulleted"></ha-icon> Chips</span>`,
+                listBody
+            )}
+            ${this._renderDisclosure(
+                html`<span class="section-head"><ha-icon icon="mdi:view-grid-outline"></ha-icon> Position & Layout</span>`,
+                layoutBody
+            )}
+            ${this._renderDisclosure(
+                html`<span class="section-head"><ha-icon icon="mdi:palette-swatch-outline"></ha-icon> Appearance</span>`,
+                appearanceBody
+            )}
         `;
     }
 
     render() {
-        if (!this.hass || !this._config) {
-            return html``;
-        }
-
+        if (!this.hass || !this._config) return html``;
         const c = this._formData;
         const isSquare = c.square === true;
 
         return html`
             ${this._renderForm(this._weatherEntitySchema())}
-
             <ha-expansion-panel
                 outlined
                 .expanded=${this._openPanel === "sun_moon"}
@@ -2014,30 +1732,21 @@ class AtmosphericWeatherCardEditor extends LitElement {
                     <ha-icon icon="mdi:theme-light-dark"></ha-icon>
                     <span>Sun &amp; Moon</span>
                 </div>
-                <div class="info">
-                    The <b>Sun Entity</b> drives the day/night cycle and the
-                    arc the sun and moon travel across the card. The
-                    <b>Moon Phase Entity</b> renders the correct phase, oriented
-                    by your latitude.
-                </div>
-                ${this._renderDisclosure(
-                    "Entities",
-                    this._renderForm(this._sunMoonEntitiesSchema())
-                )}
+                ${this._renderForm(this._sunMoonEntitiesSchema())}
                 ${this._renderDisclosure(
                     "Position & Size",
                     (() => {
                         const mode = this._formData.celestial_position || "fixed";
                         return html`
-                            ${this._renderSunMoonSize()}
                             ${this._renderCelestialPosition()}
+                            ${this._renderCompactField("sun_moon_size", "e.g. 50")}
                             ${mode === "fixed" ? html`
                                 ${this._renderSunMoonPosition("sun_moon_x_position", "x")}
                                 ${this._renderSunMoonPosition("sun_moon_y_position", "y")}
                             ` : ""}
                             ${mode === "dynamic_sun" ? html`
-                                ${this._renderSunMoonPosition("sun_moon_x_position", "x", "Moon X Position")}
-                                ${this._renderSunMoonPosition("sun_moon_y_position", "y", "Moon Y Position")}
+                                ${this._renderSunMoonPosition("sun_moon_x_position", "x", "Moon X")}
+                                ${this._renderSunMoonPosition("sun_moon_y_position", "y", "Moon Y")}
                             ` : ""}
                         `;
                     })()
@@ -2047,7 +1756,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
                     this._renderForm(this._sunMoonMoonStyleSchema())
                 )}
             </ha-expansion-panel>
-
             <ha-expansion-panel
                 outlined
                 .expanded=${this._openPanel === "color_mode"}
@@ -2057,21 +1765,12 @@ class AtmosphericWeatherCardEditor extends LitElement {
                     <ha-icon icon="mdi:palette-outline"></ha-icon>
                     <span>Color Mode</span>
                 </div>
-                <div class="info">
-                    This setting lets you choose how the card switches between light and dark.
-                    <br><br>
-                    <b>Note for dark themes:</b> Running the card in dark mode
-                    during the day is always a compromise and hard to get right.
-                    The card looks best with themes that provide both a light
-                    and dark variant.
-                </div>
                 ${this._renderForm(this._colorModeSchema())}
                 ${this._renderDisclosure(
                     "Advanced options",
                     this._renderForm(this._colorModeAdvancedSchema())
                 )}
             </ha-expansion-panel>
-
             <ha-expansion-panel
                 outlined
                 .expanded=${this._openPanel === "layout"}
@@ -2082,12 +1781,10 @@ class AtmosphericWeatherCardEditor extends LitElement {
                     <span>Card Style</span>
                 </div>
                 ${this._renderCardStyleSegmented()}
-                ${isSquare
-                    ? this._renderCardPaddingField()
-                    : html`
-                        ${this._renderCardHeightField()}
-                        ${this._renderCardPaddingField()}
-                    `}
+                <div class="compact-fields">
+                    ${isSquare ? "" : this._renderCompactField("card_height", "e.g. 220 or auto")}
+                    ${this._renderCompactField("card_padding", "e.g. 16px")}
+                </div>
                 ${this._renderDisclosure(
                     "Advanced options",
                     html`
@@ -2096,7 +1793,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
                     `
                 )}
             </ha-expansion-panel>
-
             <ha-expansion-panel
                 outlined
                 .expanded=${this._openPanel === "text"}
@@ -2132,8 +1828,10 @@ class AtmosphericWeatherCardEditor extends LitElement {
                                         ${c.top_text_background === true && c.top_text_behind_weather !== true ? this._renderBgStylePicker() : ""}
                                         ${this._renderPositionGrid("top_position", POSITION_GRIDS.top_position)}
                                         ${this._renderForm(this._textTopSchema())}
-                                        ${this._renderCssTextField("top_font_size", "e.g. 3em or 24px")}
-                                        ${this._renderCssTextField("top_text_padding", "e.g. 8px 14px")}
+                                        <div class="compact-fields">
+                                            ${this._renderCompactField("top_font_size", "e.g. 3em")}
+                                            ${this._renderCompactField("top_text_padding", "e.g. 8px 14px")}
+                                        </div>
                                     `}
                             `
                         )}
@@ -2170,7 +1868,6 @@ class AtmosphericWeatherCardEditor extends LitElement {
                     `
                 )}
             </ha-expansion-panel>
-
             <ha-expansion-panel
                 outlined
                 .expanded=${this._openPanel === "tap_action"}
