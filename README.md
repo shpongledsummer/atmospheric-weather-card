@@ -7,7 +7,7 @@
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/792ab762-238c-4c9a-8246-8406d2845fc1" />
 
 
-A flexible, detail-oriented weather card for Home Assistant. It generates live, animated weather visuals based on your local conditions. You can run it standalone, embed other cards inside it, or use it as an immersive background.
+A flexible, detail-oriented weather card for Home Assistant. It generates animated weather visuals based on your local conditions.
 
 <br>
 
@@ -17,7 +17,7 @@ A flexible, detail-oriented weather card for Home Assistant. It generates live, 
 
 **Customization** · [Appearance](#appearance) · [Color Mode](#color-mode) · [Fonts & Icons](#fonts--icons) · [CSS Reference](#css-reference)
 
-**Guides** · [Custom House Image](#custom-house-image) · [Smart Status Entity](#smart-status-entity) · [Companion Card](#companion-forecast-card)
+**Guides** · [Custom House Image](#custom-house-image) · [Smart Status Entity](#smart-status-entity)
 
 **Reference** · [Adding Buttons](#adding-buttons) · [Weather States](#weather-states) · [Performance](#performance)
 
@@ -140,7 +140,7 @@ top_text_padding: 8px
 chips_font_size: 14px
 chips_width: 70%
 chips_padding: 8px 12px
-chips_gap: 8px
+chip_gap: 8px
 chips_background: true
 background_style: pill
 chips:
@@ -186,7 +186,7 @@ chips_font_size: 16px
 chips_layout: scroll
 chips_width: 100%
 chips_padding: 12px 16px
-chips_gap: 8px
+chip_gap: 8px
 chips_background: true
 chips:
   - entity: weather.your_weather_entity
@@ -236,7 +236,7 @@ chips_font_size: 14px
 chips_layout: scroll
 chips_width: 30%
 chips_padding: 4px 8px
-chips_gap: 8px
+chip_gap: 8px
 chips_background: false
 chips:
   - entity: weather.your_weather_entity
@@ -316,6 +316,8 @@ chips:
 
 <br>
 
+This example uses a custom 3D house model with a door sensor status swap. See the [Custom House Image](#custom-house-image) tutorial for how to create your own.
+
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/305972c9-35f2-4705-94b1-30111ea07d03" />
 
 ```yaml
@@ -365,7 +367,7 @@ full_width: true
 > * **Custom Fonts:** The examples use the **Montserrat** font, which you can download or embed directly from [Google Fonts](https://fonts.google.com/specimen/Montserrat).
 > * **Custom Icons:** You can replace the default icons with your own custom SVG weather icons. See the [Chips](#appearance) section for instructions. You can find the icons from the examples [here.](https://github.com/basmilius/weather-icons)
 > * **Embedded Cards:** To keep this card somewhat lightweight and focused on weather visuals, it relies on an embedded custom cards approach. You can read more about this feature [here](#appearance). 
-> * **Companion Card:** There is also a companion card built specifically to sit in a scrollable row alongside this one, which you can find [here](https://github.com/shpongledsummer/minimal-forecast-card).
+> * **Custom House Image:** You can add your own 3D home model to the card. See the [Custom House Image](#custom-house-image) tutorial for step-by-step instructions.
 > </details>
 
 <br>
@@ -462,12 +464,24 @@ Chips are the small detail sensors below (or next to) the top text. You can defi
 | :--- | :--- | :--- | :--- |
 | `chips` | `list` | — | The list of chips to display. Each entry is an object with its own settings (see below). |
 | `chips_position` | `string` | `bottom-left` | Where the chips row anchors. Same 9-cell grid as `top_position`. |
-| `chips_layout` | `string` | `wrap` | Row behavior. `wrap` moves overflowing chips to a new line, `scroll` keeps them on one line with a hidden scrollbar and edge fades, `grid` arranges them in equal columns. |
+| `chips_layout` | `string` | `wrap` | Row behavior. `wrap` moves overflowing chips to a new line, `horizontal-scroll` keeps them on one line with a hidden scrollbar and edge fades, `vertical-scroll` stacks them in a scrollable column, `grid` arranges them in equal columns. `scroll` is accepted as an alias for `horizontal-scroll`. |
 | `chips_columns` | `number` | `3` | Number of equal-width columns when `chips_layout: grid` is active. |
 | `chips_align` | `string` | `start` | How each chip aligns inside its grid cell. Options: `start`, `center`, `end`. Grid layout only. |
 | `chips_width` | `string` | — | Limits the full row width (e.g., `60%` or `200px`). Useful to place the chips row next to the top text instead of spanning the card. |
 | `chips_padding` | `string` | `5px 10px` | Inner padding of each chip (e.g., `5px 10px`). |
-| `chips_gap` | `string` | `8px` | Space between chips. |
+| `chip_gap` | `string` | `8px` | Space between chips. |
+| `chip_inner_gap` | `string` | `6px` | Space between the icon and text inside each chip. |
+| `chip_format` | `string` | `inline` | Controls the chip layout style. `inline` is the default horizontal layout with icon and text side by side. `stacked` arranges the icon, name, and value in a compact two-column grid. `vertical` stacks icon, name, and value in a centered column. |
+| `chips_visible` | `number` | — | Number of chips visible at once when using a scroll layout. Enables snap-scrolling through pages of chips. |
+| `chips_grouped` | `boolean` | `false` | Wraps all chips into a single shared background container instead of styling each chip individually. Requires `chips_background: true`. |
+| `chips_full_width` | `boolean` | `false` | Stretches each chip to fill the available row width. Useful in combination with `chips_visible` or grid layouts. |
+| `chips_height` | `string` | — | Sets the height of the chips row (e.g., `120px`). |
+| `chips_scroll_dots` | `boolean` | `false` | Shows pagination dots below the chips when using a scroll layout with `chips_visible`. |
+| `chips_scroll_dots_position` | `string` | — | Set to `custom` for free placement of the dots using the anchor and offset options below. |
+| `chips_scroll_dots_anchor` | `string` | `bottom-center` | Anchor position of the scroll dots when using custom placement. Same 9-cell grid as `top_position`. |
+| `chips_scroll_dots_spacing` | `string` | — | Spacing between the dots and the chips row (e.g., `12px`). |
+| `chips_scroll_dots_x` | `string` | — | Horizontal offset for the scroll dots when using custom placement. |
+| `chips_scroll_dots_y` | `string` | — | Vertical offset for the scroll dots when using custom placement. |
 | `chips_font_size` | `string` | — | Font size of the chip text. Accepts any CSS size value (e.g., `16px`, `1.2em`). |
 | `chips_background` | `boolean` | `false` | Adds a styled background behind each chip (the style is controlled by `background_style`). |
 | `disable_chips` | `boolean` | `false` | Hides the chips row entirely. |
@@ -489,6 +503,13 @@ Each entry inside the `chips` list accepts the following keys.
 | `marquee_speed` | `number` | `30` | Scroll speed in pixels per second when `overflow: marquee` is active. Minimum `5`. |
 | `marquee_rtl` | `boolean` | `false` | Reverses the marquee direction (scrolls right-to-left). |
 | `tap_action` | `object` | `more-info` | A standard Home Assistant [tap action](https://www.home-assistant.io/dashboards/actions/) scoped to this chip. |
+| `format` | `string` | — | Overrides the global `chip_format` for this chip only. Accepts `inline`, `stacked`, or `vertical`. |
+| `name_sensor` | `string` | — | An entity whose state (or attribute) is used as the chip's dynamic name label. Updates in real time. |
+| `name_attribute` | `string` | — | Reads a specific attribute from the `name_sensor` entity instead of its state. |
+| `position` | `string` | — | Set to `custom` to detach this chip from the row and place it freely on the card using `position_anchor`, `position_x`, and `position_y`. |
+| `position_anchor` | `string` | `top-left` | Anchor point for a free-positioned chip. Same 9-cell grid as `top_position`. |
+| `position_x` | `string` | `0` | Horizontal offset for a free-positioned chip (e.g., `20px`, `10%`). |
+| `position_y` | `string` | `0` | Vertical offset for a free-positioned chip (e.g., `20px`, `10%`). |
 
 **Basic example**
 
@@ -507,7 +528,7 @@ chips:
 <details>
 <summary><strong>Custom Images</strong></summary>
 
-You can add your own images (such as a 3D house model) to the card. This works in both standalone and immersive modes.
+You can add your own images (such as a 3D house model) to the card. This works in both standalone and immersive modes. See the [Custom House Image](#custom-house-image) tutorial for a step-by-step guide on creating your own home model.
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -697,8 +718,12 @@ The same approach works inside the embedded [Minimal Forecast Card](https://gith
 | `--awc-bottom-gap` | `8px` | Gap between chips in the row. |
 | `--awc-bottom-opacity` | `0.7` | Opacity of chips without a background. |
 | `--awc-chip-name-weight` | `700` | Font weight of the chip name label. |
+| `--awc-chip-name-opacity` | `0.7` | Opacity of the chip name label. |
+| `--awc-chip-name-color` | `inherit` | Color of the chip name label. |
+| `--awc-chip-gap` | `6px` | Gap between the icon and text inside each chip. |
 | `--awc-chips-padding` | `0` (`5px 10px` with background) | Inner padding of each chip. |
 | `--awc-row-width` | `calc(100% - padding)` | Width of the chips row. Overrides the `chips_width` option. |
+| `--awc-row-height` | `auto` | Height of the chips row. Overrides the `chips_height` option. |
 | `--awc-row-columns` | `3` | Number of columns when `chips_layout: grid` is active. |
 | `--awc-row-fade-l` | *auto* | Left edge fade width for the scrolling chip row. |
 | `--awc-row-fade-r` | *auto* | Right edge fade width for the scrolling chip row. |
@@ -716,6 +741,42 @@ The same approach works inside the embedded [Minimal Forecast Card](https://gith
 | `--awc-marquee-fade` | `12px` | Edge fade width on either side of a marquee chip. |
 | `--awc-marquee-separator` | `"•"` | Character inserted between marquee repetitions. |
 | `--awc-marquee-sep-gap` | `0.4em` | Padding around the marquee separator character. |
+
+</details>
+
+<details>
+<summary><b>Stacked & Vertical Chip Variables</b></summary>
+
+These variables only apply when `chip_format` is set to `stacked` or `vertical`.
+
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `--awc-stacked-icon-bg` | *auto* | Background color of the icon area in stacked/vertical chips. |
+| `--awc-stacked-icon-radius` | *auto* | Border radius of the icon area. |
+| `--awc-stacked-icon-inset` | `3px` | Inset used to calculate the icon area's border radius relative to the chip's border radius. |
+| `--awc-stacked-name-size` | `0.85em` | Font size of the name label in stacked/vertical chips. |
+| `--awc-stacked-name-weight` | `500` | Font weight of the name label in stacked/vertical chips. |
+| `--awc-stacked-name-tracking` | `0.03em` | Letter spacing of the name label in stacked/vertical chips. |
+| `--awc-stacked-name-opacity` | `0.6` | Opacity of the name label in stacked/vertical chips. |
+| `--awc-stacked-name-color` | `inherit` | Color of the name label in stacked/vertical chips. |
+| `--awc-stacked-value-weight` | `700` | Font weight of the value in stacked/vertical chips. |
+| `--awc-stacked-column-gap` | `10px` | Horizontal gap between the icon and text columns in stacked chips. |
+| `--awc-stacked-row-gap` | `4px` | Vertical gap between the name and value rows in stacked/vertical chips. |
+| `--awc-vertical-icon-gap` | `6px` | Bottom margin of the icon in vertical chips. |
+
+</details>
+
+<details>
+<summary><b>Scroll Dots Variables</b></summary>
+
+These variables only apply when `chips_scroll_dots` is enabled.
+
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `--awc-dot-size` | `6px` | Diameter of each scroll dot. |
+| `--awc-dots-gap` | `6px` | Gap between scroll dots. |
+| `--awc-dots-spacing` | *auto* | Spacing between the dots and the chips row. |
+| `--awc-dot-inactive-opacity` | `0.3` | Opacity of inactive scroll dots. |
 
 </details>
 
@@ -770,14 +831,6 @@ The status feature dynamically swaps the displayed house/custom image when a mon
 ## Adding Buttons
 
 You can embed buttons (or any other Home Assistant card like a graph, another weather card, sensors etc.) directly inside this card using the `custom_cards` feature. See [Embedded Cards](#appearance) in the Appearance section for setup and layout options, and the [examples](#usage-modes) for different use cases.
-
-<br>
-
-## Companion Forecast Card
-
-This card is focused on live visuals and current conditions. If you want to show a weather forecast alongside it, there is a companion card available: the [Minimal Forecast Card](https://github.com/shpongledsummer/minimal-forecast-card).
-
-It is built to be embedded inside this card using the `custom_cards` feature. You can set it up as a vertical or horizontal scroll and show daily or hourly data. You can find the YAML for this in Example 2 in the [Usage Modes](#usage-modes) section.
 
 <br>
 
