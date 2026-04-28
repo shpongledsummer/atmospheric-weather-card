@@ -66,7 +66,7 @@ A flexible, detail-oriented weather card for Home Assistant. It generates animat
 
 ## Usage Modes
 
-You can use either `card_style: standalone` for a self-contained card with dynamic weather backgrounds, or `card_style: immersive` so the card has no background at all and blends into your dashboard.
+You can use either `card_style: standalone` for a self-contained card with dynamic weather backgrounds, or `card_style: immersive` so the card has no background at all.
 
 <br>
 
@@ -96,9 +96,8 @@ sun_moon_x_position: -70
 sun_moon_y_position: center
 top_font_size: 34px
 chips_font_size: 16px
-top_text_background: false
 chips_background: true
-background_style: pill
+background_style: contrast
 chips:
   - entity: weather.your_weather_entity
     icon: weather
@@ -142,7 +141,7 @@ chips_width: 70%
 chips_padding: 8px 12px
 chip_gap: 8px
 chips_background: true
-background_style: pill
+background_style: contrast
 chips:
   - entity: weather.your_weather_entity
     attribute: wind_speed
