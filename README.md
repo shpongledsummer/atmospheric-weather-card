@@ -4,7 +4,7 @@
 
 ## Atmospheric Weather Card
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/792ab762-238c-4c9a-8246-8406d2845fc1" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/4b939791-70d3-42af-b267-606b18dede8e" />
 
 
 A flexible, detail-oriented weather card for Home Assistant. It generates animated weather visuals based on your local conditions.
