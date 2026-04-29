@@ -7,7 +7,7 @@
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/4b939791-70d3-42af-b267-606b18dede8e" />
 
 
-A flexible, detail-oriented weather card for Home Assistant. It generates animated weather visuals based on your local conditions.
+A flexible, detail-oriented weather card for Home Assistant.
 
 <br>
 
