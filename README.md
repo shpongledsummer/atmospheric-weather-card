@@ -843,9 +843,11 @@ Each state triggers a unique combination of particle types, cloud densities, win
 
 ## Performance
 
-Because this card focuses on complex weather animations, it naturally uses more power than standard Home Assistant cards. To keep dashboards fast, it handles graphics like a video game, using almost every JS canvas optimization available. Nearly a third of the codebase is dedicated purely to performance. 
+Fast performance and nice animations are basically natural enemies when building a weather card for Home Assistant. Changing even a tiny detail, like how the clouds or stars work, can instantly slow the card down. There were so many times I got an effect looking absolutely perfect, only to realize it was too heavy and had to replace it with a simpler version.
 
-Despite these efforts, older setups (like wall tablets) might still struggle.
+The card draws graphics a lot like a video game, using every trick available to keep things running smoothly. Because of this, almost a third of the code exists purely to keep the card fast. I really dislike how much this adds to the size of the code, but that is just how it is.
+
+Even with all this effort, older setups might still struggle, and the birds may stutter.
 
 <details>
 <summary><b>View 30-second stress test results</b></summary>
