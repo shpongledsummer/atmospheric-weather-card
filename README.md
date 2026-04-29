@@ -850,7 +850,7 @@ The card draws graphics a lot like a video game, using every trick available to 
 Even with all this effort, older setups might still struggle, and the birds may stutter.
 
 <details>
-<summary><b>View 30-second stress test results</b></summary>
+<summary><b>View stress test results</b></summary>
 
 <br>
 
