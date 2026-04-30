@@ -7,7 +7,7 @@
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/4b939791-70d3-42af-b267-606b18dede8e" />
 
 
-A flexible, detail-oriented weather card for Home Assistant.
+A flexible, detail-oriented weather card.
 
 <br>
 
@@ -66,7 +66,7 @@ A flexible, detail-oriented weather card for Home Assistant.
 
 ## Usage Modes
 
-You can use either `card_style: standalone` for a self-contained card with dynamic weather backgrounds, or `card_style: immersive` so the card has no background at all.
+You can use either `card_style: standalone` for a card with dynamic weather backgrounds, or `card_style: immersive` so the card has no background at all.
 
 <br>
 
@@ -272,7 +272,7 @@ custom_cards:
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/dd716851-b09a-4112-ad74-bbf605361857" />
 
-*(A look at my dashboard: Immersive mode, a custom image, and a few buttons. The theme and card follow the sun in sync.)*
+*(My dashboard: Immersive mode, a custom image, and a few chips. The theme and card colors follow the sun.)*
 
 <br>
 
@@ -315,7 +315,7 @@ chips:
 
 <br>
 
-This example uses a custom 3D house model with a door sensor status swap. See the [Custom House Image](#custom-house-image) tutorial for how to create your own.
+This example uses a custom house image. See the [Custom House Image](#custom-house-image) tutorial for how to create your own.
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/305972c9-35f2-4705-94b1-30111ea07d03" />
 
@@ -386,7 +386,7 @@ full_width: true
 
 ## Appearance
 
-Everything that controls how your card looks — layout, colors, sun/moon, text, chips, and images.
+Everything that controls how your card looks.
 
 <details>
 <summary><strong>Card Style & Layout</strong></summary>
@@ -421,7 +421,7 @@ Everything that controls how your card looks — layout, colors, sun/moon, text,
 <details>
 <summary><strong>Sun & Moon</strong></summary>
 
-The sun and moon share a single position and the card automatically swaps them based on your `sun_entity`. See [Colors](#color-mode) for the full picture. The card also automatically generates a dynamic **sunrise and sunset effect** based on the sun's elevation, and **rotates the moon** accurately based on your Home Assistant latitude setting.
+The sun and moon share a single position and the card swaps them based on your `sun_entity`. See [Colors](#color-mode) for the full details. The card also automatically generates a dynamic **sunrise and sunset effect** based on the sun's elevation, and **rotates the moon** accurately based on your Home Assistant latitude setting.
  
 
 | Option | Type | Default | Description |
@@ -527,7 +527,7 @@ chips:
 <details>
 <summary><strong>Custom Images</strong></summary>
 
-You can add your own images (such as a 3D house model) to the card. This works in both standalone and immersive modes. See the [Custom House Image](#custom-house-image) tutorial for a step-by-step guide on creating your own home model.
+You can add your own images (such as a house image) to the card. This works in both standalone and immersive modes. See the [Custom House Image](#custom-house-image) tutorial for a step-by-step guide.
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -667,7 +667,7 @@ chips:
     icon_path: /local/weather-icons/
 ```
 
-The card then resolves the icon by the current weather state — for example, `rainy` weather loads `/local/weather-icons/rainy.svg`. Make sure the filenames match the supported [weather states](#weather-states).
+The card then resolves the icon by the current weather state. For example, `rainy` weather loads `/local/weather-icons/rainy.svg`. Make sure the filenames match the supported [weather states](#weather-states).
 
 The same approach works inside the embedded [Minimal Forecast Card](https://github.com/shpongledsummer/minimal-forecast-card) via its `custom_icon_path` option, which is why several examples in this README set both at once.
 
@@ -803,7 +803,7 @@ These variables only apply when `chips_scroll_dots` is enabled.
 
 ## Custom House Image
 
-To achieve the immersive look featuring your own home, follow these steps:
+This explains how to create an image for your own home and use it in the card.
 
 1. **Take a reference photo** from a corner angle to properly capture the depth of the house.
 2. **Generate a 3D model** using an AI image tool. Use a prompt similar to:
@@ -816,7 +816,7 @@ To achieve the immersive look featuring your own home, follow these steps:
 
 ## Smart Status Entity
 
-The status feature dynamically swaps the displayed house/custom image when a monitored entity becomes active. The card recognizes the following states as "active": `on`, `true`, `open`, `unlocked`, `home`, and `active`.
+The status feature dynamically changes the displayed house/custom image when a monitored entity becomes active. The card recognizes the following states as "active": `on`, `true`, `open`, `unlocked`, `home`, and `active`.
 
 | Use Case | Example Entity | Triggers On |
 | :--- | :--- | :--- |
@@ -835,15 +835,15 @@ You can embed buttons (or any other Home Assistant card like a graph, another we
 
 ## Weather States
 
-The card supports the following weather states: `sunny` · `clear-night` · `partlycloudy` · `cloudy` · `fog` · `rainy` · `pouring` · `snowy` · `snowy-rainy` · `hail` · `lightning` · `lightning-rainy` · `windy` · `windy-variant` · `exceptional`
+The cards supports the following weather states: `sunny` · `clear-night` · `partlycloudy` · `cloudy` · `fog` · `rainy` · `pouring` · `snowy` · `snowy-rainy` · `hail` · `lightning` · `lightning-rainy` · `windy` · `windy-variant` · `exceptional`
 
-Each state triggers a unique combination of particle types, cloud densities, wind behaviors, and atmospheric lighting. The card also reads details like the `wind_speed` or `elevation` to dynamically influence the animations.
+Each state triggers a unique combination of animated effects, cloud densities, wind behaviors, and atmospheric lighting. The card also reads details like the `wind_speed` or `elevation` to dynamically influence the animations.
 
 <br>
 
 ## Performance
 
-Fast performance and impressive animations are basically natural enemies when building a card for Home Assistant. Changing even a tiny detail, like how the clouds or stars work, can instantly slow the card down. There were so many times I got an effect looking absolutely perfect, only to realize it was too heavy and had to replace it with a simpler version.
+Fast performance and impressive animations are basically natural enemies when building a card for Home Assistant. Changing even a tiny detail, like how the clouds or stars work, can instantly slow the dashboard down. There were so many times I got an effect looking absolutely perfect, only to realize it was too heavy and had to replace it with a simpler version.
 
 The card uses every trick available to keep things running smoothly. Because of this, almost a third of the code exists purely to keep the card fast. I really dislike how much this adds to the size of the code, but that is just how it is.
 
