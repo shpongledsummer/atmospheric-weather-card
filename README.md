@@ -23,7 +23,7 @@ A flexible, detail-oriented weather card for Home Assistant.
 
 <br>
 
-> **How I use AI here:** I like pretty design and always wanted a nice, visual HA weather card. I strictly use AI in this project for code I actually understand, but would never have the patience or time to write manually.
+> **Note on AI:** I'm using it to speed up what would have taken years manually. I hope the card's quality speaks for itself and shows the experience behind it.
 
 <br>
 
@@ -843,9 +843,9 @@ Each state triggers a unique combination of particle types, cloud densities, win
 
 ## Performance
 
-Fast performance and nice visuals are basically natural enemies when building an animated card for Home Assistant. Changing even a tiny detail, like how the clouds or stars work, can instantly slow the card down. There were so many times I got an effect looking absolutely perfect, only to realize it was too heavy and had to replace it with a simpler version.
+Fast performance and impressive animations are basically natural enemies when building a card for Home Assistant. Changing even a tiny detail, like how the clouds or stars work, can instantly slow the card down. There were so many times I got an effect looking absolutely perfect, only to realize it was too heavy and had to replace it with a simpler version.
 
-The card draws graphics a lot like a video game, using every trick available to keep things running smoothly. Because of this, almost a third of the code exists purely to keep the card fast. I really dislike how much this adds to the size of the code, but that is just how it is.
+The card uses every trick available to keep things running smoothly. Because of this, almost a third of the code exists purely to keep the card fast. I really dislike how much this adds to the size of the code, but that is just how it is.
 
 Even with all this effort, older setups might still struggle, and the birds may stutter.
 
