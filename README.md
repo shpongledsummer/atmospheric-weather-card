@@ -17,7 +17,7 @@ A flexible, detail-oriented weather card.
 
 **Customization** · [Appearance](#appearance) · [Color Mode](#color-mode) · [CSS](#css-reference)
 
-**Guides** · [Fonts & Icons](#fonts--icons) · [Custom House Image](#custom-house-image) · [Smart Status Entity](#smart-status-entity)
+**Guides** · [Fonts & Icons](#fonts--icons) · [House Image](#custom-house-image)
 
 **Reference** · [Performance](#performance)
 
