@@ -13,13 +13,13 @@ A flexible, detail-oriented weather card.
 
 ## Contents
 
-**Getting Started** · [Installation](#installation) · [Usage Modes (examples)](#usage-modes) · [Setup](#setup)
+**Getting Started** · [Installation](#installation) · [Examples](#examples) · [Setup](#setup)
 
-**Customization** · [Appearance](#appearance) · [Color Mode](#color-mode) · [Fonts & Icons](#fonts--icons) · [CSS Reference](#css-reference)
+**Customization** · [Appearance](#appearance) · [Color Mode](#color-mode) · [CSS Reference](#css-reference)
 
-**Guides** · [Custom House Image](#custom-house-image) · [Smart Status Entity](#smart-status-entity)
+**Guides** · [Fonts & Icons](#fonts--icons) · [Custom House Image](#custom-house-image) · [Smart Status Entity](#smart-status-entity)
 
-**Reference** · [Adding Buttons](#adding-buttons) · [Weather States](#weather-states) · [Performance](#performance)
+**Reference** · [Performance](#performance)
 
 <br>
 
@@ -64,7 +64,7 @@ A flexible, detail-oriented weather card.
 
 <br>
 
-## Usage Modes
+## Examples
 
 You can use either `card_style: standalone` for a card with dynamic weather backgrounds, or `card_style: immersive` so the card has no background at all.
 
@@ -355,19 +355,6 @@ full_width: true
 
 
 </details>
-<br>
-
-
-> [!TIP]
-> <details>
-> <summary><strong>Fonts & Icons</strong></summary>
-> <br>
-> 
-> * **Custom Fonts:** The examples use the **Montserrat** font, which you can download or embed directly from [Google Fonts](https://fonts.google.com/specimen/Montserrat).
-> * **Custom Icons:** You can replace the default icons with your own custom SVG weather icons. See the [Chips](#appearance) section for instructions. You can find the icons from the examples [here.](https://github.com/basmilius/weather-icons)
-> * **Embedded Cards:** To keep this card somewhat lightweight and focused on weather visuals, it relies on an embedded custom cards approach. You can read more about this feature [here](#appearance). 
-> * **Custom House Image:** You can add your own 3D home model to the card. See the [Custom House Image](#custom-house-image) tutorial for step-by-step instructions.
-> </details>
 
 <br>
 
@@ -637,44 +624,6 @@ Useful if you want something like "dark after 9pm", "dark when it's overcast", o
 
 <br>
 
-## Fonts & Icons
-
-If you want to use the exact fonts and weather icons from the screenshots in your own setup, here's how.
-
-<details>
-<summary><strong>Font family used in the examples</strong></summary>
-
-<br>
-
-The screenshots throughout this README use the **Montserrat** font, which you can download or embed directly from [Google Fonts](https://fonts.google.com/specimen/Montserrat). Once it's loaded into your Home Assistant frontend (for example via a custom theme), it applies to this card along with the rest of your dashboard — the card inherits whatever font your theme sets.
-
-</details>
-
-<details>
-<summary><strong>Custom SVG weather icons</strong></summary>
-
-<br>
-
-You can replace the default MDI icons inside a chip with your own animated SVG files. The examples use the set from [basmilius/weather-icons](https://github.com/basmilius/weather-icons).
-
-1. Download the SVG files and place them in a folder under `config/www/`, for example `config/www/weather-icons/`.
-2. In your chip config, set `icon` to `weather` and point `icon_path` to that folder:
-
-```yaml
-chips:
-  - entity: weather.your_weather_entity
-    icon: weather
-    icon_path: /local/weather-icons/
-```
-
-The card then resolves the icon by the current weather state. For example, `rainy` weather loads `/local/weather-icons/rainy.svg`. Make sure the filenames match the supported [weather states](#weather-states).
-
-The same approach works inside the embedded [Minimal Forecast Card](https://github.com/shpongledsummer/minimal-forecast-card) via its `custom_icon_path` option, which is why several examples in this README set both at once.
-
-</details>
-
-<br>
-
 ## CSS Reference
 
 > [!NOTE]
@@ -801,7 +750,45 @@ These variables only apply when `chips_scroll_dots` is enabled.
 
 <br>
 
-## Custom House Image
+## Guides
+
+### Fonts & Icons
+
+If you want to use the exact fonts and weather icons from the screenshots in your own setup, here's how.
+
+<details>
+<summary><strong>Font family used in the examples</strong></summary>
+
+<br>
+
+The screenshots throughout this README use the **Montserrat** font, which you can download or embed directly from [Google Fonts](https://fonts.google.com/specimen/Montserrat). Once it's loaded into your Home Assistant frontend (for example via a custom theme), it applies to this card along with the rest of your dashboard — the card inherits whatever font your theme sets.
+
+</details>
+
+<details>
+<summary><strong>Custom SVG weather icons</strong></summary>
+
+<br>
+
+You can replace the default MDI icons inside a chip with your own animated SVG files. The examples use the set from [basmilius/weather-icons](https://github.com/basmilius/weather-icons).
+
+1. Download the SVG files and place them in a folder under `config/www/`, for example `config/www/weather-icons/`.
+2. In your chip config, set `icon` to `weather` and point `icon_path` to that folder:
+
+```yaml
+chips:
+  - entity: weather.your_weather_entity
+    icon: weather
+    icon_path: /local/weather-icons/
+```
+
+The card then resolves the icon by the current weather state. For example, `rainy` weather loads `/local/weather-icons/rainy.svg`.
+
+</details>
+
+<br>
+
+### Custom House Image
 
 This explains how to create an image for your own home and use it in the card.
 
@@ -814,7 +801,7 @@ This explains how to create an image for your own home and use it in the card.
 
 <br>
 
-## Smart Status Entity
+### Smart Status Entity
 
 The status feature dynamically changes the displayed house/custom image when a monitored entity becomes active. The card recognizes the following states as "active": `on`, `true`, `open`, `unlocked`, `home`, and `active`.
 
@@ -824,20 +811,6 @@ The status feature dynamically changes the displayed house/custom image when a m
 | Lock | `lock.front_door` | `unlocked` |
 | Toggle | `input_boolean.party_mode` | `on` |
 | Presence | `person.me` | `home` |
-
-<br>
-
-## Adding Buttons
-
-You can embed buttons (or any other Home Assistant card like a graph, another weather card, sensors etc.) directly inside this card using the `custom_cards` feature. See [Embedded Cards](#appearance) in the Appearance section for setup and layout options, and the [examples](#usage-modes) for different use cases.
-
-<br>
-
-## Weather States
-
-The cards supports the following weather states: `sunny` · `clear-night` · `partlycloudy` · `cloudy` · `fog` · `rainy` · `pouring` · `snowy` · `snowy-rainy` · `hail` · `lightning` · `lightning-rainy` · `windy` · `windy-variant` · `exceptional`
-
-Each state triggers a unique combination of animated effects, cloud densities, wind behaviors, and atmospheric lighting. The card also reads details like the `wind_speed` or `elevation` to dynamically influence the animations.
 
 <br>
 
