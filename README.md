@@ -801,19 +801,6 @@ This explains how to create an image for your own home and use it in the card.
 
 <br>
 
-### Smart Status Entity
-
-The status feature dynamically changes the displayed house/custom image when a monitored entity becomes active. The card recognizes the following states as "active": `on`, `true`, `open`, `unlocked`, `home`, and `active`.
-
-| Use Case | Example Entity | Triggers On |
-| :--- | :--- | :--- |
-| Door / Window | `binary_sensor.front_door` | `open` |
-| Lock | `lock.front_door` | `unlocked` |
-| Toggle | `input_boolean.party_mode` | `on` |
-| Presence | `person.me` | `home` |
-
-<br>
-
 ## Performance
 
 Fast performance and impressive animations are basically natural enemies when building a card for Home Assistant. Changing even a tiny detail, like how the clouds or stars work, can instantly slow the dashboard down. There were so many times I got an effect looking absolutely perfect, only to realize it was too heavy and had to replace it with a simpler version.
