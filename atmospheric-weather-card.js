@@ -1,24 +1,19 @@
 /**
  * ATMOSPHERIC WEATHER CARD
- * Version: 4.0
+ * Version: 4.1
  * * https://github.com/shpongledsummer/atmospheric-weather-card
  */
-
 console.info(
     "%c ATMOSPHERIC WEATHER CARD ",
     "color: white; font-weight: 700; background: linear-gradient(90deg, #355C7D 0%, #6C5B7B 50%, #C06C84 100%); padding: 6px 12px; border-radius: 6px; font-family: sans-serif; letter-spacing: 0.5px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);"
 );
-
 // CONSTANTS & CONFIGURATION
-
 const NIGHT_MODES = Object.freeze([
     'dark', 'night', 'evening', 'on', 'true', 'below_horizon'
 ]);
-
 const ACTIVE_STATES = Object.freeze([
     'on', 'true', 'open', 'unlocked', 'home', 'active'
 ]);
-
 const FALLBACK_WEATHER = Object.freeze({
     state: 'cloudy',
     attributes: {
@@ -29,7 +24,6 @@ const FALLBACK_WEATHER = Object.freeze({
         friendly_name: 'Weather Unavailable'
     }
 });
-
 // WEATHER CONFIGURATION
 const WEATHER_MAP = Object.freeze({
     'clear-night': Object.freeze({
@@ -123,7 +117,6 @@ const WEATHER_MAP = Object.freeze({
         types: Object.freeze([['cumulus','cumulus','organic','organic','stratus','cirrus'], ['organic','organic','cumulus','cumulus','stratus','stratus'], ['cirrus','cirrus','cumulus','organic','stratus','stratus']])
     })
 });
-
 const WEATHER_ICONS = Object.freeze({
     'clear-night': 'mdi:weather-night',
     'cloudy': 'mdi:weather-cloudy',
@@ -142,7 +135,6 @@ const WEATHER_ICONS = Object.freeze({
     'exceptional': 'mdi:weather-sunny-alert',
     'default': 'mdi:weather-cloudy'
 });
-
 const WEATHER_ATTR_ICONS = Object.freeze({
     temperature:    'mdi:thermometer',
     apparent_temperature: 'mdi:thermometer-lines',
@@ -157,7 +149,11 @@ const WEATHER_ATTR_ICONS = Object.freeze({
     cloud_coverage: 'mdi:cloud-outline',
     ozone:          'mdi:weather-hazy'
 });
-
+const FORECAST_ATTR_ICONS = Object.freeze({
+    ...WEATHER_ATTR_ICONS,
+    condition: 'mdi:weather-partly-cloudy', templow: 'mdi:thermometer-low',
+    precipitation: 'mdi:weather-rainy', precipitation_probability: 'mdi:weather-rainy',
+});
 const MOON_PHASES = Object.freeze({
     'new_moon':         { illumination: 0.0,  direction: 'right' },
     'waxing_crescent':  { illumination: 0.25, direction: 'right' },
@@ -168,18 +164,15 @@ const MOON_PHASES = Object.freeze({
     'last_quarter':     { illumination: 0.5,  direction: 'left' },
     'waning_crescent':  { illumination: 0.25, direction: 'left' }
 });
-
 const LIMITS = Object.freeze({
     MAX_SHOOTING_STARS: 2,
     MAX_BOLTS: 4
 });
-
 const PARTICLE_ARRAYS = Object.freeze([
     '_rain', '_snow', '_hail', '_clouds', '_fgClouds', '_stars',
     '_bolts', '_fogBanks', '_windVapor', '_shootingStars',
     '_planes', '_birds', '_comets', '_celestialClouds'
 ]);
-
 // GEOMETRY TABLES — named pixel offsets for icon glyph positions
 const MOON_CRATERS = Object.freeze({
     maria: [
@@ -205,7 +198,6 @@ const MOON_CRATERS = Object.freeze({
         { dx:  4,  dy:  3, r: 0.9 }
     ]
 });
-
 const MOON_STYLE_COLORS = Object.freeze({
     newMoon: {
         yellow: [{ rgb: '210,205,190', op: 0.10 }],
@@ -260,40 +252,50 @@ const MOON_STYLE_COLORS = Object.freeze({
         light:  'rgb(228,234,248)'
     }
 });
-
 const PLANE_PATH = Object.freeze([
     [  6, 0, -6,  0 ],
     [ -5, 0, -8, -4 ],
     [  1, 0, -2,  2 ]
 ]);
-
 const TWO_PI = Math.PI * 2;
-
 function fillCircle(ctx, x, y, r) {
     ctx.beginPath();
     ctx.arc(x, y, r, 0, TWO_PI);
     ctx.fill();
 }
-
 function parseCSSVal(v) {
     const s = String(v).trim();
     if (!s || s === '0') return '0px';
     return /[%a-z]/i.test(s) ? s : s + 'px';
 }
-
 function parseAnchor(anchor) {
     if (anchor === 'center') return ['center', 'center'];
     if (anchor === 'left') return ['center', 'left'];
     if (anchor === 'right') return ['center', 'right'];
     return anchor.includes('-') ? anchor.split('-') : ['top', anchor];
 }
-
+// Forecast helpers
+const _fcCache = new Map(); // module-level: survives HA editor destroy/recreate cycles
+function fcFilterPast(raw, daily) {
+    const now = new Date(), cut = daily ? new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() : now.getTime();
+    return raw.filter(f => Date.parse(f.datetime) >= cut);
+}
+function fcFingerprint(fc) {
+    if (!fc?.length) return '';
+    let s = '' + fc.length;
+    for (const f of fc) s += `|${f.datetime}|${f.condition}|${f.temperature}|${f.templow ?? ''}|${f.precipitation_probability ?? ''}`;
+    return s;
+}
+function fcLabel(dt, daily, locale) {
+    const d = new Date(dt);
+    return daily ? d.toLocaleDateString(locale, { weekday: 'short' }) : d.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
+}
+const _FC_UNIT_MAP = { temperature: 'temperature_unit', templow: 'temperature_unit', wind_speed: 'wind_speed_unit', precipitation: 'precipitation_unit', pressure: 'pressure_unit', visibility: 'visibility_unit' };
 const STAR_TIER_PROPS = Object.freeze({
     bg:   [1.2, 0.4, 0.35, 0.2, 0.04, 0.04],
     mid:  [1.8, 0.6, 0.60, 0.25, 0.02, 0.02],
     hero: [2.2, 0.8, 0.85, 0.15, 0.005, 0.01]
 });
-
 const STAR_PALETTE_GOLDEN = Object.freeze([
     [0.3,  42, 90, 42],
     [0.85, 36, 85, 46],
@@ -304,7 +306,6 @@ const STAR_PALETTE_GLOW = Object.freeze([
     [0.85, 200, 5, 95],
     [1, 35, 35, 85]
 ]);
-
 function hslToRgb(h, s, l) {
     h /= 360; s /= 100; l /= 100;
     let r, g, b;
@@ -327,9 +328,7 @@ function hslToRgb(h, s, l) {
     }
     return [(r * 255 + 0.5) | 0, (g * 255 + 0.5) | 0, (b * 255 + 0.5) | 0];
 }
-
 const CONTRAIL_OFFSETS = Object.freeze([3, -3]);
-
 const BAD_WEATHER_TYPES = Object.freeze(new Set([
     'rain', 'hail', 'fog', 'lightning', 'lightning-rainy', 'pouring', 'rainy', 'snowy-rainy'
 ]));
@@ -339,7 +338,6 @@ const STORM_TYPES = Object.freeze(new Set([
 const LIGHT_BAD_BOOST_TYPES = Object.freeze(new Set([
     'rain', 'rainy', 'hail', 'snowy-rainy', 'fog'
 ]));
-
 const CLOUD_PALETTES = Object.freeze({
     darkNight:    [215,225,245,  58, 72,112,  15, 22, 45,  0.72, 0.66, 0.05],
     darkDay:      [218,228,250, 110,128,176,  52, 66,114,  0.86, 0.62, 0.07],
@@ -349,7 +347,6 @@ const CLOUD_PALETTES = Object.freeze({
     lightOvercast:[255,255,255, 222,228,240, 138,152,190,  1.00, 0.76, 0.14],
     lightDefault: [252,254,255, 210,218,234, 118,134,174,  1.00, 0.77, 0.14]
 });
-
 // Cloud type specs: shape, placement, bake profile, and palette tint unified.
 // layers: [lo,hi] depth tier. jitterX/Y: [base,range] puff scatter. stretch: [base,range] horizontal.
 // flattenMul: vCompress multiplier. yBand: [min, max] — negative max = heightLimit offset.
@@ -364,7 +361,6 @@ const CLOUD_TYPES = Object.freeze({
     storm:   Object.freeze({ layers:[1,2], jitterX:[0.855,0.18], jitterY:[0.945,0.21], stretch:[1.0,0],     flattenMul:1.0,  yBand:[0.12,-0.04], profile:[0.40,0.78,1.05,1.15,0.88], tint:[0,0,0, 0,0,0, -3,0,4] }),
     scud:    Object.freeze({ layers:[5,5], jitterX:[1.0,0],      jitterY:[1.0,0],      stretch:[1.0,0],     flattenMul:1.0,  yBand:[0,0.75],     profile:[0.20,0.65,1.00,1.08,0.93], tint:[0,0,0, -6,-4,8, -4,-2,6] }),
 });
-
 const CELESTIAL_CLOUD_PALETTES = Object.freeze({
     warm: Object.freeze({
         litR: 255, litG: 252, litB: 235,
@@ -392,7 +388,6 @@ const CELESTIAL_CLOUD_PALETTES = Object.freeze({
         shadowR: 60, shadowG: 76, shadowB: 122
     })
 });
-
 const TRAIL_CAP_SHOOTING_STAR = 22;
 const TRAIL_CAP_COMET = 100;
 const TRAIL_CAP_PLANE = 500;
@@ -406,14 +401,12 @@ const PERFORMANCE_CONFIG = Object.freeze({
     TARGET_FPS: 30,
     MAX_PIXELS: 2073600
 });
-
 const FILTER_PRESETS = Object.freeze({
     'darken':  'brightness(0.72) contrast(1.1)',
     'vivid':   'saturate(1.5) contrast(1.12) brightness(1.02)',
     'muted':   'saturate(0.55) brightness(1.08)',
     'warm':    'sepia(0.25) saturate(1.15) brightness(1.0)'
 });
-
 const WEATHER_CLASSES = Object.freeze([
     'weather-overcast','weather-rainy','weather-storm',
     'weather-snow','weather-partly','weather-fog','weather-exceptional','weather-pouring'
@@ -424,7 +417,6 @@ const ATMOSPHERE_CSS = Object.freeze({
     fair:'weather-partly', rain:'weather-rainy', pouring:'weather-pouring',
     storm:'weather-storm', snow:'weather-snow', exceptional:'weather-exceptional'
 });
-
 // CLOUD SHAPE GENERATOR
 class CloudShapeGenerator {
     static generateOrganicPuffs(isStorm, seed, baseUnit = 100) {
@@ -455,33 +447,17 @@ class CloudShapeGenerator {
             const softness = 0.3 + seededRandom() * 0.4;
             const squash = 0.75 + seededRandom() * 0.25;
             const rotation = (seededRandom() - 0.5) * 0.60;
-            puffs.push({
-                offsetX: dx, offsetY: dy,
-                rad: Math.max(15 * s, rad),
-                shade: Math.min(1, shade),
-                softness, squash, rotation,
-                depth: seededRandom()
-            });
+            puffs.push({ offsetX: dx, offsetY: dy, rad: Math.max(15 * s, rad), shade: Math.min(1, shade), softness, squash, rotation, depth: seededRandom() });
         }
         const detailCount = isStorm ? 8 : 6;
         for (let i = 0; i < detailCount; i++) {
             const angle = seededRandom() * TWO_PI;
             const dist = 0.3 + seededRandom() * 0.45;
-            puffs.push({
-                offsetX: Math.cos(angle) * (baseWidth / 2) * dist,
-                offsetY: Math.sin(angle) * (baseHeight / 2) * dist * 0.5 - 10 * s,
-                rad: (14 + seededRandom() * 16) * s,
-                shade: 0.5 + seededRandom() * 0.3,
-                softness: 0.5 + seededRandom() * 0.3,
-                squash: 0.6 + seededRandom() * 0.3,
-                rotation: (seededRandom() - 0.5) * 0.80,
-                depth: 0.8 + seededRandom() * 0.2
-            });
+            puffs.push({ offsetX: Math.cos(angle) * (baseWidth / 2) * dist, offsetY: Math.sin(angle) * (baseHeight / 2) * dist * 0.5 - 10 * s, rad: (14 + seededRandom() * 16) * s, shade: 0.5 + seededRandom() * 0.3, softness: 0.5 + seededRandom() * 0.3, squash: 0.6 + seededRandom() * 0.3, rotation: (seededRandom() - 0.5) * 0.80, depth: 0.8 + seededRandom() * 0.2 });
         }
         puffs.sort((a, b) => a.depth - b.depth);
         return puffs;
     }
-
     static generateWispyPuffs(seed, baseUnit = 100) {
         const puffs = [];
         const seededRandom = this._seededRandom(seed);
@@ -494,21 +470,11 @@ class CloudShapeGenerator {
         for (let i = 0; i < puffCount; i++) {
             const angle = (i / puffCount) * TWO_PI + seededRandom() * 0.8;
             const dist = 0.05 + seededRandom() * 0.85;
-            puffs.push({
-                offsetX: Math.cos(angle) * aspectH * s * dist,
-                offsetY: Math.sin(angle) * aspectV * s * dist,
-                rad: (15 + seededRandom() * 18) * s,
-                shade: 0.5 + seededRandom() * 0.4,
-                softness: 0.4 + seededRandom() * 0.4,
-                squash: 0.85 + seededRandom() * 0.18,
-                rotation: seededRandom() * 0.5,
-                depth: seededRandom()
-            });
+            puffs.push({ offsetX: Math.cos(angle) * aspectH * s * dist, offsetY: Math.sin(angle) * aspectV * s * dist, rad: (15 + seededRandom() * 18) * s, shade: 0.5 + seededRandom() * 0.4, softness: 0.4 + seededRandom() * 0.4, squash: 0.85 + seededRandom() * 0.18, rotation: seededRandom() * 0.5, depth: seededRandom() });
         }
         puffs.sort((a, b) => a.depth - b.depth);
         return puffs;
     }
-
     static generateSunDecorationPuffs(seed, baseUnit = 100) {
         const puffs = [];
         const seededRandom = this._seededRandom(seed);
@@ -524,14 +490,7 @@ class CloudShapeGenerator {
             const taper = 1 - Math.pow(edge, 1.6) * 0.30;
             const rad = (20 + seededRandom() * 14) * s * taper;
             const y = baselineY - rad * (0.70 + seededRandom() * 0.25) + (seededRandom() - 0.5) * 10 * s;
-            puffs.push({
-                offsetX: x, offsetY: y, rad,
-                shade: 0.42 + seededRandom() * 0.14,
-                softness: 0.38 + seededRandom() * 0.14,
-                squash: 0.62 + seededRandom() * 0.18,
-                rotation: (seededRandom() - 0.5) * 0.55,
-                depth: seededRandom() * 0.28
-            });
+            puffs.push({ offsetX: x, offsetY: y, rad, shade: 0.42 + seededRandom() * 0.14, softness: 0.38 + seededRandom() * 0.14, squash: 0.62 + seededRandom() * 0.18, rotation: (seededRandom() - 0.5) * 0.55, depth: seededRandom() * 0.28 });
         }
         const bodyCount = 6 + Math.floor(seededRandom() * 3);
         for (let i = 0; i < bodyCount; i++) {
@@ -541,14 +500,7 @@ class CloudShapeGenerator {
             const taper = 1 - Math.pow(edge, 1.6) * 0.35;
             const rad = (16 + seededRandom() * 18) * s * taper;
             const y = baselineY - rad - (6 + seededRandom() * 14) * s + (seededRandom() - 0.5) * 12 * s;
-            puffs.push({
-                offsetX: x, offsetY: y, rad,
-                shade: 0.58 + seededRandom() * 0.18,
-                softness: 0.32 + seededRandom() * 0.14,
-                squash: 0.68 + seededRandom() * 0.18,
-                rotation: (seededRandom() - 0.5) * 0.45,
-                depth: 0.32 + seededRandom() * 0.30
-            });
+            puffs.push({ offsetX: x, offsetY: y, rad, shade: 0.58 + seededRandom() * 0.18, softness: 0.32 + seededRandom() * 0.14, squash: 0.68 + seededRandom() * 0.18, rotation: (seededRandom() - 0.5) * 0.45, depth: 0.32 + seededRandom() * 0.30 });
         }
         const crownCount = 3 + Math.floor(seededRandom() * 3);
         for (let i = 0; i < crownCount; i++) {
@@ -558,19 +510,11 @@ class CloudShapeGenerator {
             const taper = 1 - Math.pow(edge, 1.8) * 0.35;
             const rad = (12 + seededRandom() * 14) * s * taper;
             const y = baselineY - (26 + seededRandom() * 16) * s - rad * 0.5 + (seededRandom() - 0.5) * 10 * s;
-            puffs.push({
-                offsetX: x, offsetY: y, rad,
-                shade: 0.74 + seededRandom() * 0.18,
-                softness: 0.28 + seededRandom() * 0.14,
-                squash: 0.70 + seededRandom() * 0.18,
-                rotation: (seededRandom() - 0.5) * 0.50,
-                depth: 0.70 + seededRandom() * 0.30
-            });
+            puffs.push({ offsetX: x, offsetY: y, rad, shade: 0.74 + seededRandom() * 0.18, softness: 0.28 + seededRandom() * 0.14, squash: 0.70 + seededRandom() * 0.18, rotation: (seededRandom() - 0.5) * 0.50, depth: 0.70 + seededRandom() * 0.30 });
         }
         puffs.sort((a, b) => a.depth - b.depth);
         return puffs;
     }
-
     static generateCirrusLayeredPuffs(seed, baseUnit = 100) {
         const puffs = [];
         const seededRandom = this._seededRandom(seed);
@@ -586,22 +530,12 @@ class CloudShapeGenerator {
                 const x = -layerSpan / 2 + i * spacing + (seededRandom() - 0.5) * spacing * 0.45;
                 const yJitter = (seededRandom() - 0.5) * 8 * s;
                 const taper = Math.max(0.60, 1 - Math.pow(Math.abs(x) / (layerSpan / 2 + 1), 1.6) * 0.40);
-                puffs.push({
-                    offsetX: x,
-                    offsetY: layerY + yJitter,
-                    rad: (14 + seededRandom() * 10) * s * taper,
-                    shade: (0.55 + seededRandom() * 0.30) * layerOpacity,
-                    softness: 0.45 + seededRandom() * 0.30,
-                    squash: 0.70 + seededRandom() * 0.20,
-                    rotation: (seededRandom() - 0.5) * 0.25,
-                    depth: L * 0.3 + seededRandom() * 0.3
-                });
+                puffs.push({ offsetX: x, offsetY: layerY + yJitter, rad: (14 + seededRandom() * 10) * s * taper, shade: (0.55 + seededRandom() * 0.30) * layerOpacity, softness: 0.45 + seededRandom() * 0.30, squash: 0.70 + seededRandom() * 0.20, rotation: (seededRandom() - 0.5) * 0.25, depth: L * 0.3 + seededRandom() * 0.3 });
             }
         }
         puffs.sort((a, b) => a.depth - b.depth);
         return puffs;
     }
-
     static generateCirrusUncinusPuffs(seed, baseUnit = 100) {
         const puffs = [];
         const seededRandom = this._seededRandom(seed);
@@ -637,22 +571,12 @@ class CloudShapeGenerator {
                 const tangent = Math.max(-0.38, Math.min(0.38, rawTangent));
                 const edge = Math.min(tNorm, 1 - tNorm) * 2;
                 const taper = 0.65 + edge * 0.35;
-                puffs.push({
-                    offsetX: p.x + (seededRandom() - 0.5) * 4 * s,
-                    offsetY: p.y + echoOffsetY + (seededRandom() - 0.5) * 3 * s,
-                    rad: (12 + seededRandom() * 7) * s * taper,
-                    shade: (0.50 + seededRandom() * 0.28) * echoOpacity,
-                    softness: 0.45 + seededRandom() * 0.22,
-                    squash: 0.55 + seededRandom() * 0.15,
-                    rotation: tangent + (seededRandom() - 0.5) * 0.12,
-                    depth: stroke * 0.35 + seededRandom() * 0.55
-                });
+                puffs.push({ offsetX: p.x + (seededRandom() - 0.5) * 4 * s, offsetY: p.y + echoOffsetY + (seededRandom() - 0.5) * 3 * s, rad: (12 + seededRandom() * 7) * s * taper, shade: (0.50 + seededRandom() * 0.28) * echoOpacity, softness: 0.45 + seededRandom() * 0.22, squash: 0.55 + seededRandom() * 0.15, rotation: tangent + (seededRandom() - 0.5) * 0.12, depth: stroke * 0.35 + seededRandom() * 0.55 });
             }
         }
         puffs.sort((a, b) => a.depth - b.depth);
         return puffs;
     }
-
     static generateMixedPuffs(seed, variety = 'cumulus', baseUnit = 100) {
         const puffs = [];
         const seededRandom = this._seededRandom(seed);
@@ -664,47 +588,19 @@ class CloudShapeGenerator {
             const baseCount = 4 + Math.floor(seededRandom() * 2);
             for (let i = 0; i < baseCount; i++) {
                 const t = baseCount > 1 ? (i / (baseCount - 1)) - 0.5 : 0;
-                puffs.push({
-                    offsetX: t * baseWidth * 0.88 + (seededRandom() - 0.5) * 15 * s,
-                    offsetY: (6 + seededRandom() * 10) * s,
-                    rad: (26 + seededRandom() * 18) * s,
-                    shade: 0.38 + seededRandom() * 0.05,
-                    softness: 0.35, squash: 1.0, rotation: 0,
-                    depth: seededRandom() * 0.25
-                });
+                puffs.push({ offsetX: t * baseWidth * 0.88 + (seededRandom() - 0.5) * 15 * s, offsetY: (6 + seededRandom() * 10) * s, rad: (26 + seededRandom() * 18) * s, shade: 0.38 + seededRandom() * 0.05, softness: 0.35, squash: 1.0, rotation: 0, depth: seededRandom() * 0.25 });
             }
             const bodyCount = 8 + Math.floor(seededRandom() * 4);
             for (let i = 0; i < bodyCount; i++) {
-                puffs.push({
-                    offsetX: (seededRandom() - 0.5) * baseWidth * (0.40 + seededRandom() * 0.25) + asymShift * 0.35,
-                    offsetY: -(20 + seededRandom() * 58) * s,
-                    rad: (22 + seededRandom() * 20) * s,
-                    shade: 0.62 + seededRandom() * 0.08,
-                    softness: 0.28, squash: 1.0, rotation: 0,
-                    depth: 0.22 + seededRandom() * 0.48
-                });
+                puffs.push({ offsetX: (seededRandom() - 0.5) * baseWidth * (0.40 + seededRandom() * 0.25) + asymShift * 0.35, offsetY: -(20 + seededRandom() * 58) * s, rad: (22 + seededRandom() * 20) * s, shade: 0.62 + seededRandom() * 0.08, softness: 0.28, squash: 1.0, rotation: 0, depth: 0.22 + seededRandom() * 0.48 });
             }
             const crownCount = 4 + Math.floor(seededRandom() * 2 + towerFactor * 1.5);
             for (let i = 0; i < crownCount; i++) {
-                puffs.push({
-                    offsetX: (seededRandom() - 0.5) * baseWidth * 0.42 + asymShift * 0.60,
-                    offsetY: -(82 + towerFactor * 54 + seededRandom() * 52) * s,
-                    rad: (16 + seededRandom() * 18) * s,
-                    shade: 0.80 + seededRandom() * 0.05,
-                    softness: 0.22, squash: 1.0, rotation: 0,
-                    depth: 0.68 + seededRandom() * 0.32
-                });
+                puffs.push({ offsetX: (seededRandom() - 0.5) * baseWidth * 0.42 + asymShift * 0.60, offsetY: -(82 + towerFactor * 54 + seededRandom() * 52) * s, rad: (16 + seededRandom() * 18) * s, shade: 0.80 + seededRandom() * 0.05, softness: 0.22, squash: 1.0, rotation: 0, depth: 0.68 + seededRandom() * 0.32 });
             }
             for (let i = 0; i < 3; i++) {
                 const a = seededRandom() * TWO_PI;
-                puffs.push({
-                    offsetX: Math.cos(a) * (baseWidth * 0.35 + seededRandom() * 10 * s),
-                    offsetY: -(28 + seededRandom() * 48) * s,
-                    rad: (14 + seededRandom() * 15) * s,
-                    shade: 0.60 + seededRandom() * 0.10,
-                    softness: 0.38, squash: 1.0, rotation: 0,
-                    depth: seededRandom()
-                });
+                puffs.push({ offsetX: Math.cos(a) * (baseWidth * 0.35 + seededRandom() * 10 * s), offsetY: -(28 + seededRandom() * 48) * s, rad: (14 + seededRandom() * 15) * s, shade: 0.60 + seededRandom() * 0.10, softness: 0.38, squash: 1.0, rotation: 0, depth: seededRandom() });
             }
         } else if (variety === 'stratus') {
             const puffCount = 14 + Math.floor(seededRandom() * 6);
@@ -712,30 +608,12 @@ class CloudShapeGenerator {
                 const spreadX = (i - puffCount / 2) * 18 * s + (seededRandom() - 0.5) * 10 * s;
                 const spreadY = (seededRandom() - 0.5) * 14 * s;
                 const normalY = (spreadY + 7 * s) / (14 * s);
-                puffs.push({
-                    offsetX: spreadX,
-                    offsetY: spreadY,
-                    rad: (16 + seededRandom() * 14) * s,
-                    shade: 0.48 + (1 - normalY) * 0.30 + seededRandom() * 0.06,
-                    softness: 0.2 + seededRandom() * 0.3,
-                    squash: 0.55,
-                    rotation: 0,
-                    depth: seededRandom()
-                });
+                puffs.push({ offsetX: spreadX, offsetY: spreadY, rad: (16 + seededRandom() * 14) * s, shade: 0.48 + (1 - normalY) * 0.30 + seededRandom() * 0.06, softness: 0.2 + seededRandom() * 0.3, squash: 0.55, rotation: 0, depth: seededRandom() });
             }
             const coreCount = 4 + Math.floor(seededRandom() * 3);
             for (let i = 0; i < coreCount; i++) {
                 const spreadX = (i - coreCount / 2) * 26 * s + (seededRandom() - 0.5) * 12 * s;
-                puffs.push({
-                    offsetX: spreadX,
-                    offsetY: (seededRandom() - 0.5) * 6 * s,
-                    rad: (18 + seededRandom() * 12) * s,
-                    shade: 0.60 + seededRandom() * 0.15,
-                    softness: 0.25 + seededRandom() * 0.2,
-                    squash: 0.6,
-                    rotation: 0,
-                    depth: 0.4 + seededRandom() * 0.3
-                });
+                puffs.push({ offsetX: spreadX, offsetY: (seededRandom() - 0.5) * 6 * s, rad: (18 + seededRandom() * 12) * s, shade: 0.60 + seededRandom() * 0.15, softness: 0.25 + seededRandom() * 0.2, squash: 0.6, rotation: 0, depth: 0.4 + seededRandom() * 0.3 });
             }
         } else if (variety === 'cirrus') {
             const layerCount = 2 + Math.floor(seededRandom() * 2);
@@ -751,23 +629,13 @@ class CloudShapeGenerator {
                     const x = -layerSpan / 2 + i * stepX + (seededRandom() - 0.5) * stepX * 0.40;
                     const taper = 1 - Math.pow(Math.abs(x) / (layerSpan / 2 + 1), 1.6) * 0.45;
                     const rad = (15 + seededRandom() * 9) * s * taper;
-                    puffs.push({
-                        offsetX: x,
-                        offsetY: layerY + (seededRandom() - 0.5) * 4 * s,
-                        rad,
-                        shade: (0.50 + seededRandom() * 0.30) * layerOpacity,
-                        softness: 0.50 + seededRandom() * 0.25,
-                        squash: 0.50 + seededRandom() * 0.20,
-                        rotation: (seededRandom() - 0.5) * 0.20,
-                        depth: seededRandom()
-                    });
+                    puffs.push({ offsetX: x, offsetY: layerY + (seededRandom() - 0.5) * 4 * s, rad, shade: (0.50 + seededRandom() * 0.30) * layerOpacity, softness: 0.50 + seededRandom() * 0.25, squash: 0.50 + seededRandom() * 0.20, rotation: (seededRandom() - 0.5) * 0.20, depth: seededRandom() });
                 }
             }
         }
         puffs.sort((a, b) => a.depth - b.depth);
         return puffs;
     }
-
     static _seededRandom(seed) {
         let s = seed;
         return () => {
@@ -776,10 +644,8 @@ class CloudShapeGenerator {
         };
     }
 }
-
 // MAIN CARD CLASS
 class AtmosphericWeatherCard extends HTMLElement {
-
     // CONSTRUCTOR & LIFECYCLE
     constructor() {
         super();
@@ -799,44 +665,27 @@ class AtmosphericWeatherCard extends HTMLElement {
         this._hasReceivedFirstHass = false;
         this._renderState = null;
         this._celestialSize = null;
-        this._moonPhaseState = 'full_moon';
-        this._moonPhaseConfig = MOON_PHASES['full_moon'];
-        this._windGust = 0;
-        this._gustPhase = 0;
-        this._windSpeed = 0.1;
-        this._windKmh = 0;
-        this._microGustPhase = 0;
+        this._moonPhaseState = 'full_moon'; this._moonPhaseConfig = MOON_PHASES['full_moon'];
+        this._windGust = 0; this._gustPhase = 0; this._windSpeed = 0.1; this._windKmh = 0; this._microGustPhase = 0;
         this._layerFadeProgress = { stars: 1, clouds: 1, precipitation: 1, effects: 1 };
-        this._sunPulsePhase = 0;
-        this._initialized = false;
-        this._initializationComplete = false;
-        this._isVisible = false;
-        this._intersectionObserver = null;
+        this._sunPulsePhase = 0; this._initialized = false; this._initializationComplete = false;
+        this._isVisible = false; this._intersectionObserver = null;
         this._renderGate = { hasValidDimensions: false, hasFirstHass: false, isRevealed: false };
-        this._resizeDebounceTimer = null;
-        this._pendingResize = false;
-        this._needsReinit = false;
+        this._resizeDebounceTimer = null; this._pendingResize = false; this._needsReinit = false;
         this._cachedDimensions = { width: 0, height: 0, dpr: 1 };
-        this._lastInitWidth = 0;
-        this._lastTempVal = null;
-        this._lastTempUnit = null;
-        this._lastLocStr = null;
-        this._lastSnapshot = null;
+        this._lastInitWidth = 0; this._lastTempVal = null; this._lastTempUnit = null;
+        this._lastLocStr = null; this._lastSnapshot = null;
         this._prevStyleSig = this._prevPosSig = this._prevCcSig = null;
-        this._entityErrors = new Map();
-        this._lastErrorLog = 0;
-        this._customCardElements = [];
-        this._hass = null;
-        this._prevCustomCssClasses = null;
+        this._entityErrors = new Map(); this._lastErrorLog = 0;
+        this._customCardElements = []; this._hass = null; this._prevCustomCssClasses = null;
         this._boundVisibilityChange = this._handleVisibilityChange.bind(this);
         this._boundTap = this._handleTap.bind(this);
+        this._fcData = new Map(_fcCache); this._fcSubs = new Map(); this._fcFmtCache = null;
     }
-
     get _isLightBackground() { return !this._isThemeDark; }
     get _isNight()           { return this._isTimeNight; }
     get _isImmersive()       { return this._config.card_style !== 'standalone'; }
     get _isDarkDayImmersive(){ return this._isImmersive && this._isThemeDark && !this._isTimeNight; }
-
     // HOME ASSISTANT LIFECYCLE
     connectedCallback() {
         if (!this._resizeObserver) {
@@ -884,14 +733,14 @@ class AtmosphericWeatherCard extends HTMLElement {
             this._tryInitialize();
         }
     }
-
     disconnectedCallback() {
         this._stopAnimation();
         this._resizeObserver?.disconnect();
         this._intersectionObserver?.disconnect();
         this._marqueeObserver?.disconnect();
         this._marqueeObserver = null;
-        this._teardownDotsObserver();
+        for (const unsub of this._fcSubs.values()) unsub();
+        this._fcSubs.clear();
         if (this._resizeDebounceTimer) {
             clearTimeout(this._resizeDebounceTimer);
             this._resizeDebounceTimer = null;
@@ -902,7 +751,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         this._customCardElements = [];
         this._initializationComplete = false;
     }
-
     setConfig(config) {
         this._config = config;
         this._chips = this._deriveChips(this._config);
@@ -956,13 +804,24 @@ class AtmosphericWeatherCard extends HTMLElement {
                 slot.style.bottom = padV; slot.style.top = 'auto';
             }
             slot.style.transform = t.join(' ');
+            const ox = config.image_offset_x !== undefined ? String(config.image_offset_x).trim() : '';
+            const oy = config.image_offset_y !== undefined ? String(config.image_offset_y).trim() : '';
+            if (ox || oy) {
+                const tx2 = ox ? `translateX(${/[%a-z]/i.test(ox) ? ox : ox + 'px'})` : '';
+                // When bottom-anchored, negate Y so positive values move the image up (toward center)
+                let oyEffective = oy;
+                if (oy && v === 'bottom') {
+                    oyEffective = oy.startsWith('-') ? oy.slice(1) : `-${oy}`;
+                }
+                const ty2 = oyEffective ? `translateY(${/[%a-z]/i.test(oyEffective) ? oyEffective : oyEffective + 'px'})` : '';
+                const extra = [tx2, ty2].filter(Boolean).join(' ');
+                slot.style.transform = t.length ? `${t.join(' ')} ${extra}` : extra;
+            }
         }
         const root = this._elements.root;
         root.classList.toggle('no-mask-v', config.css_mask_vertical === false);
         root.classList.toggle('no-mask-h', config.css_mask_horizontal === false);
-        const hasTapAction = config.tap_action &&
-                             config.tap_action.action &&
-                             config.tap_action.action !== 'none';
+        const hasTapAction = config.tap_action && config.tap_action.action && config.tap_action.action !== 'none';
         root.classList.toggle('clickable', !!hasTapAction);
         const filterVal = FILTER_PRESETS[(config.filter || '').toLowerCase()] || '';
         root.style.setProperty('--_canvas-filter', filterVal || 'none');
@@ -1008,24 +867,53 @@ class AtmosphericWeatherCard extends HTMLElement {
                 }
             });
         }
-        this._lastSnapshot = this._lastLocStr = this._prevRowOverflow = this._prevRowWidth =
-            this._prevRowHeight = this._prevFullWidth = this._prevChipPad = this._prevTopPad =
-            this._prevChipsGap = this._prevRowCols = this._prevChipAlign = this._prevDotsSig = null;
+        this._lastSnapshot = this._prevRowOverflow = this._prevRowWidth =
+            this._prevRowHeight = this._prevFullWidth = this._prevChipPad = this._prevContainerPad = this._prevTopPad =
+            this._prevChipsGap = this._prevChipGap = this._prevRowCols = this._prevChipAlign =
+            this._prevConfigSig = this._prevGrouped = this._prevVisKey =
+            this._lastFreeSig = this._prevCardPadding = this._prevCardPadParsed =
+            this._prevTopFS = this._prevBottomFS = this._prevChipNameFS =
+            this._prevChipIconWidth = this._prevChipIconPad = this._prevImageOffset = null;
+        this._lastTempVal = this._lastTempUnit = null;
         this._nativeIconCache = null;
         this._prevHadVertVis = false;
-        if (this._hass) this.hass = this._hass;
+        this._syncFc();
+        this._applyConfigStyles();
     }
-
     set hass(hass) {
         if (!hass || !this._config) return;
         this._hass = hass;
-        if (this._customCardElements.length > 0) {
-            for (const child of this._customCardElements) child.hass = hass;
+        if (this._customCardElements.length > 0) { for (const child of this._customCardElements) child.hass = hass; }
+        const cfg = this._config;
+        const wObj = (cfg.weather_entity && hass.states[cfg.weather_entity]) || null;
+        const sunObj = cfg.sun_entity ? hass.states[cfg.sun_entity] : null;
+        const moonObj = cfg.moon_phase_entity ? hass.states[cfg.moon_phase_entity] : null;
+        const themeObj = cfg.theme_entity ? hass.states[cfg.theme_entity] : null;
+        const statusObj = cfg.status_entity ? hass.states[cfg.status_entity] : null;
+        const topObj = cfg.top_text_sensor ? hass.states[cfg.top_text_sensor] : null;
+        if (this._lastSnapshot) {
+            let changed = wObj !== this._refW || sunObj !== this._refSun || moonObj !== this._refMoon
+                || themeObj !== this._refTheme || statusObj !== this._refStatus || topObj !== this._refTop
+                || hass.themes?.darkMode !== this._refSysDark;
+            if (!changed) {
+                for (const s of this._chips) {
+                    if (s.entity && hass.states[s.entity] !== this._refChipEnts?.get(s.entity)) { changed = true; break; }
+                    if (s.name_sensor && hass.states[s.name_sensor] !== this._refChipEnts?.get(s.name_sensor)) { changed = true; break; }
+                }
+            }
+            if (!changed) return;
         }
-        if (this._moonRotationRad === undefined && hass.config && hass.config.latitude !== undefined) {
-            this._moonRotationRad = (51 - hass.config.latitude) * (Math.PI / 180);
+        this._refW = wObj; this._refSun = sunObj; this._refMoon = moonObj;
+        this._refTheme = themeObj; this._refStatus = statusObj; this._refTop = topObj;
+        this._refSysDark = hass.themes?.darkMode;
+        const refs = new Map();
+        for (const s of this._chips) {
+            if (s.entity) refs.set(s.entity, hass.states[s.entity]);
+            if (s.name_sensor) refs.set(s.name_sensor, hass.states[s.name_sensor]);
         }
-        const wEntity = (this._config.weather_entity && hass.states[this._config.weather_entity]) || FALLBACK_WEATHER;
+        this._refChipEnts = refs;
+        if (this._moonRotationRad === undefined && hass.config?.latitude !== undefined) { this._moonRotationRad = (51 - hass.config.latitude) * (Math.PI / 180); }
+        const wEntity = wObj || FALLBACK_WEATHER;
         const sunEntity = this._config.sun_entity ? hass.states[this._config.sun_entity] : null;
         const moonEntity = this._config.moon_phase_entity ? hass.states[this._config.moon_phase_entity] : null;
         const themeEntity = this._config.theme_entity ? hass.states[this._config.theme_entity] : null;
@@ -1033,6 +921,11 @@ class AtmosphericWeatherCard extends HTMLElement {
         const topSensor = this._config.top_text_sensor ? hass.states[this._config.top_text_sensor] : null;
         const botSig = this._chips.map(s => {
             if (!s.entity) return '';
+            if (s.forecast) {
+                const t = s.forecast === 'hourly' ? 'hourly' : 'daily';
+                const fd = this._fcData.get(`${s.entity}|${t}`);
+                return `fc:${s.entity}|${t}:${s.forecast_offset || 0}:${s.attribute || ''}:${fd?.fp || ''}`;
+            }
             const e = hass.states[s.entity];
             let sig;
             if (!e) sig = '|';
@@ -1103,19 +996,17 @@ class AtmosphericWeatherCard extends HTMLElement {
             this._params = newParams;
             this._stateInitialized = true;
             this._buildRenderState();
+            this._syncFc();
             this._tryInitialize();
             return;
         }
         this._handleWeatherChange(weatherState, newParams, hasNightChanged);
     }
-
     static async getConfigElement() {
-        if (!customElements.get("atmospheric-weather-card-editor")) {
-            await import("./atmospheric-weather-card-editor.js?v=2026.04");
-        }
+        if (!customElements.get("atmospheric-weather-card-editor")) 
+        { await import("./atmospheric-weather-card-editor.js?v=2026.0504"); }
         return document.createElement("atmospheric-weather-card-editor");
     }
-
     static getStubConfig() {
         return {
             weather_entity: 'weather.your_weather_entity',
@@ -1131,28 +1022,30 @@ class AtmosphericWeatherCard extends HTMLElement {
             top_position: 'top-left',
             chips_position: 'bottom-left',
             disable_chips: false,
-            top_font_size: '3em',
-            chips_font_size: '16px',
+            top_font_size: '2.5em',
+            top_text_padding: '4px',
+            chips_font_size: '14px',
+            chips_padding: '8px 12px',
+            chip_inner_gap: '10px',
             top_text_background: false,
             chips_background: true,
             tap_action: {
                 action: 'more-info',
                 entity: 'weather.your_weather_entity'
-            }
+            },
+            chips: [
+                { entity: 'sun.sun', name: 'Sun' }
+            ],
+            grid_options: { rows: 'auto' }
         };
     }
-
-    getCardSize() {
-        return 4;
-    }
-
+    getCardSize() { return 4; }
     getGridOptions() {
         return {
-            columns: 12, rows: 3,
+            columns: 12, rows: 'auto',
             min_columns: 2, min_rows: 2,
         };
     }
-
     // CONFIGURATION HELPERS
     _deriveChips(config) {
         const arr = config && config.chips;
@@ -1161,15 +1054,10 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         return [{}];
     }
-
     _resolveTextPositions() {
         const c = this._config || {};
-        return {
-            top:   c.top_position   || 'top-left',
-            chips: c.chips_position || 'bottom-left'
-        };
+        return { top: c.top_position || 'top-left', chips: c.chips_position || 'bottom-left' };
     }
-
     _resolveAxes(sunEntity, themeEntity, sysDark) {
         const mode = this._config.theme ? this._config.theme.toLowerCase() : null;
             const themeValid = themeEntity &&
@@ -1197,10 +1085,8 @@ class AtmosphericWeatherCard extends HTMLElement {
             : themeValid ? themeIsNight
             : sysDark !== undefined ? !!sysDark
             : sunEntity ? sunIsNight : false;
-
         return { isTimeNight, isThemeDark, isImageNight };
     }
-
     // ENTITY & STATE HELPERS
     _getEntityState(hass, entityId, defaultValue = null) {
         if (!hass || !entityId) return defaultValue;
@@ -1216,13 +1102,11 @@ class AtmosphericWeatherCard extends HTMLElement {
         this._entityErrors.delete(entityId);
         return entity;
     }
-
     _getEntityAttribute(entity, attribute, defaultValue = null) {
         if (!entity || !entity.attributes) return defaultValue;
         const value = entity.attributes[attribute];
         return value !== undefined && value !== null ? value : defaultValue;
     }
-
     _trackEntityError(entityId, errorType) {
         const now = Date.now();
         const existing = this._entityErrors.get(entityId);
@@ -1234,7 +1118,6 @@ class AtmosphericWeatherCard extends HTMLElement {
             }
         }
     }
-
     _resolveSensorValue(hass, entityId, attribute) {
         let value, unit = '', haFormatted = false;
         const sensor = hass.states[entityId];
@@ -1265,14 +1148,96 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         return { formatted, unit, sensor };
     }
-
+    // FORECAST DATA LAYER
+    _syncFc() {
+        if (!this._hass?.connection) return;
+        const needed = new Set();
+        for (const c of this._chips) if (c.forecast && c.entity) needed.add(`${c.entity}|${c.forecast === 'hourly' ? 'hourly' : 'daily'}`);
+        for (const [k, unsub] of this._fcSubs) if (!needed.has(k)) { unsub(); this._fcSubs.delete(k); this._fcData.delete(k); _fcCache.delete(k); }
+        for (const k of needed) if (!this._fcSubs.has(k)) this._startFcSub(k);
+    }
+    _startFcSub(key) {
+        const [entity, type] = key.split('|'), hass = this._hass;
+        if (!hass?.connection) return;
+        hass.connection.subscribeMessage(
+            (msg) => this._onFcData(key, msg.forecast ?? [], type === 'daily'),
+            { type: 'weather/subscribe_forecast', forecast_type: type, entity_id: entity }
+        ).then(unsub => {
+            if (!this._fcSubs.has(key) && !this._chips.some(c => c.forecast && c.entity === entity)) { unsub(); return; }
+            this._fcSubs.set(key, unsub);
+        }).catch(() => {
+            const poll = async () => {
+                try {
+                    const res = await this._hass?.callWS({ type: 'call_service', domain: 'weather', service: 'get_forecasts', target: { entity_id: entity }, service_data: { type }, return_response: true });
+                    this._onFcData(key, (res?.[entity] || res?.response?.[entity])?.forecast ?? [], type === 'daily');
+                } catch (_) {}
+            };
+            poll();
+            const timer = setInterval(poll, 30 * 60_000);
+            this._fcSubs.set(key, () => clearInterval(timer));
+        });
+    }
+    _onFcData(key, raw, daily) {
+        const processed = fcFilterPast(raw, daily), fp = fcFingerprint(processed);
+        if (this._fcData.get(key)?.fp === fp) return;
+        const entry = { processed, fp };
+        this._fcData.set(key, entry);
+        _fcCache.set(key, entry);
+        this._lastSnapshot = null;
+    }
+    /** Resolve a forecast chip's display value. */
+    _resolveFcValue(hass, chip, lang) {
+        const type = chip.forecast === 'hourly' ? 'hourly' : 'daily';
+        const offset = Math.max(0, parseInt(chip.forecast_offset, 10) || 0);
+        const fc = this._fcData.get(`${chip.entity}|${type}`)?.processed;
+        if (!fc?.length) return { formatted: '', unit: '', condition: null, datetime: null, loading: true };
+        const entry = fc[Math.min(offset, fc.length - 1)];
+        if (!entry) return { formatted: '', unit: '', condition: null, datetime: null, loading: true };
+        const attr = chip.attribute;
+        if (!attr || attr === 'condition') {
+            let label = entry.condition || '—';
+            if (entry.condition && typeof hass.localize === 'function') label = hass.localize(`component.weather.entity_component._.state.${entry.condition}`) || label;
+            return { formatted: label, unit: '', condition: entry.condition, datetime: entry.datetime };
+        }
+        const raw = entry[attr];
+        if (raw == null) return { formatted: 'N/A', unit: '', condition: entry.condition, datetime: entry.datetime };
+        const w = hass.states[chip.entity]?.attributes;
+        const unit = w?.[`${attr}_unit`] || (_FC_UNIT_MAP[attr] && w?.[_FC_UNIT_MAP[attr]]) || '';
+        let formatted = raw;
+        if (raw !== '' && !isNaN(parseFloat(raw)) && isFinite(raw)) {
+            const precision = chip.forecast_precision;
+            const fmt = (precision !== undefined && precision !== null)
+                ? this._getFcFmt(lang, precision)
+                : this._numFmt;
+            if (fmt) formatted = fmt.format(raw);
+        }
+        if (chip.forecast_show_min && attr === 'temperature' && entry.templow != null) {
+            const lowRaw = entry.templow;
+            let lowFmt = lowRaw;
+            if (lowRaw !== '' && !isNaN(parseFloat(lowRaw)) && isFinite(lowRaw)) {
+                const precision = chip.forecast_precision;
+                const fmt = (precision !== undefined && precision !== null)
+                    ? this._getFcFmt(lang, precision)
+                    : this._numFmt;
+                if (fmt) lowFmt = fmt.format(lowRaw);
+            }
+            formatted = `${lowFmt} – ${formatted}`;
+        }
+        return { formatted, unit, condition: entry.condition, datetime: entry.datetime };
+    }
+    _getFcFmt(lang, precision) {
+        const key = `${lang}|${precision}`;
+        if (this._fcFmtCache?.[0] === key) return this._fcFmtCache[1];
+        const fmt = new Intl.NumberFormat(lang, { maximumFractionDigits: precision, minimumFractionDigits: 0 });
+        this._fcFmtCache = [key, fmt];
+        return fmt;
+    }
     _cssVar(el, prop, val, key) {
         if (this[key] === val) return;
         this[key] = val;
         if (val) el.style.setProperty(prop, val);
         else el.style.removeProperty(prop);
     }
-
     _hasSnapshotChanged(prev, next) {
         // Explicit per-field comparison — V8 inlines and short-circuits.
         // Faster than for...in over an object literal in the hot path.
@@ -1291,7 +1256,6 @@ class AtmosphericWeatherCard extends HTMLElement {
             || prev.sysDark    !== next.sysDark
             || prev.lang       !== next.lang;
     }
-
     _calculateStatusImage(hass, isNight) {
         if (!this._hasStatusFeature) return null;
         const entityId = this._config.status_entity;
@@ -1305,7 +1269,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         return null;
     }
-
     // STATE COMPUTATION
     _buildRenderState() {
         const p = this._params;
@@ -1342,24 +1305,11 @@ class AtmosphericWeatherCard extends HTMLElement {
         if (isNight) celestialCloudPalette = isDark ? 'moon' : 'moonLight';
         else if (isDark) celestialCloudPalette = isStandalone ? 'darkDay' : 'moon';
         else celestialCloudPalette = p?.sunCloudWarm ? 'warm' : 'cool';
-        this._sunDiscGrad = this._sunDiscGradR = null;
-        this._haloGrad = this._haloGradR = this._haloGradColor = null;
-        this._diffuseGlowCache = null;
-        this._breathGlowCache = null;
-        this._moonCache = this._rainGrad = null;
-        this._renderState = {
-            isBadWeatherForComets,
-            isSevereWeather,
-            glow,
-            rainRgb,
-            cloudGlobalOp,
-            starMode,
-            celestialCloudPalette,
-            cp  // cloud palette
-        };
+        this._sunDiscGrad = this._sunDiscGradR = null; this._haloGrad = this._haloGradR = this._haloGradColor = null;
+        this._diffuseGlowCache = null; this._breathGlowCache = null; this._moonCache = this._rainGrad = null;
+        this._renderState = { isBadWeatherForComets, isSevereWeather, glow, rainRgb, cloudGlobalOp, starMode, celestialCloudPalette, cp };
         this._buildTextures();
     }
-
     _computeGlowParams(state, type, atm, p, goodWeather, isDark, isNight, isStandalone, isDarkDayImmersive) {
         if (isNight) return null;  // moon system handles night
         const isBad = !!(p?.dark) || BAD_WEATHER_TYPES.has(type);
@@ -1367,22 +1317,11 @@ class AtmosphericWeatherCard extends HTMLElement {
                                state === 'windy-variant' || state === 'fog';
         let active, showDisc, showHalo, drawPhase;
         if (goodWeather) {
-                    active = true;
-            showDisc = true;
-            showHalo = true;
-            drawPhase = 'bg';
+            active = true; showDisc = true; showHalo = true; drawPhase = 'bg';
         } else if (isStandalone) {
-            // Standalone relies on CSS background for atmosphere; only diffuse in light-overcast.
-            // Dark-theme standalone draws no JS glow (CSS gradient carries the mood).
-            active = !isDark && isOvercastType && !isBad;
-            showDisc = false;
-            showHalo = false;
-            drawPhase = 'mid-post';
+            active = !isDark && isOvercastType && !isBad; showDisc = false; showHalo = false; drawPhase = 'mid-post';
         } else {
-                    active = true;
-            showDisc = false;
-            showHalo = false;
-            drawPhase = isDark ? 'mid-pre' : 'mid-post';
+            active = true; showDisc = false; showHalo = false; drawPhase = isDark ? 'mid-pre' : 'mid-post';
         }
         if (!active) return null;
         const prof = p.glow || WEATHER_MAP['default'].glow;
@@ -1411,23 +1350,8 @@ class AtmosphericWeatherCard extends HTMLElement {
             const compOp = showDisc ? null : (isDark ? 'screen' : 'source-over');
             const cacheKey = showDisc ? null
             : `${color[0]}_${color[1]}_${color[2]}_${sizeMul.toFixed(2)}`;
-
-        return {
-            active: true,
-            showDisc,
-            showHalo,
-            drawPhase,
-            color,
-            intensity,
-            breathAmp,
-            breathPeriodMul,
-            sizeMul,
-            compOp,
-            cacheKey,
-            glowBoost,
-        };
+        return { active: true, showDisc, showHalo, drawPhase, color, intensity, breathAmp, breathPeriodMul, sizeMul, compOp, cacheKey, glowBoost };
     }
-
     _computeCloudPalette(isDark, isNight, isLight, p, type, atm, isStandalone) {
             let mood;
         if (isDark && isNight) {
@@ -1454,7 +1378,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         const isRainyBoost = isLight && !isDark && isBadType;
         const isStormOverride = isRainyBoost && (p?.thunder || STORM_TYPES.has(type));
             const rainyOpacityMul = (isRainyBoost && !isStormOverride && !this._isImmersive) ? 1.10 : 1.0;
-
         return {
             litR, litG, litB,
             midR, midG, midB,
@@ -1465,7 +1388,6 @@ class AtmosphericWeatherCard extends HTMLElement {
             rainyOpacityMul
         };
     }
-
     _handleWeatherChange(weatherState, newParams, hasNightChanged) {
         const oldParams = this._params;
         const typeChanged = !oldParams || oldParams.type !== newParams.type;
@@ -1492,7 +1414,6 @@ class AtmosphericWeatherCard extends HTMLElement {
             this._params = newParams;
         }
     }
-
     _applyGoldenHour(sunEntity, params) {
         if (!this._elements?.root) return;
         const root = this._elements.root;
@@ -1536,7 +1457,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         this._cssVar(root, '--gh-wash', (0.34 * i).toFixed(3), '_prevGhWash');
         this._cssVar(root, '--ambient-dim', (0.14 * i).toFixed(3), '_prevAmbDim');
     }
-
     _getCelestialPosition(w, h) {
         const mode = this._config.celestial_position;
         if (mode === 'dynamic_sun' || mode === 'dynamic_both') {
@@ -1558,7 +1478,6 @@ class AtmosphericWeatherCard extends HTMLElement {
             y: parseAxis(this._config.sun_moon_y_position, h, false, 100)
         };
     }
-
     _computeDynamicCelestial(mode) {
         const isNight = this._isTimeNight;
         if (mode === 'dynamic_sun' && isNight) return null;
@@ -1589,25 +1508,14 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         return { t, y01 };
     }
-
     // DOM & STYLES
     static _buildStyles() {
         return `
-            :host {
-                display: block;
-                width: 100%; position: relative;
-                background: transparent !important;
-                min-height: 200px;
-            }
+            :host { display: block; width: 100%; position: relative; background: transparent !important; min-height: 200px; }
             #card-root {
-                position: relative; width: 100%; height: 100%;
-                container-type: size;
-                z-index: var(--awc-stack-order, 1);
-                overflow: hidden; background: transparent;
-                display: block; transform: translateZ(0);
-                will-change: transform, opacity;
-                opacity: 0;
-                transition: opacity ${PERFORMANCE_CONFIG.REVEAL_TRANSITION_MS}ms ease-out;
+                position: relative; width: 100%; height: 100%; container-type: size; z-index: var(--awc-stack-order, 1);
+                overflow: hidden; background: transparent; display: block; transform: translateZ(0);
+                will-change: transform, opacity; opacity: 0; transition: opacity ${PERFORMANCE_CONFIG.REVEAL_TRANSITION_MS}ms ease-out;
                 &.clickable { cursor: pointer; }
                 &.clickable:active { transform: scale(0.98); transition: scale 0.3s ease-in-out; }
                 &.standalone { border-radius: var(--awc-card-border-radius, var(--ha-card-border-radius, 12px)); }
@@ -1619,10 +1527,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                 &.standalone {
                     box-shadow: var(--ha-card-box-shadow, 0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12));
                     background-color: transparent; overflow: hidden; background-size: 100% 100%;
-                    border-width: var(--awc-card-border-width, var(--ha-card-border-width, 0px));
-                    border-style: solid;
-                    border-color: var(--ha-card-border-color, var(--divider-color, #e0e0e0));
-                    box-sizing: border-box;
+                    border-width: var(--awc-card-border-width, var(--ha-card-border-width, 0px)); border-style: solid; border-color: var(--ha-card-border-color, var(--divider-color, #e0e0e0)); box-sizing: border-box;
                     &.scheme-day {
                         --bg-hl: 255,248,228; --bg-a1: 0.38; --bg-a2: 0.05; --bg-s2: 18%; --bg-s3: 42%;
                         --bg-c1: #164FA6; --bg-c2: #4480C8; --bg-c3: #8CB9DD; --bg-hz: 255,222,172; --bg-hz-a: 0.10;
@@ -1688,44 +1593,34 @@ class AtmosphericWeatherCard extends HTMLElement {
                 &.scheme-day {
                     --awc-text-color: var(--awc-text-day, #2c2c2e);
                     --awc-text-shadow-active: var(--awc-text-shadow-day, 0 1px 2px rgba(255, 255, 255, 0.9), 0 0 8px rgba(255, 255, 255, 0.7), 0 0 14px rgba(255, 255, 255, 0.5));
+                    --_chip-no-bg-shadow: var(--awc-chip-text-shadow, var(--awc-text-shadow-day, 0 1px 2px rgba(255, 255, 255, 0.85), 0 0 6px rgba(255, 255, 255, 0.5)));
                     --_text-bg: rgba(255, 255, 255, 0.25); --_text-bg-border: rgba(255, 255, 255, 0.2);
                     & .contrast { --_text-bg: rgba(255,255,255,0.52); --_contrast-shadow: inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.08); }
                     & .frosted { --_text-bg: rgba(255,255,255,0.18); --_text-bg-border: rgba(255,255,255,0.32); --_frosted-inset: inset 0 1px 2px rgba(0,0,0,0.12), inset 0 -1px 1px rgba(0,0,0,0.06); }
-                    & .format-stacked.frosted { --_stacked-icon-bg: rgba(255,255,255,0.48); --_stacked-icon-border: 1px solid rgba(255,255,255,0.22); }
-                    & .format-stacked.contrast { --_stacked-icon-bg: rgba(0,0,0,0.10); --_stacked-icon-shadow: inset 0 1px 2px rgba(0,0,0,0.10), inset 0 -1px 1px rgba(0,0,0,0.04); }
-                    & .format-stacked.theme { --_stacked-icon-bg: var(--secondary-background-color, rgba(0,0,0,0.06)); }
-                    & .chip.format-stacked:not(.with-bg) > :is(ha-icon, ha-state-icon, img.custom-bottom-icon) { background: var(--awc-stacked-icon-bg, rgba(0,0,0,0.08)); }
+                    & .has-icon-bg.with-bg.frosted { --_stacked-icon-border: 1px solid rgba(255,255,255,0.22); }
+                    & .has-icon-bg.with-bg.contrast { --_stacked-icon-shadow: 0 2px 6px rgba(0,0,0,0.18), 0 1px 2px rgba(0,0,0,0.12); }
                 }
                 &.scheme-night {
                     --awc-text-color: var(--awc-text-night, #ffffff);
                     --awc-text-shadow-active: var(--awc-text-shadow-night, 0 1px 3px rgba(0, 0, 0, 0.9), 0 2px 8px rgba(0, 0, 0, 0.7), 0 0 16px rgba(0, 0, 0, 0.5));
+                    --_chip-no-bg-shadow: var(--awc-chip-text-shadow, var(--awc-text-shadow-night, 0 1px 3px rgba(0, 0, 0, 0.9), 0 2px 6px rgba(0, 0, 0, 0.6)));
                     --_text-bg: rgba(0, 0, 0, 0.35); --_text-bg-border: rgba(255, 255, 255, 0.08);
                     & .contrast { --_text-bg: rgba(0,0,0,0.58); --_contrast-shadow: inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.3); }
                     & .frosted { --_text-bg: rgba(0,0,0,0.26); --_text-bg-border: rgba(255,255,255,0.10); --_frosted-inset: inset 0 1px 2px rgba(0,0,0,0.25), inset 0 -1px 1px rgba(0,0,0,0.15); }
-                    & .format-stacked.frosted { --_stacked-icon-bg: rgba(255,255,255,0.14); --_stacked-icon-border: 1px solid rgba(255,255,255,0.08); }
-                    & .format-stacked.contrast { --_stacked-icon-bg: rgba(255,255,255,0.12); --_stacked-icon-shadow: inset 0 1px 2px rgba(0,0,0,0.20), inset 0 -1px 1px rgba(0,0,0,0.10); }
-                    & .format-stacked.theme { --_stacked-icon-bg: rgba(255,255,255,0.09); }
-                    & .chip.format-stacked:not(.with-bg) > :is(ha-icon, ha-state-icon, img.custom-bottom-icon) { background: var(--awc-stacked-icon-bg, rgba(255,255,255,0.15)); }
+                    & .has-icon-bg.with-bg.frosted { --_stacked-icon-border: 1px solid rgba(255,255,255,0.08); }
+                    & .has-icon-bg.with-bg.contrast { --_stacked-icon-shadow: 0 2px 6px rgba(0,0,0,0.28), 0 1px 2px rgba(0,0,0,0.18); }
                 }
                 &.is-offscreen .awc-marquee-host .awc-marquee-track { animation-play-state: paused; }
             }
             canvas {
-                position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
-                filter: var(--awc-canvas-filter, var(--_canvas-filter, none));
-                --mask-v: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
-                --mask-h: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-                -webkit-mask-image: var(--mask-v), var(--mask-h); mask-image: var(--mask-v), var(--mask-h);
-                -webkit-mask-composite: source-in; mask-composite: intersect;
+                position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; filter: var(--awc-canvas-filter, var(--_canvas-filter, none));
+                --mask-v: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent); --mask-h: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+                -webkit-mask-image: var(--mask-v), var(--mask-h); mask-image: var(--mask-v), var(--mask-h); -webkit-mask-composite: source-in; mask-composite: intersect;
             }
-            #bg-canvas { -webkit-mask-image: none !important; mask-image: none !important; }
+            #fg-canvas { -webkit-mask-image: none !important; mask-image: none !important; }
             #image-slot {
-                position: absolute; top: 0; height: 100%; width: auto;
-                user-select: none; pointer-events: none; box-sizing: border-box;
-                & > img {
-                    display: block; height: 100%; width: auto; max-width: 100%;
-                    object-fit: contain; border: none; outline: none;
-                    &[src=""], &:not([src]) { display: none; visibility: hidden; }
-                }
+                position: absolute; top: 0; height: 100%; width: auto; user-select: none; pointer-events: none; box-sizing: border-box;
+                & > img { display: block; height: 100%; width: auto; max-width: 100%; object-fit: contain; border: none; outline: none; &[src=""], &:not([src]) { display: none; visibility: hidden; } }
             }
             #text-wrapper {
                 position: absolute; inset: 0; pointer-events: none; box-sizing: border-box; overflow: visible;
@@ -1740,130 +1635,115 @@ class AtmosphericWeatherCard extends HTMLElement {
                 & > .pos-bottom-right  { bottom: var(--_awc-pad-v, var(--awc-card-padding, 16px)); right: var(--_awc-pad-h, var(--awc-card-padding, 16px)); }
             }
             #temp-text, #chips-group {
-                position: absolute; pointer-events: none;
-                font-family: var(--ha-font-family, var(--paper-font-body1_-_font-family, sans-serif));
-                transition: color 0.3s ease, text-shadow 0.3s ease;
-                min-width: 0; max-width: calc(100% - var(--_awc-pad-h, var(--awc-card-padding, 16px)) * 2); box-sizing: border-box;
+                position: absolute; pointer-events: none; font-family: var(--ha-font-family, var(--paper-font-body1_-_font-family, sans-serif)); transition: color 0.3s ease, text-shadow 0.3s ease; min-width: 0; max-width: calc(100% - var(--_awc-pad-h, var(--awc-card-padding, 16px)) * 2); box-sizing: border-box;
             }
             #temp-text {
-                z-index: 10; font-size: var(--awc-top-font-size, clamp(24px, 11cqw, 52px));
-                font-weight: var(--awc-top-font-weight, 600); line-height: 1;
-                letter-spacing: -1px; display: flex; align-items: flex-start; gap: 6px;
-                white-space: nowrap; padding: var(--awc-top-padding, 0);
+                z-index: 10; font-size: var(--awc-top-font-size, clamp(24px, 11cqw, 52px)); font-weight: var(--awc-top-font-weight, 600); line-height: 1; letter-spacing: -1px; display: flex; align-items: flex-start; gap: 6px; white-space: nowrap; padding: var(--awc-top-padding, 0);
                 &.behind { z-index: -1; }
-                &.with-bg {
-                    --_bg: var(--awc-top-bg-color, var(--_text-bg));
-                    padding: var(--awc-top-padding, 8px 14px);
-                    border-radius: var(--awc-top-bg-radius, calc(var(--awc-card-border-radius, var(--ha-card-border-radius, 12px)) - 5px));
-                    width: fit-content; align-items: flex-start; text-shadow: none !important;
-                    &.frosted { backdrop-filter: var(--awc-top-bg-filter, blur(10px)); -webkit-backdrop-filter: var(--awc-top-bg-filter, blur(10px)); }
-                }
+                &.with-bg { --_bg: var(--awc-top-bg-color, var(--_text-bg)); padding: var(--awc-top-padding, 8px 14px); border-radius: var(--awc-top-bg-radius, calc(var(--awc-card-border-radius, var(--ha-card-border-radius, 12px)) - 5px)); width: fit-content; align-items: flex-start; text-shadow: none !important; &.frosted { backdrop-filter: var(--awc-top-bg-filter, blur(10px)); -webkit-backdrop-filter: var(--awc-top-bg-filter, blur(10px)); } }
             }
             #temp-text, #chips-row, .chip-free { color: var(--awc-text-color); }
             #temp-text { text-shadow: var(--awc-text-shadow-active); }
             .temp-val { overflow: visible; text-overflow: ellipsis; min-width: 0; }
             .temp-unit { font-size: 0.5em; font-weight: 500; padding-top: 6px; opacity: 0.7; flex-shrink: 0; }
             #chips-group {
-                pointer-events: auto; width: var(--awc-row-width, auto);
-                max-height: calc(100% - var(--_awc-pad-v, var(--awc-card-padding, 16px)) * 2);
+                pointer-events: auto; width: var(--awc-row-width, auto); box-sizing: border-box; padding: var(--awc-container-padding, 0); max-height: calc(100% - var(--_awc-pad-v, var(--awc-card-padding, 16px)) * 2);
                 &:has(.row-wrap) {
-                    --_pad-h: var(--_awc-pad-h, var(--awc-card-padding, 16px));
-                    width: var(--awc-row-width, auto); left: var(--_pad-h); right: var(--_pad-h);
-                    &.pos-top-center, &.pos-bottom-center { transform: none; }
-                    &.pos-center, &.pos-left, &.pos-right { transform: translateY(-50%); }
+                    --_pad-h: var(--_awc-pad-h, var(--awc-card-padding, 16px)); width: var(--awc-row-width, auto);
+                    &:is(.pos-top-left, .pos-left, .pos-bottom-left) { left: var(--_pad-h); right: var(--_pad-h); width: var(--awc-row-width, auto); }
+                    &:is(.pos-top-right, .pos-right, .pos-bottom-right) { right: var(--_pad-h); left: auto; }
+                    &.pos-top-center, &.pos-bottom-center { left: 50%; transform: translateX(-50%); }
+                    &.pos-center { left: 50%; transform: translate(-50%, -50%); }
+                    &.pos-left { transform: translateY(-50%); } &.pos-right { transform: translateY(-50%); }
                 }
-                &:has(.row-vertical-scroll:not(.has-visible-count)) { height: calc(100% - var(--_awc-pad-v, var(--awc-card-padding, 16px)) * 2); }
+                &:has(.row-horizontal-scroll) { height: var(--awc-row-height, auto); }
+                &:has(.row-vertical-scroll) { height: var(--awc-row-height, calc(100% - var(--_awc-pad-v, var(--awc-card-padding, 16px)) * 2)); }
+                &:has(.ind-v.active) { flex-direction: row; }
                 &.grouped {
                     border-radius: var(--awc-bottom-bg-radius, calc(var(--awc-card-border-radius, var(--ha-card-border-radius, 12px)) - 5px));
                     &.with-bg {
-                        --_bg: var(--awc-bottom-bg-color, var(--_text-bg)); padding: var(--awc-chips-padding, 8px 10px);
+                        --_bg: var(--awc-bottom-bg-color, var(--_text-bg));
                         &.contrast { background: var(--_bg); box-shadow: var(--awc-bg-shadow, var(--_contrast-shadow)); }
                         &.frosted { background: var(--_bg); border: var(--awc-bg-border, 1px solid var(--_text-bg-border)); box-shadow: var(--awc-bg-shadow, var(--_frosted-inset, none)); backdrop-filter: var(--awc-bottom-bg-filter, blur(10px)); -webkit-backdrop-filter: var(--awc-bottom-bg-filter, blur(10px)); }
                         &.theme { background: var(--ha-card-background, var(--card-background-color, var(--primary-background-color))); border: var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--divider-color)); box-shadow: var(--ha-card-box-shadow, none); }
-                        & > #chips-row .chip.with-bg { background: none; border: none; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; border-radius: 0; padding: 0; }
+                        & > #chips-row .chip.with-bg { background: none; border: none; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; border-radius: 0; padding: var(--awc-chips-padding, 0); }
+                        & > #chips-row.has-separator > .chip { position: relative; overflow: visible; }
+                        & > #chips-row.has-separator > .chip + .chip::before { content: ""; position: absolute; pointer-events: none; top: 0; bottom: 0; inset-inline-start: calc((var(--awc-bottom-gap, 8px) / -2) - (var(--awc-separator-width, 2px) / 2)); width: var(--awc-separator-width, 2px); background: var(--awc-separator-color, color-mix(in srgb, currentColor 10%, transparent)); }
+                        & > #chips-row.has-separator.row-vertical-scroll > .chip + .chip::before { top: calc((var(--awc-bottom-gap, 8px) / -2) - (var(--awc-separator-width, 2px) / 2)); bottom: auto; left: 0; right: 0; inset-inline-start: 0; width: auto; height: var(--awc-separator-width, 2px); }
                     }
                 }
             }
             #chips-row {
-                font-size: var(--awc-bottom-font-size, clamp(15px, 5cqmin, 26px));
-                font-weight: var(--awc-bottom-font-weight, 500); letter-spacing: 0.5px;
-                display: flex; align-items: center; gap: var(--awc-bottom-gap, 8px);
-                width: 100%; box-sizing: border-box; pointer-events: auto;
+                font-size: var(--awc-bottom-font-size, clamp(15px, 5cqmin, 26px)); font-weight: var(--awc-bottom-font-weight, 500); letter-spacing: 0.5px; display: flex; align-items: center; gap: var(--awc-bottom-gap, 8px); width: 100%; box-sizing: border-box; pointer-events: auto; border-radius: inherit;
                 &.row-wrap { flex-wrap: wrap; }
                 &.row-horizontal-scroll {
-                    flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
-                    scroll-snap-type: x proximity; scrollbar-width: none; -ms-overflow-style: none; pointer-events: auto;
+                    flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; height: 100%; scroll-snap-type: x proximity; scrollbar-width: none; -ms-overflow-style: none; pointer-events: auto;
                     &::-webkit-scrollbar { display: none; }
-                    &.has-visible-count {
-                        display: grid; grid-auto-flow: column; grid-auto-columns: var(--awc-chip-basis); scroll-snap-type: x mandatory;
-                        & > .chip { width: 100%; overflow: hidden; scroll-snap-align: start; }
-                    }
+                    &.has-visible-count { display: grid; grid-auto-flow: column; grid-auto-columns: var(--awc-chip-basis); scroll-snap-type: x mandatory; & > .chip { width: 100%; overflow: hidden; scroll-snap-align: start; } }
                 }
                 &.row-vertical-scroll {
-                    flex-direction: column; flex-wrap: nowrap; overflow-y: auto; overflow-x: hidden;
-                    scroll-snap-type: y proximity; scrollbar-width: none; -ms-overflow-style: none; pointer-events: auto;
-                    height: var(--awc-row-height, auto); max-height: var(--awc-row-max-height, 100%);
+                    flex-direction: column; flex-wrap: nowrap; overflow-y: auto; overflow-x: hidden; height: 100%; max-height: var(--awc-row-max-height, none); scroll-snap-type: y proximity; scrollbar-width: none; -ms-overflow-style: none; pointer-events: auto;
                     &::-webkit-scrollbar { display: none; }
-                    &.has-visible-count { scroll-snap-type: y mandatory; & > .chip { scroll-snap-align: start; } }
-                    &[class*="pos-bottom"] > :first-child { margin-block-start: auto; }
-                    &.pos-center > :first-child { margin-block-start: auto; }
-                    &.pos-center > :last-child { margin-block-end: auto; }
+                    &.has-visible-count { display: grid; grid-auto-flow: row; grid-auto-rows: var(--awc-chip-basis-v, auto); max-height: none; scroll-snap-type: y mandatory; & > .chip { height: 100%; overflow: hidden; scroll-snap-align: start; } }
+                    &:not(.has-visible-count)[class*="pos-bottom"] > :first-child { margin-block-start: auto; }
+                    &:not(.has-visible-count).pos-center > :first-child { margin-block-start: auto; }
+                    &:not(.has-visible-count).pos-center > :last-child { margin-block-end: auto; }
                     &[class*="right"] { align-items: flex-end; }
                     &.pos-top-center, &.pos-center, &.pos-bottom-center { align-items: center; }
                 }
-                &.row-grid { display: grid; grid-template-columns: repeat(var(--awc-row-columns, 1), minmax(0, 1fr)); }
+                &.row-grid { display: grid; grid-template-columns: repeat(var(--awc-row-columns, 1), minmax(0, 1fr)); align-items: stretch; row-gap: var(--awc-bottom-gap, 8px); column-gap: 0; }
                 &.row-wrap[class*="right"] { justify-content: flex-end; }
                 &.row-wrap.pos-top-center, &.row-wrap.pos-center, &.row-wrap.pos-bottom-center { justify-content: center; }
+                &:is(.row-grid, .full-width, .has-visible-count) { align-items: stretch; }
                 &:is(.row-grid, .full-width, .has-visible-count) > .chip { width: 100%; overflow: hidden; }
                 &:is(.row-grid, .full-width, .has-visible-count) > .chip > .chip-val { flex: 0 1 auto; }
                 &.align-center:is(.row-grid, .full-width, .has-visible-count) > .chip { justify-content: center; text-align: center; }
-                &.align-end:is(.row-grid, .full-width, .has-visible-count) > .chip { justify-content: flex-end; text-align: end; }
+                &.align-end:is(.row-grid, .full-width, .has-visible-count) > .chip { justify-content: flex-start; text-align: end; }
                 &.align-center {
                     & .chip:is(.format-stacked, .format-vertical) { justify-content: center; }
                     & .chip.format-stacked { grid-template-columns: auto minmax(0, auto); }
                     & .chip:is(.format-stacked, .format-vertical) .chip-name,
                     & .chip:is(.format-stacked, .format-vertical) .chip-val { align-self: auto; justify-self: start; text-align: start; }
                     & .chip.format-vertical .chip-name, & .chip.format-vertical .chip-val { justify-self: center; text-align: center; }
-                    & .chip:is(.format-stacked, .format-vertical):not(:has(ha-icon, ha-state-icon, img.custom-bottom-icon)) { justify-items: center; }
-                    & .chip:is(.format-stacked, .format-vertical):not(:has(ha-icon, ha-state-icon, img.custom-bottom-icon)) .chip-name,
-                    & .chip:is(.format-stacked, .format-vertical):not(:has(ha-icon, ha-state-icon, img.custom-bottom-icon)) .chip-val { justify-self: center; text-align: center; }
+                    & .chip:is(.format-stacked, .format-vertical):not(:has(.chip-icon)) { justify-items: center; }
+                    & .chip:is(.format-stacked, .format-vertical):not(:has(.chip-icon)) .chip-name,
+                    & .chip:is(.format-stacked, .format-vertical):not(:has(.chip-icon)) .chip-val { justify-self: center; text-align: center; }
                 }
                 &.align-end {
+                    & .chip:not(:is(.format-stacked, .format-vertical)) { flex-direction: row-reverse; & .chip-icon { margin-right: 0; margin-left: var(--awc-chip-gap, 6px); } & .chip-name { margin-right: 0; margin-left: 0.35em; } }
                     & .chip.format-stacked { grid-template: "name icon" auto "value icon" auto / minmax(0, auto) auto; justify-content: end; }
                     & .chip.format-vertical { justify-items: end; text-align: end; }
                     & .chip:is(.format-stacked, .format-vertical).with-bg { padding: var(--awc-chips-padding, 6px 6px 6px 10px); }
                     & .chip:is(.format-stacked, .format-vertical) .chip-name,
                     & .chip:is(.format-stacked, .format-vertical) .chip-val { justify-self: end; text-align: end; }
                 }
-                &[class*="pos-bottom"] > .chip:is(.format-stacked, .format-vertical) { align-content: end; }
-                &[class*="pos-top"] > .chip:is(.format-stacked, .format-vertical) { align-content: start; }
-                &.pos-center > .chip:is(.format-stacked, .format-vertical),
-                &.pos-left > .chip:is(.format-stacked, .format-vertical),
-                &.pos-right > .chip:is(.format-stacked, .format-vertical) { align-content: center; }
-                &[class*="pos-bottom"]:has(:is(.format-stacked, .format-vertical)) { align-items: flex-end; }
-                &[class*="pos-top"]:has(:is(.format-stacked, .format-vertical)) { align-items: flex-start; }
+                &.align-spread {
+                    & .chip:not(:is(.format-stacked, .format-vertical)) { flex: 1 1 0; & .chip-val { margin-left: auto; text-align: right; } }
+                    & .chip.format-stacked { flex: 1 1 0; grid-template-columns: auto 1fr; & .chip-val { text-align: right; justify-self: end; } }
+                }
+                &[class*="pos-bottom"]:not(.has-visible-count) > .chip:is(.format-stacked, .format-vertical) { align-content: end; }
+                &[class*="pos-top"]:not(.has-visible-count) > .chip:is(.format-stacked, .format-vertical) { align-content: start; }
+                &.pos-center:not(.has-visible-count) > .chip:is(.format-stacked, .format-vertical),
+                &.pos-left:not(.has-visible-count) > .chip:is(.format-stacked, .format-vertical),
+                &.pos-right:not(.has-visible-count) > .chip:is(.format-stacked, .format-vertical) { align-content: center; }
+                &.has-visible-count > .chip:is(.format-stacked, .format-vertical) { align-content: center; }
+                &[class*="pos-bottom"]:not(.has-visible-count):has(:is(.format-stacked, .format-vertical)) { align-items: flex-end; }
+                &[class*="pos-top"]:not(.has-visible-count):has(:is(.format-stacked, .format-vertical)) { align-items: flex-start; }
             }
             .chip {
-                display: flex; align-items: center; gap: var(--awc-chip-gap, 6px); flex: 0 0 auto;
-                min-width: 0; max-width: 100%; white-space: nowrap; box-sizing: border-box;
-                scroll-snap-align: start; padding: var(--awc-chips-padding, 0); cursor: pointer;
-                &:not(.with-bg) { opacity: var(--awc-bottom-opacity, 0.7); }
-                & > :is(ha-icon, ha-state-icon, img.custom-bottom-icon) { flex: 0 0 auto; }
-                & :is(ha-icon, ha-state-icon) { --mdc-icon-size: var(--awc-icon-size, 1.1em); opacity: 0.9; }
-                & > :is(ha-icon, ha-state-icon):first-child { filter: var(--awc-icon-drop-shadow, drop-shadow(0px 3px 6px rgba(0, 0, 0, 0.3))); }
-                & > :is(ha-icon, ha-state-icon, img.custom-bottom-icon):first-child { margin-left: -2px; }
-                & img.custom-bottom-icon { position: relative; height: var(--awc-icon-size, 1.5em); width: var(--awc-icon-size, 1.5em); object-fit: contain; flex-shrink: 0; filter: var(--awc-icon-drop-shadow, drop-shadow(0px 3px 6px rgba(0, 0, 0, 0.3))); }
-                & .chip-name { font-weight: var(--awc-chip-name-weight, 700); opacity: var(--awc-chip-name-opacity, 0.7); color: var(--awc-chip-name-color, inherit); flex: 0 0 auto; }
-                & .chip-val { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: inline-block; }
-                & .chip-val, & .chip-name { text-shadow: var(--awc-chip-text-shadow, 0 1px 2px rgba(0, 0, 0, 0.35)); }
+                display: flex; align-items: center; gap: 0; flex: 0 0 auto; min-width: 0; max-width: 100%; white-space: nowrap; box-sizing: border-box; scroll-snap-align: start; padding: var(--awc-chips-padding, 0); cursor: pointer;
+                &:not(.with-bg) { & .chip-name { opacity: var(--awc-bottom-opacity, 0.7); } }
+                &.has-icon-bg.frosted:not(.with-bg) { & .chip-name { opacity: var(--awc-bottom-opacity, 0.7); } }
+                & .chip-icon { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; margin-right: var(--awc-chip-gap, 6px); & :is(ha-icon, ha-state-icon) { --mdc-icon-size: var(--awc-icon-size, 1.1em); opacity: 0.9; } & img.custom-bottom-icon { display: block; height: var(--awc-icon-size, 1.1em); width: var(--awc-icon-size, 1.1em); object-fit: contain; } }
+                & .chip-name { font-size: var(--awc-chip-name-font-size, inherit); font-weight: var(--awc-chip-name-weight, 500); opacity: var(--awc-chip-name-opacity, 0.7); color: var(--awc-chip-name-color, inherit); flex: 0 0 auto; margin-right: 0.35em; }
+                & .chip-val { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: inline-block; font-weight: var(--awc-chip-value-weight, 700); }
+                &:not(:has(.chip-name)):not(:is(.format-stacked, .format-vertical)) .chip-val { font-weight: var(--awc-chip-value-weight, 500); }
+                & .chip-val, & .chip-name { text-shadow: var(--_chip-no-bg-shadow, 0 1px 2px rgba(0, 0, 0, 0.35)); }
                 &.overflow-clip .chip-val { text-overflow: clip; }
                 &.overflow-wrap { white-space: normal; & .chip-val { white-space: normal; overflow: visible; text-overflow: clip; } }
                 &.overflow-wrap:not(:is(.format-stacked, .format-vertical)) .chip-val { display: inline; }
                 &.with-bg {
-                    --_bg: var(--awc-bottom-bg-color, var(--_text-bg));
-                    padding: var(--awc-chips-padding, 5px 10px);
-                    border-radius: var(--awc-bottom-bg-radius, calc(var(--awc-card-border-radius, var(--ha-card-border-radius, 12px)) - 5px));
-                    align-items: center;
+                    --_bg: var(--awc-bottom-bg-color, var(--_text-bg)); padding: var(--awc-chips-padding, 5px 10px); border-radius: var(--awc-bottom-bg-radius, calc(var(--awc-card-border-radius, var(--ha-card-border-radius, 12px)) - 5px)); align-items: center;
                     & .chip-val, & .chip-name { text-shadow: none; }
                     &.contrast { background: var(--_bg); box-shadow: var(--awc-bg-shadow, var(--_contrast-shadow)); }
                     &.frosted { background: var(--_bg); border: var(--awc-bg-border, 1px solid var(--_text-bg-border)); box-shadow: var(--awc-bg-shadow, var(--_frosted-inset, none)); backdrop-filter: var(--awc-bottom-bg-filter, blur(10px)); -webkit-backdrop-filter: var(--awc-bottom-bg-filter, blur(10px)); }
@@ -1871,45 +1751,58 @@ class AtmosphericWeatherCard extends HTMLElement {
                 }
                 &:is(.format-stacked, .format-vertical) {
                     display: grid; align-items: center;
-                    & > :is(ha-icon, ha-state-icon, img.custom-bottom-icon) { grid-area: icon; margin-left: 0; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: var(--awc-stacked-icon-radius, calc(var(--awc-bottom-bg-radius, calc(var(--awc-card-border-radius, var(--ha-card-border-radius, 12px)) - 5px)) - var(--awc-stacked-icon-inset, 3px))); background: var(--awc-stacked-icon-bg, var(--_stacked-icon-bg, rgba(255,255,255,0.08))); }
-                    & > :is(ha-icon, ha-state-icon) { --mdc-icon-size: var(--awc-icon-size, 1.3em); opacity: 1; }
-                    & > img.custom-bottom-icon { height: 100%; width: auto; padding: 4px; box-sizing: border-box; filter: none; }
-                    & .chip-name { grid-area: name; max-width: 100%; font-size: var(--awc-stacked-name-size, 0.85em); font-weight: var(--awc-chip-name-weight, 500); letter-spacing: var(--awc-stacked-name-tracking, 0.03em); opacity: var(--awc-stacked-name-opacity, 0.6); color: var(--awc-stacked-name-color, inherit); line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; &:empty { display: none; } &:empty + .chip-val { grid-row: 1 / -1; align-self: center; } }
-                    &:has(.chip-name:empty) > :is(ha-icon, ha-state-icon, img.custom-bottom-icon) { background: none; border: none; box-shadow: none; aspect-ratio: unset; align-self: center; }
+                    & .chip-icon { grid-area: icon; margin: 0; aspect-ratio: 1; overflow: visible; border-radius: var(--awc-stacked-icon-radius, calc(var(--awc-bottom-bg-radius, calc(var(--awc-card-border-radius, var(--ha-card-border-radius, 12px)) - 5px)) - var(--awc-stacked-icon-inset, 3px))); padding: var(--awc-icon-padding, 4px); & :is(ha-icon, ha-state-icon) { --mdc-icon-size: var(--awc-icon-size, 1.3em); opacity: 1; } & img.custom-bottom-icon { height: var(--awc-icon-size, 1.3em); width: var(--awc-icon-size, 1.3em); } }
+                    & .chip-name { grid-area: name; max-width: 100%; font-size: var(--awc-chip-name-font-size, var(--awc-stacked-name-size, 0.85em)); font-weight: var(--awc-chip-name-weight, 500); letter-spacing: var(--awc-stacked-name-tracking, 0.03em); opacity: var(--awc-stacked-name-opacity, 0.6); color: var(--awc-stacked-name-color, inherit); line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0; &:empty { display: none; } &:empty + .chip-val { grid-row: 1 / -1; align-self: center; } }
+                    &:has(.chip-name:empty) .chip-icon { background: none; border: none; box-shadow: none; aspect-ratio: unset; align-self: center; }
                     & .chip-val { grid-area: value; font-weight: var(--awc-stacked-value-weight, 700); min-width: 0; max-width: 100%; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
                 }
                 &.format-stacked {
                     grid-template: "icon name" auto "icon value" auto / auto 1fr;
                     column-gap: var(--awc-stacked-column-gap, var(--awc-chip-gap, 10px)); row-gap: var(--awc-stacked-row-gap, 4px);
-                    & > :is(ha-icon, ha-state-icon, img.custom-bottom-icon) { align-self: stretch; }
+                    & .chip-icon { align-self: stretch; }
                     & .chip-name { align-self: end; } & .chip-val { align-self: start; }
-                    &:not(:has(:is(ha-icon, ha-state-icon, img.custom-bottom-icon))) { grid-template: "name" auto "value" auto / 1fr; column-gap: 0; }
+                    &:not(:has(.chip-icon)) { grid-template: "name" auto "value" auto / 1fr; column-gap: 0; }
                     &.with-bg { padding: var(--awc-chips-padding, 6px 10px 6px 6px); }
-                    &.frosted > :is(ha-icon, ha-state-icon, img.custom-bottom-icon) { border: var(--_stacked-icon-border, none); }
-                    &.contrast > :is(ha-icon, ha-state-icon, img.custom-bottom-icon) { box-shadow: var(--_stacked-icon-shadow, none); }
-                    &.theme > :is(ha-icon, ha-state-icon, img.custom-bottom-icon) { border: var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--divider-color)); }
-                    &:not(.with-bg) > :is(ha-icon, ha-state-icon, img.custom-bottom-icon) { border-radius: var(--awc-stacked-icon-radius, 6px); padding: 4px; }
                 }
                 &.format-vertical {
-                    grid-template: "icon" auto "name" auto "value" auto / 1fr; row-gap: var(--awc-stacked-row-gap, 4px);
-                    justify-items: center; text-align: center;
-                    & > :is(ha-icon, ha-state-icon, img.custom-bottom-icon) { align-self: center; justify-self: center; background: none; border: none; box-shadow: none; aspect-ratio: unset; border-radius: 0; overflow: visible; margin-bottom: var(--awc-vertical-icon-gap, 6px); }
-                    & > :is(ha-icon, ha-state-icon) { --mdc-icon-size: var(--awc-icon-size, 1.6em); }
-                    & .chip-name { align-self: auto; } & .chip-val { align-self: auto; }
+                    grid-template: "icon" auto "name" auto "value" auto / 1fr; row-gap: var(--awc-stacked-row-gap, 4px); justify-items: center; text-align: center;
+                    & .chip-name:empty + .chip-val { grid-row: value; align-self: center; }
+                    & .chip-icon { align-self: center; justify-self: center; margin: 0 0 var(--awc-vertical-icon-gap, var(--awc-chip-gap, 6px)) 0; & :is(ha-icon, ha-state-icon) { --mdc-icon-size: var(--awc-icon-size, 1.6em); } & img.custom-bottom-icon { height: var(--awc-icon-size, 1.6em); width: var(--awc-icon-size, 1.6em); } }
+                    & .chip-name { align-self: auto; margin: 0; } & .chip-val { align-self: auto; }
                     &.with-bg { padding: var(--awc-chips-padding, 6px 10px); }
+                    &:not(.has-icon-bg) .chip-icon { background: none; border: none; box-shadow: none; aspect-ratio: unset; border-radius: 0; overflow: visible; padding: var(--awc-icon-padding, 0); }
                 }
+                &.no-icon-bg .chip-icon { background: none !important; border: none !important; box-shadow: none !important; aspect-ratio: unset !important; border-radius: 0 !important; overflow: visible !important; padding: 0 !important; }
+                &.align-center:not(:is(.format-stacked, .format-vertical)) { justify-content: center; }
+                &.align-end:not(:is(.format-stacked, .format-vertical)) { flex-direction: row-reverse; & .chip-icon { margin-right: 0; margin-left: var(--awc-chip-gap, 6px); } & .chip-name { margin-right: 0; margin-left: 0.35em; } }
+                &.align-spread:not(:is(.format-stacked, .format-vertical)) { & .chip-val { margin-left: auto; } }
+                &.align-center.format-stacked { grid-template-columns: auto minmax(0, auto); justify-content: center; & .chip-name, & .chip-val { align-self: auto; justify-self: start; text-align: start; } }
+                &.align-end.format-stacked { grid-template: "name icon" auto "value icon" auto / minmax(0, auto) auto; justify-content: end; & .chip-name, & .chip-val { justify-self: end; text-align: end; } &.with-bg { padding: var(--awc-chips-padding, 6px 6px 6px 10px); } }
+                &.align-center.format-vertical { justify-items: center; text-align: center; }
+                &.align-end.format-vertical { justify-items: end; text-align: end; }
+                &.has-icon-bg .chip-icon { aspect-ratio: 1; overflow: visible; border-radius: var(--awc-stacked-icon-radius, calc(var(--awc-bottom-bg-radius, calc(var(--awc-card-border-radius, var(--ha-card-border-radius, 12px)) - 5px)) - var(--awc-stacked-icon-inset, 3px))); padding: var(--awc-icon-padding, 4px); }
+                &.has-icon-bg:not(:is(.format-stacked, .format-vertical)) .chip-icon { align-self: stretch; }
+                &.has-icon-bg.format-stacked .chip-icon { align-self: stretch; }
+                &.has-icon-bg:not(.with-bg) .chip-icon { background: var(--_bg, var(--awc-bottom-bg-color, var(--_text-bg))); border: var(--awc-bg-border, 1px solid var(--_text-bg-border, transparent)); box-shadow: var(--awc-icon-bg-shadow, var(--_frosted-inset, none)); }
+                &.has-icon-bg:not(.with-bg).frosted .chip-icon { backdrop-filter: var(--awc-bottom-bg-filter, blur(10px)); -webkit-backdrop-filter: var(--awc-bottom-bg-filter, blur(10px)); }
+                &.has-icon-bg:not(.with-bg).contrast .chip-icon { box-shadow: var(--awc-icon-bg-shadow, var(--_contrast-shadow, none)); border: none; }
+                &.has-icon-bg:not(.with-bg).theme .chip-icon { background: var(--ha-card-background, var(--card-background-color, var(--primary-background-color))); border: var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--divider-color)); box-shadow: var(--ha-card-box-shadow, none); }
+                &.has-icon-bg.with-bg .chip-icon { background: var(--awc-stacked-icon-bg, var(--ha-card-background, var(--card-background-color, var(--primary-background-color)))); border: none; box-shadow: var(--awc-icon-bg-shadow, 0 2px 6px rgba(0,0,0,0.18), 0 1px 2px rgba(0,0,0,0.12)); }
+                &.has-icon-bg.with-bg.frosted .chip-icon { border: var(--_stacked-icon-border, none); }
+                &.has-icon-bg.with-bg.contrast .chip-icon { box-shadow: var(--awc-icon-bg-shadow, var(--_stacked-icon-shadow, 0 2px 6px rgba(0,0,0,0.18), 0 1px 2px rgba(0,0,0,0.12))); }
+                &.has-icon-bg.with-bg.theme .chip-icon { border: var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--divider-color)); }
             }
-            .chip-free {
-                position: absolute; pointer-events: auto; z-index: 5;
-                font-family: var(--ha-font-family, var(--paper-font-body1_-_font-family, sans-serif));
-                font-size: var(--awc-bottom-font-size, clamp(15px, 5cqmin, 26px));
-                font-weight: var(--awc-bottom-font-weight, 500); letter-spacing: 0.5px;
+            .chip-free { position: absolute; pointer-events: auto; z-index: 5; font-family: var(--ha-font-family, var(--paper-font-body1_-_font-family, sans-serif)); font-size: var(--awc-bottom-font-size, clamp(15px, 5cqmin, 26px)); font-weight: var(--awc-bottom-font-weight, 500); letter-spacing: 0.5px; }
+            .chip.chip-loading { position: relative; & .chip-icon, & .chip-name, & .chip-val { visibility: hidden; } }
+            .chip-loader { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 5px; pointer-events: none; }
+            .chip-loader span { width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.2; animation: awc-dot-pulse 1.2s ease-in-out infinite; }
+            .chip-loader span:nth-child(2) { animation-delay: 0.2s; }
+            .chip-loader span:nth-child(3) { animation-delay: 0.4s; }
+            @keyframes awc-dot-pulse {
+                0%, 60%, 100% { opacity: 0.2; transform: scale(0.85); }
+                30%           { opacity: 0.7; transform: scale(1); }
             }
-            .chip .chip-val.awc-marquee-host {
-                overflow: hidden; text-overflow: clip; contain: layout style;
-                -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--awc-marquee-fade, 12px), #000 calc(100% - var(--awc-marquee-fade, 12px)), transparent 100%);
-                mask-image: linear-gradient(to right, transparent 0, #000 var(--awc-marquee-fade, 12px), #000 calc(100% - var(--awc-marquee-fade, 12px)), transparent 100%);
-            }
+            .chip .chip-val.awc-marquee-host { overflow: hidden; text-overflow: clip; contain: layout style; -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--awc-marquee-fade, 12px), #000 calc(100% - var(--awc-marquee-fade, 12px)), transparent 100%); mask-image: linear-gradient(to right, transparent 0, #000 var(--awc-marquee-fade, 12px), #000 calc(100% - var(--awc-marquee-fade, 12px)), transparent 100%); }
             .awc-marquee-track { display: inline-block; white-space: nowrap; }
             .awc-marquee-text { display: inline; }
             .awc-marquee-sep { display: inline-block; padding: 0 var(--awc-marquee-sep-gap, 0.4em); opacity: 0.5; &::before { content: var(--awc-marquee-separator, "•"); } }
@@ -1917,24 +1810,8 @@ class AtmosphericWeatherCard extends HTMLElement {
             .awc-marquee-host.awc-marquee-rtl .awc-marquee-track { animation-direction: reverse; }
             @keyframes awc-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
             @media (prefers-reduced-motion: reduce) { .awc-marquee-host.is-animating .awc-marquee-track { animation: none; will-change: auto; } }
-            #scroll-dots {
-                display: none; gap: var(--awc-dots-gap, 6px); justify-content: center;
-                margin-top: var(--awc-dots-spacing, calc(var(--awc-bottom-gap, 8px) * 1.5)); pointer-events: none;
-                &.active { display: flex; }
-                &.dots-free { position: absolute; pointer-events: none; z-index: 5; margin-top: 0; }
-            }
-            .scroll-dot {
-                width: var(--awc-dot-size, 6px); height: var(--awc-dot-size, 6px);
-                border-radius: 50%; background: currentColor;
-                opacity: var(--awc-dot-inactive-opacity, 0.3); transition: opacity 0.2s ease;
-                &.current { opacity: 1; }
-            }
             #custom-cards-wrapper {
-                position: absolute; inset: 0; box-sizing: border-box; z-index: 10;
-                display: none; flex-wrap: wrap; flex-direction: var(--awc-custom-cards-direction, row);
-                gap: var(--awc-custom-cards-gap, 8px); justify-content: var(--awc-custom-cards-justify, flex-start);
-                align-items: var(--awc-custom-cards-align, flex-start);
-                padding: var(--awc-card-padding, var(--ha-space-4, 16px)); pointer-events: none; overflow: visible;
+                position: absolute; inset: 0; box-sizing: border-box; z-index: 10; display: none; flex-wrap: wrap; flex-direction: var(--awc-custom-cards-direction, row); gap: var(--awc-custom-cards-gap, 8px); justify-content: var(--awc-custom-cards-justify, flex-start); align-items: var(--awc-custom-cards-align, flex-start); padding: var(--awc-card-padding, var(--ha-space-4, 16px)); pointer-events: none; overflow: visible;
                 &.has-cards { display: flex; }
                 & > * { pointer-events: auto; }
                 &.cc-text-left { justify-content: flex-start; }
@@ -1946,7 +1823,6 @@ class AtmosphericWeatherCard extends HTMLElement {
             }
 `;
     }
-
     _initDOM() {
         if (this._initialized) return;
         this._initialized = true;
@@ -1955,7 +1831,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         style.textContent = AtmosphericWeatherCard._buildStyles();
         const root = document.createElement('div');
         root.id = 'card-root';
-        root.innerHTML = `<canvas id="bg-canvas"></canvas><canvas id="mid-canvas"></canvas><div id="image-slot"><img /></div><canvas id="fg-canvas"></canvas><div id="text-wrapper"><div id="temp-text"><span class="temp-val"></span><span class="temp-unit"></span></div><div id="chips-group"><div id="chips-row"></div><div id="scroll-dots"></div></div></div><div id="custom-cards-wrapper"></div>`;
+        root.innerHTML = `<canvas id="bg-canvas"></canvas><canvas id="mid-canvas"></canvas><div id="image-slot"><img /></div><canvas id="fg-canvas"></canvas><div id="text-wrapper"><div id="temp-text"><span class="temp-val"></span><span class="temp-unit"></span></div><div id="chips-group"><div id="chips-row"></div></div></div><div id="custom-cards-wrapper"></div>`;
         this.shadowRoot.append(style, root);
         const q = (sel) => root.querySelector(sel);
         const bg = q('#bg-canvas'), mid = q('#mid-canvas'), fg = q('#fg-canvas');
@@ -1967,7 +1843,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         this._elements = {
             root, bg, mid, fg, img, imageSlot: q('#image-slot'),
             tempText: q('#temp-text'), chipsGroup: q('#chips-group'), chipsRow,
-            scrollDots: q('#scroll-dots'), textWrapper: q('#text-wrapper'),
+            textWrapper: q('#text-wrapper'),
             customCardsWrapper: q('#custom-cards-wrapper'),
             tempVal: q('.temp-val'), tempUnit: q('.temp-unit')
         };
@@ -1982,7 +1858,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         bgCtx.imageSmoothingQuality = midCtx.imageSmoothingQuality = fgCtx.imageSmoothingQuality = 'high';
         this._ctxs = { bg: bgCtx, mid: midCtx, fg: fgCtx };
     }
-
     _clearAllParticles() {
         if (this._cloudAtlases) {
             for (let i = 0; i < this._cloudAtlases.length; i++) {
@@ -1997,7 +1872,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         this._aurora = null;
         if (this._milkyWay) { this._milkyWay.width = 0; this._milkyWay = null; }
     }
-
     // DOM UPDATES
     _updateStandaloneStyles(isNight, newParams) {
         const root = this._elements.root;
@@ -2064,36 +1938,32 @@ class AtmosphericWeatherCard extends HTMLElement {
         const weatherClass = ATMOSPHERE_CSS[atm];
         if (weatherClass) root.classList.add(weatherClass);
     }
-
-    _updateTextElements(hass, wEntity, lang, weatherState = 'default') {
-        if (!wEntity) return;
+    _applyConfigStyles() {
         if (!this._elements?.tempText || !this._elements?.chipsRow) return;
-        const showText = this._config.disable_text !== true;
-        const showTop = this._config.disable_top_text !== true;
-        const showBottom = this._config.disable_chips !== true;
-        const showBottomBg = this._config.chips_background === true;
-        const showTopBg = this._config.top_text_background === true;
-        const bgStyle = ['contrast', 'frosted', 'theme'].includes((this._config.background_style || '').toLowerCase()) ? this._config.background_style.toLowerCase() : 'frosted';
-        const chipFormatRaw = (this._config.chip_format || 'inline').toLowerCase();
-        const chipFormat = chipFormatRaw === 'stacked' ? 'stacked' : chipFormatRaw === 'vertical' ? 'vertical' : 'inline';
+        const cfg = this._config;
+        const showText = cfg.disable_text !== true;
+        const showTop = cfg.disable_top_text !== true;
+        const showBottom = cfg.disable_chips !== true;
+        const showBottomBg = cfg.chips_background === true;
+        const showTopBg = cfg.top_text_background === true;
+        const bgStyle = ['contrast', 'frosted', 'theme'].includes((cfg.background_style || '').toLowerCase()) ? cfg.background_style.toLowerCase() : 'frosted';
         const root = this._elements.root;
-        this._cssVar(root, '--awc-top-font-size', this._config.top_font_size || '', '_prevTopFS');
-        this._cssVar(root, '--awc-bottom-font-size', this._config.chips_font_size || '', '_prevBottomFS');
-        this._cssVar(root, '--awc-card-padding', this._config.card_padding || '', '_prevCardPadding');
-        const padRaw = (this._config.card_padding || '').toString().trim();
+        this._cssVar(root, '--awc-top-font-size', cfg.top_font_size || '', '_prevTopFS');
+        this._cssVar(root, '--awc-bottom-font-size', cfg.chips_font_size || '', '_prevBottomFS');
+        this._cssVar(root, '--awc-chip-name-font-size', cfg.chips_name_font_size || '', '_prevChipNameFS');
+        this._cssVar(root, '--awc-card-padding', cfg.card_padding || '', '_prevCardPadding');
+        const padRaw = (cfg.card_padding || '').toString().trim();
         if (padRaw && this._prevCardPadParsed !== padRaw) {
             this._prevCardPadParsed = padRaw;
             const parts = padRaw.split(/\s+/);
-            const padV = parts[0] || '';
-            const padH = parts[1] || parts[0] || '';
-            root.style.setProperty('--_awc-pad-v', padV);
-            root.style.setProperty('--_awc-pad-h', padH);
+            root.style.setProperty('--_awc-pad-v', parts[0] || '');
+            root.style.setProperty('--_awc-pad-h', parts[1] || parts[0] || '');
         } else if (!padRaw && this._prevCardPadParsed) {
             this._prevCardPadParsed = '';
             root.style.removeProperty('--_awc-pad-v');
             root.style.removeProperty('--_awc-pad-h');
         }
-        const behind = this._config.top_text_behind_weather === true;
+        const behind = cfg.top_text_behind_weather === true;
         const showBg = showTopBg && !behind;
         const configSig = `${showText}|${showTop}|${showBottom}|${behind}|${showTopBg}|${showBg}|${bgStyle}`;
         if (this._prevConfigSig !== configSig) {
@@ -2107,48 +1977,58 @@ class AtmosphericWeatherCard extends HTMLElement {
             tt.classList.toggle('with-bg', showBg);
             for (const s of ['contrast', 'frosted', 'theme']) tt.classList.toggle(s, showBg && bgStyle === s);
         }
-            for (const [prop, key, cache] of [
+        for (const [prop, key, cache] of [
             ['--awc-row-width', 'chips_width', '_prevRowWidth'],
             ['--awc-row-height', 'chips_height', '_prevRowHeight'],
             ['--awc-chips-padding', 'chips_padding', '_prevChipPad'],
+            ['--awc-container-padding', 'chips_container_padding', '_prevContainerPad'],
             ['--awc-top-padding', 'top_text_padding', '_prevTopPad'],
             ['--awc-bottom-gap', 'chip_gap', '_prevChipsGap'],
             ['--awc-chip-gap', 'chip_inner_gap', '_prevChipGap'],
-        ]) this._cssVar(root, prop, (this._config[key] || '').toString().trim(), cache);
-        const cols = parseInt(this._config.chips_columns, 10);
+            ['--awc-icon-size', 'chip_icon_width', '_prevChipIconWidth'],
+            ['--awc-icon-padding', 'chip_icon_padding', '_prevChipIconPad'],
+        ]) this._cssVar(root, prop, (cfg[key] || '').toString().trim(), cache);
+        const cols = parseInt(cfg.chips_columns, 10);
         this._cssVar(root, '--awc-row-columns', Number.isFinite(cols) && cols > 0 ? String(cols) : '', '_prevRowCols');
-            let rowLayout = (this._config.chips_layout || 'wrap').toString().toLowerCase();
+        let rowLayout = (cfg.chips_layout || 'wrap').toString().toLowerCase();
         if (rowLayout === 'scroll') rowLayout = 'horizontal-scroll';
-        const isGrouped = this._config.chips_grouped === true;
+        const isGrouped = cfg.chips_grouped === true;
         const bt = this._elements.chipsRow;
         const cg = this._elements.chipsGroup;
         if (this._prevRowOverflow !== rowLayout) {
             this._prevRowOverflow = rowLayout;
             for (const m of ['horizontal-scroll', 'wrap', 'grid', 'vertical-scroll']) bt.classList.toggle('row-' + m, rowLayout === m);
         }
-        const visCount = parseInt(this._config.chips_visible, 10);
+        const visCount = parseInt(cfg.chips_visible, 10);
         const hasVis = Number.isFinite(visCount) && visCount > 0;
         const visKey = `${hasVis}|${visCount}|${rowLayout}`;
         if (this._prevVisKey !== visKey) {
             this._prevVisKey = visKey;
             bt.classList.toggle('has-visible-count', hasVis);
             if (hasVis) {
-                const gapVal = (this._config.chip_gap || '8px').toString().trim() || '8px';
-                const totalGap = `${visCount - 1} * ${gapVal}`;
-                bt.style.setProperty('--awc-chip-basis', `calc((100% - ${totalGap}) / ${visCount})`);
+                const gapVal = (cfg.chip_gap || '8px').toString().trim() || '8px';
+                bt.style.setProperty('--awc-chip-basis', `calc((100% - ${visCount - 1} * ${gapVal}) / ${visCount})`);
+                if (rowLayout === 'vertical-scroll') {
+                    bt.style.setProperty('--awc-chip-basis-v', `calc((100% - ${visCount - 1} * ${gapVal}) / ${visCount})`);
+                } else {
+                    bt.style.removeProperty('--awc-chip-basis-v');
+                }
             } else {
                 bt.style.removeProperty('--awc-chip-basis');
+                bt.style.removeProperty('--awc-chip-basis-v');
             }
-            if (hasVis && rowLayout === 'vertical-scroll') {
+            if (!hasVis && rowLayout === 'vertical-scroll') {
                 requestAnimationFrame(() => this._computeVerticalVisHeight());
-            } else {
+            } else if (rowLayout !== 'vertical-scroll' || hasVis) {
                 bt.style.removeProperty('--awc-row-max-height');
             }
         }
-        const groupedKey = `${isGrouped}|${showBottomBg}|${bgStyle}`;
+        const hasSeparator = isGrouped && showBottomBg && cfg.chips_separator === true;
+        const groupedKey = `${isGrouped}|${showBottomBg}|${bgStyle}|${hasSeparator}`;
         if (this._prevGrouped !== groupedKey) {
             this._prevGrouped = groupedKey;
             cg.classList.toggle('grouped', isGrouped);
+            bt.classList.toggle('has-separator', hasSeparator);
             if (isGrouped && showBottomBg) {
                 cg.classList.add('with-bg');
                 for (const s of ['contrast', 'frosted', 'theme']) cg.classList.toggle(s, bgStyle === s);
@@ -2156,16 +2036,31 @@ class AtmosphericWeatherCard extends HTMLElement {
                 cg.classList.remove('with-bg', 'contrast', 'frosted', 'theme');
             }
         }
-        const fullWidth = this._config.chips_full_width === true;
+        const fullWidth = cfg.chips_full_width === true;
         if (this._prevFullWidth !== fullWidth) {
             this._prevFullWidth = fullWidth;
             bt.classList.toggle('full-width', fullWidth);
         }
-        const align = (this._config.chips_align || 'start').toString().toLowerCase();
+        const align = (cfg.chips_align || 'start').toString().toLowerCase();
         if (this._prevChipAlign !== align) {
             this._prevChipAlign = align;
-            for (const a of ['start', 'center', 'end']) bt.classList.toggle(`align-${a}`, align === a);
+            for (const a of ['start', 'center', 'end', 'spread']) bt.classList.toggle(`align-${a}`, align === a);
         }
+    }
+    _updateTextElements(hass, wEntity, lang, weatherState = 'default') {
+        if (!wEntity) return;
+        if (!this._elements?.tempText || !this._elements?.chipsRow) return;
+        this._applyConfigStyles();
+        const cfg = this._config;
+        const showBottomBg = cfg.chips_background === true;
+        const bgStyle = ['contrast', 'frosted', 'theme'].includes((cfg.background_style || '').toLowerCase()) ? cfg.background_style.toLowerCase() : 'frosted';
+        const chipFormatRaw = (cfg.chip_format || 'inline').toLowerCase();
+        const chipFormat = chipFormatRaw === 'stacked' ? 'stacked' : chipFormatRaw === 'vertical' ? 'vertical' : 'inline';
+        let rowLayout = (cfg.chips_layout || 'wrap').toString().toLowerCase();
+        if (rowLayout === 'scroll') rowLayout = 'horizontal-scroll';
+        const visCount = parseInt(cfg.chips_visible, 10);
+        const hasVis = Number.isFinite(visCount) && visCount > 0;
+        const bt = this._elements.chipsRow;
         let topVal, topUnit;
         const hasCustomTop = !!this._config.top_text_sensor;
         if (hasCustomTop) {
@@ -2189,6 +2084,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             this._numFmt = new Intl.NumberFormat(lang, { maximumFractionDigits: 1, minimumFractionDigits: 0 });
         }
         if (isTopNumeric) fmtTop = this._numFmt.format(topVal);
+        if (cfg.top_unit_format !== undefined) topUnit = cfg.top_unit_format;
         if (this._lastTempVal !== fmtTop) {
             this._lastTempVal = fmtTop;
             this._elements.tempVal.textContent = fmtTop;
@@ -2208,12 +2104,10 @@ class AtmosphericWeatherCard extends HTMLElement {
             this._lastLocStr = rowSig;
             bt.innerHTML = rowChips.map(r => r.html).join('');
             this._refreshMarqueeObservation();
-            if (hasVis && rowLayout === 'vertical-scroll') {
-                requestAnimationFrame(() => this._computeVerticalVisHeight());
-            }
+            if (!hasVis && rowLayout === 'vertical-scroll') { requestAnimationFrame(() => this._computeVerticalVisHeight()); }
             this._nativeIconCache = null;
         }
-        if (!hasVis || rowLayout !== 'vertical-scroll') {
+        if (rowLayout !== 'vertical-scroll' || hasVis) {
             if (this._prevHadVertVis) { bt.style.removeProperty('--awc-row-max-height'); this._prevHadVertVis = false; }
         } else {
             this._prevHadVertVis = true;
@@ -2313,30 +2207,29 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         this._updateScrollDots(rowLayout, rowChips.length);
     }
-
     _renderChip(chip, idx, hass, weatherState, lang, rowBg, bgStyle, chipFormat) {
         if (!chip.entity) return { html: '', sig: `skip-${idx}`, sensorObj: null, iconStrategy: 'static', showIcon: false, isFree: false, posAnchor: '', posX: '0', posY: '0' };
         const showIcon = chip.disable_icon !== true;
         const isEnhanced = chipFormat === 'stacked' || chipFormat === 'vertical';
-        let sensorObj = null;
-        let iconStrategy = 'static';
-        let iconValue = 'mdi:information-outline';
-        const resolved = this._resolveSensorValue(hass, chip.entity, chip.attribute);
-        const formatted = resolved.formatted;
-        const unit = resolved.unit;
-        const sensor = hass.states[chip.entity];
-        if (sensor) {
-            if (chip.attribute) {
-                iconValue = WEATHER_ATTR_ICONS[chip.attribute] || 'mdi:information-outline';
-            } else {
-                sensorObj = sensor;
-                iconStrategy = 'native';
-            }
+        let sensorObj = null, iconStrategy = 'static', iconValue = 'mdi:information-outline', formatted, unit;
+        const isForecast = !!chip.forecast;
+        let fcCondition = null, fcDatetime = null, fcLoading = false;
+        if (isForecast) {
+            const fc = this._resolveFcValue(hass, chip, lang);
+            formatted = fc.formatted; unit = fc.unit; fcCondition = fc.condition; fcDatetime = fc.datetime;
+            fcLoading = !!fc.loading;
+            iconValue = fcCondition ? (WEATHER_ICONS[fcCondition] || WEATHER_ICONS['default']) : iconValue;
+            if (chip.attribute && chip.attribute !== 'condition') iconValue = FORECAST_ATTR_ICONS[chip.attribute] || iconValue;
+        } else {
+            const resolved = this._resolveSensorValue(hass, chip.entity, chip.attribute);
+            formatted = resolved.formatted; unit = resolved.unit;
+            const sensor = hass.states[chip.entity];
+            if (sensor) { if (chip.attribute) iconValue = WEATHER_ATTR_ICONS[chip.attribute] || 'mdi:information-outline'; else { sensorObj = sensor; iconStrategy = 'native'; } }
         }
         const configIcon = chip.icon;
         const configPath = chip.icon_path;
         if (configIcon) {
-            const resolvedBase = (configIcon === 'weather') ? weatherState : configIcon;
+            const resolvedBase = (configIcon === 'weather') ? (isForecast && fcCondition ? fcCondition : weatherState) : configIcon;
             if (configPath) {
                 iconStrategy = 'image';
                 const basePath = configPath.endsWith('/') ? configPath : configPath + '/';
@@ -2347,6 +2240,8 @@ class AtmosphericWeatherCard extends HTMLElement {
                 iconValue = (configIcon === 'weather') ? (WEATHER_ICONS[resolvedBase] || WEATHER_ICONS['default']) : configIcon;
             }
         }
+        const hasUnitFormat = chip.unit_format !== undefined;
+        if (hasUnitFormat) unit = chip.unit_format;
         const overflowMode = (chip.overflow || 'ellipsis').toString().toLowerCase().trim();
         const isMarquee = overflowMode === 'marquee';
         const marqueeSpeed = Math.max(5, parseFloat(chip.marquee_speed) || 30);
@@ -2354,6 +2249,10 @@ class AtmosphericWeatherCard extends HTMLElement {
         const width = (chip.width || '').toString().trim();
         let name = (chip.name || '').toString().trim();
         let nameSig = name;
+        if (!name && !chip.name_sensor && isForecast && fcDatetime) {
+            name = fcLabel(fcDatetime, chip.forecast !== 'hourly', lang);
+            nameSig = `fc:${fcDatetime}`;
+        }
         if (chip.name_sensor) {
             const nameResolved = this._resolveSensorValue(hass, chip.name_sensor, chip.name_attribute);
             const nameUnit = nameResolved.unit;
@@ -2362,16 +2261,18 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         let iconHtml = '';
         if (showIcon) {
+            let inner;
             if (iconStrategy === 'native') {
-                iconHtml = '<ha-state-icon></ha-state-icon>';
+                inner = '<ha-state-icon></ha-state-icon>';
             } else if (iconStrategy === 'image') {
-                iconHtml = `<img src="${iconValue}" class="custom-bottom-icon" />`;
+                inner = `<img src="${iconValue}" class="custom-bottom-icon" />`;
             } else {
-                iconHtml = `<ha-icon icon="${iconValue}"></ha-icon>`;
+                inner = `<ha-icon icon="${iconValue}"></ha-icon>`;
             }
+            iconHtml = `<span class="chip-icon">${inner}</span>`;
         }
         const nameHtml = (name || isEnhanced) ? `<span class="chip-name">${name}</span>` : '';
-        const inner = unit ? `${formatted} ${unit}` : `${formatted}`;
+        const inner = hasUnitFormat ? `${formatted}${unit}` : (unit ? `${formatted} ${unit}` : `${formatted}`);
         const valHtml = isMarquee
             ? `<span class="chip-val awc-marquee-host" data-speed="${marqueeSpeed}" data-rtl="${marqueeRtl ? 1 : 0}"><span class="awc-marquee-track"><span class="awc-marquee-text">${inner}</span></span></span>`
             : `<span class="chip-val">${inner}</span>`;
@@ -2379,20 +2280,38 @@ class AtmosphericWeatherCard extends HTMLElement {
         const posAnchor = isFree ? (chip.position_anchor || 'top-left') : '';
         const posX = isFree ? String(chip.position_x || 0).trim() : '0';
         const posY = isFree ? String(chip.position_y || 0).trim() : '0';
+        const effectiveFormat = chip.chip_format ? chip.chip_format : chipFormat;
+        const effectiveBg = chip.chip_background !== undefined ? chip.chip_background : rowBg;
         const classes = ['chip', `overflow-${overflowMode}`];
-        if (chipFormat === 'stacked') classes.push('format-stacked');
-        else if (chipFormat === 'vertical') classes.push('format-vertical');
-        if (rowBg) {
+        if (fcLoading) classes.push('chip-loading');
+        if (effectiveFormat === 'stacked') classes.push('format-stacked');
+        else if (effectiveFormat === 'vertical') classes.push('format-vertical');
+        const iconBg = chip.icon_bg !== undefined ? chip.icon_bg : this._config.chip_icon_bg;
+        if (iconBg === true) classes.push('has-icon-bg');
+        else if (iconBg === false) classes.push('no-icon-bg');
+        if (effectiveBg) {
             classes.push('with-bg');
             if (bgStyle === 'contrast' || bgStyle === 'frosted' || bgStyle === 'theme') classes.push(bgStyle);
+        } else if (iconBg === true || (iconBg !== false && this._config.chip_icon_bg === true)) {
+            if (bgStyle === 'contrast' || bgStyle === 'frosted' || bgStyle === 'theme') classes.push(bgStyle);
         }
-        const style = width ? ` style="width:${width};max-width:${width}"` : '';
-        const html = `<div class="${classes.join(' ')}" data-idx="${idx}"${style}>${iconHtml}${nameHtml}${valHtml}</div>`;
-        const sig = `${idx}|${formatted}|${unit}|${iconValue}|${iconStrategy}|${showIcon}|${overflowMode}|${marqueeSpeed}|${marqueeRtl}|${width}|${nameSig}|${rowBg}|${bgStyle}|${chipFormat}|${isFree}|${posAnchor}|${posX}|${posY}`;
-
+        const inlineStyles = [];
+        if (width) { inlineStyles.push(`width:${width};max-width:${width}`); }
+        if (chip.chip_bg_color) inlineStyles.push(`--awc-bottom-bg-color:${chip.chip_bg_color}`);
+        if (chip.chip_padding !== undefined && chip.chip_padding !== '') inlineStyles.push(`padding:${chip.chip_padding}`);
+        if (chip.font_size) inlineStyles.push(`font-size:${chip.font_size};--awc-bottom-font-size:${chip.font_size}`);
+        if (chip.name_font_size) inlineStyles.push(`--awc-chip-name-font-size:${chip.name_font_size}`);
+        if (chip.inner_gap) inlineStyles.push(`--awc-chip-gap:${chip.inner_gap}`);
+        if (chip.icon_size) inlineStyles.push(`--awc-icon-size:${chip.icon_size}`);
+        if (chip.icon_padding) inlineStyles.push(`--awc-icon-padding:${chip.icon_padding}`);
+        const chipAlignClass = chip.chip_align || '';
+        if (chipAlignClass) classes.push(`align-${chipAlignClass}`);
+        const style = inlineStyles.length ? ` style="${inlineStyles.join(';')}"` : '';
+        const loaderHtml = fcLoading ? '<div class="chip-loader"><span></span><span></span><span></span></div>' : '';
+        const html = `<div class="${classes.join(' ')}" data-idx="${idx}"${style}>${loaderHtml}${iconHtml}${nameHtml}${valHtml}</div>`;
+        const sig = `${idx}|${formatted}|${unit}|${iconValue}|${iconStrategy}|${showIcon}|${overflowMode}|${marqueeSpeed}|${marqueeRtl}|${width}|${nameSig}|${effectiveBg}|${bgStyle}|${effectiveFormat}|${iconBg ?? ''}|${isFree}|${posAnchor}|${posX}|${posY}|${chip.chip_bg_color || ''}|${chip.chip_padding ?? ''}|${chip.font_size || ''}|${chip.name_font_size || ''}|${chip.inner_gap || ''}|${chip.icon_size || ''}|${chip.icon_padding || ''}|${chipAlignClass}`;
         return { html, sig, sensorObj, iconStrategy, showIcon, isFree, posAnchor, posX, posY };
     }
-
     _updateImage(hass, isNight, weatherState = 'default') {
         if (!this._elements?.img || !this._elements?.imageSlot) return;
         const img = this._elements.img;
@@ -2407,100 +2326,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         slot.hidden = !img.getAttribute('src');
     }
-
-    _updateScrollDots(layout, chipCount) {
-        const dotsEl = this._elements?.scrollDots;
-        if (!dotsEl) return;
-        const isScroll = layout === 'horizontal-scroll' || layout === 'vertical-scroll';
-        const visCount = parseInt(this._config.chips_visible, 10);
-        const hasVis = Number.isFinite(visCount) && visCount > 0;
-        const showDots = this._config.chips_scroll_dots === true && isScroll && hasVis && chipCount > visCount;
-        if (!showDots) {
-            if (this._prevDotsSig) {
-                this._prevDotsSig = null;
-                dotsEl.classList.remove('active');
-                this._teardownDotsObserver();
-            }
-            return;
-        }
-        const pageCount = Math.ceil(chipCount / visCount);
-        const dotsCfg = this._config.chips_scroll_dots_position || '';
-        const isFree = dotsCfg.toLowerCase() === 'custom';
-        const spacing = (this._config.chips_scroll_dots_spacing || '').toString().trim();
-        const anchor = this._config.chips_scroll_dots_anchor || 'bottom-center';
-        const ox = this._config.chips_scroll_dots_x || '';
-        const oy = this._config.chips_scroll_dots_y || '';
-        const sig = `${pageCount}|${isFree}|${anchor}|${ox}|${oy}|${spacing}|${layout}`;
-        if (this._prevDotsSig === sig) return;
-        this._prevDotsSig = sig;
-        if (dotsEl.childElementCount !== pageCount) {
-            dotsEl.innerHTML = '';
-            for (let i = 0; i < pageCount; i++) {
-                const dot = document.createElement('span');
-                dot.className = 'scroll-dot' + (i === 0 ? ' current' : '');
-                dotsEl.append(dot);
-            }
-        }
-        dotsEl.classList.add('active');
-        dotsEl.classList.toggle('dots-free', isFree);
-        if (isFree) {
-            const [anchorV, anchorH] = parseAnchor(anchor);
-            const pox = parseCSSVal(ox);
-            const poy = parseCSSVal(oy);
-            dotsEl.style.left = dotsEl.style.right = dotsEl.style.top = dotsEl.style.bottom = '';
-            dotsEl.style.transform = '';
-            const tx = [];
-            if (anchorH === 'left') dotsEl.style.left = pox;
-            else if (anchorH === 'right') dotsEl.style.right = pox;
-            else { dotsEl.style.left = '50%'; tx.push('translateX(-50%)'); }
-            if (anchorV === 'top') dotsEl.style.top = poy;
-            else if (anchorV === 'bottom') dotsEl.style.bottom = poy;
-            else { dotsEl.style.top = '50%'; tx.push('translateY(-50%)'); }
-            if (tx.length) dotsEl.style.transform = tx.join(' ');
-            if (dotsEl.parentElement !== this._elements.textWrapper) this._elements.textWrapper.append(dotsEl);
-        } else {
-            dotsEl.style.left = dotsEl.style.right = dotsEl.style.top = dotsEl.style.bottom = '';
-            dotsEl.style.transform = '';
-            if (dotsEl.parentElement !== this._elements.chipsGroup) this._elements.chipsGroup.append(dotsEl);
-        }
-        if (spacing) dotsEl.style.setProperty('--awc-dots-spacing', spacing);
-        else dotsEl.style.removeProperty('--awc-dots-spacing');
-        this._setupDotsObserver(visCount);
-    }
-
-    _setupDotsObserver(visCount) {
-        const bt = this._elements?.chipsRow;
-        const dotsEl = this._elements?.scrollDots;
-        if (!bt || !dotsEl) return;
-        this._teardownDotsObserver();
-        // Use scroll event — lightweight, one listener, debounced via rAF
-        let rafId = null;
-        const isVertical = bt.classList.contains('row-vertical-scroll');
-        this._dotsScrollHandler = () => {
-            if (rafId) return;
-            rafId = requestAnimationFrame(() => {
-                rafId = null;
-                const scrollPos = isVertical ? bt.scrollTop : bt.scrollLeft;
-                const scrollSize = isVertical ? bt.scrollHeight - bt.clientHeight : bt.scrollWidth - bt.clientWidth;
-                const pageCount = dotsEl.childElementCount;
-                if (scrollSize <= 0 || pageCount <= 1) return;
-                const activePage = Math.round((scrollPos / scrollSize) * (pageCount - 1));
-                const dots = dotsEl.children;
-                for (let i = 0; i < dots.length; i++) {
-                    dots[i].classList.toggle('current', i === activePage);
-                }
-            });
-        };
-        bt.addEventListener('scroll', this._dotsScrollHandler, { passive: true });
-    }
-
-    _teardownDotsObserver() {
-        if (this._dotsScrollHandler && this._elements?.chipsRow) {
-            this._elements.chipsRow.removeEventListener('scroll', this._dotsScrollHandler);
-            this._dotsScrollHandler = null;
-        }
-    }
-
+    _updateScrollDots(layout, chipCount) {}
     _refreshMarqueeObservation() {
         if (!this._marqueeObserver) {
             this._marqueeObserver = new ResizeObserver(entries => {
@@ -2513,7 +2339,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         bt.querySelectorAll('.chip.overflow-marquee .awc-marquee-host')
           .forEach(host => this._marqueeObserver.observe(host));
     }
-
     _measureMarqueeOne(host) {
         const track = host.querySelector('.awc-marquee-track');
         if (!track) return;
@@ -2545,7 +2370,6 @@ class AtmosphericWeatherCard extends HTMLElement {
             host.style.removeProperty('--awc-marquee-duration');
         }
     }
-
     _computeVerticalVisHeight() {
         const bt = this._elements?.chipsRow;
         if (!bt || !bt.children.length) return;
@@ -2556,7 +2380,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         const gap = parseFloat(getComputedStyle(bt).gap) || 8;
         bt.style.setProperty('--awc-row-max-height', `${firstChip.offsetHeight * visCount + gap * (visCount - 1)}px`);
     }
-
     // VISIBILITY, EVENTS & INITIALIZATION
     _handleVisibilityChange(entries) {
         const entry = entries[0];
@@ -2574,7 +2397,6 @@ class AtmosphericWeatherCard extends HTMLElement {
             this._stopAnimation();
         }
     }
-
     _handleTap(e) {
         e.stopPropagation();
         const event = new CustomEvent('hass-action', {
@@ -2587,7 +2409,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         });
         this.dispatchEvent(event);
     }
-
     _handleChipClick(e) {
         const chipEl = e.target.closest('.chip');
         if (!chipEl) return;
@@ -2606,7 +2427,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         });
         this.dispatchEvent(event);
     }
-
     _tryInitialize() {
         if (this._initializationComplete) return;
         if (!this._renderGate.hasFirstHass) return;
@@ -2623,7 +2443,6 @@ class AtmosphericWeatherCard extends HTMLElement {
             this._checkRenderGate();
         });
     }
-
     _updateCanvasDimensions(forceW = null, forceH = null) {
         if (!this._elements?.root || !this._ctxs) return false;
         if (this._config.square && forceW === null) {
@@ -2675,10 +2494,8 @@ class AtmosphericWeatherCard extends HTMLElement {
             this._renderGate.hasValidDimensions = true;
             this._checkRenderGate();
         }
-
         return true;
     }
-
     _scheduleParticleReinit() {
         this._pendingResize = true;
         if (this._resizeDebounceTimer) clearTimeout(this._resizeDebounceTimer);
@@ -2699,7 +2516,6 @@ class AtmosphericWeatherCard extends HTMLElement {
             }
         }, PERFORMANCE_CONFIG.RESIZE_DEBOUNCE_MS);
     }
-
     _checkRenderGate() {
         if (this._renderGate.isRevealed) return;
         const canReveal =
@@ -2713,7 +2529,6 @@ class AtmosphericWeatherCard extends HTMLElement {
             });
         }
     }
-
     // TEXTURE BUILDING
     _buildTextures() {
         const isLight = this._isLightBackground;
@@ -2838,7 +2653,6 @@ class AtmosphericWeatherCard extends HTMLElement {
             this._vaporTex = vc;
         }
     }
-
     // PARTICLE FACTORY
     _initParticles(forceW = null, forceH = null) {
         if (!this._elements?.root) return;
@@ -2869,88 +2683,31 @@ class AtmosphericWeatherCard extends HTMLElement {
         const starCount = (this._renderState && this._renderState.starMode !== 'hidden') ? (p.stars || 0) : 0;
         if (starCount > 0) this._initStars(w, h, starCount);
         const ws = (this._lastState || '').toLowerCase();
-        if (starCount > 150 && (ws === 'clear-night' || ws === 'sunny' || ws === 'exceptional')) {
-            this._bakeMilkyWay(w, h);
-        }
+        if (starCount > 150 && (ws === 'clear-night' || ws === 'sunny' || ws === 'exceptional')) { this._bakeMilkyWay(w, h); }
         const vaporFlat = p.windVapor === true || (this._windKmh || 0) >= 20;
         this._initWindVapor(w, h, p.vapor || 24, p.vaporScale || 1.0, vaporFlat);
         this._bakeAllClouds();
     }
-
     _initAurora(w, h) {
-        this._aurora = {
-            phase: 0,
-            waves: Array(6).fill().map((_, i) => ({
-                y: h * 0.12 + i * 10,
-                speed: 0.006 + Math.random() * 0.012,
-                amplitude: 6 + Math.random() * 8,
-                wavelength: 0.01 + Math.random() * 0.008,
-                color: [
-                    'rgba(80, 255, 160, 0.22)',
-                    'rgba(100, 200, 255, 0.22)',
-                    'rgba(180, 100, 255, 0.18)',
-                    'rgba(255, 120, 200, 0.15)'
-                ][Math.floor(Math.random() * 4)],
-                offset: Math.random() * TWO_PI
-            }))
-        };
+        const _auroraColors = ['rgba(80, 255, 160, 0.22)', 'rgba(100, 200, 255, 0.22)', 'rgba(180, 100, 255, 0.18)', 'rgba(255, 120, 200, 0.15)'];
+        this._aurora = { phase: 0, waves: Array(6).fill().map((_, i) => ({ y: h * 0.12 + i * 10, speed: 0.006 + Math.random() * 0.012, amplitude: 6 + Math.random() * 8, wavelength: 0.01 + Math.random() * 0.008, color: _auroraColors[Math.floor(Math.random() * 4)], offset: Math.random() * TWO_PI })) };
     }
-
     _createComet(w, h) {
-        return {
-            x: w * 0.15,
-            y: h * 0.08,
-            vx: -2.2 - Math.random() * 1.2,
-            vy: 0.8 + Math.random() * 0.4,
-            life: 1.0,
-            tailBuf: new Float32Array(TRAIL_CAP_COMET * 2),
-            tailHead: 0,
-            tailLen: 0,
-            size: 3 + Math.random() * 2
-        };
+        return { x: w * 0.15, y: h * 0.08, vx: -2.2 - Math.random() * 1.2, vy: 0.8 + Math.random() * 0.4, life: 1.0, tailBuf: new Float32Array(TRAIL_CAP_COMET * 2), tailHead: 0, tailLen: 0, size: 3 + Math.random() * 2 };
     }
-
     _createPlane(w, h) {
         const goingRight = Math.random() > 0.5;
         const baseSpeed = 0.6 + Math.random() * 0.5;
         const dir = goingRight ? 1 : -1;
-        const climbAngle = Math.random() < 0.33
-            ? (1 + Math.random() * 4) * (Math.PI / 180)
-            : 0;
-		const spawnRange = this._isImmersive ? 0.4 : 0.7;
-        return {
-            x: goingRight ? -100 : w + 100,
-            y: h * 0.15 + Math.random() * (h * spawnRange),
-            vx: dir * Math.cos(climbAngle) * baseSpeed,
-            vy: -Math.sin(climbAngle) * baseSpeed,
-            climbAngle: climbAngle,
-            scale: 0.5 + Math.random() * 0.4,
-            blinkPhase: Math.random() * 10,
-            histBuf: new Float32Array(TRAIL_CAP_PLANE * 3),
-            histHead: 0,
-            histLen: 0,
-            gapTimer: 0
-        };
+        const climbAngle = Math.random() < 0.33 ? (1 + Math.random() * 4) * (Math.PI / 180) : 0;
+        return { x: goingRight ? -100 : w + 100, y: h * 0.15 + Math.random() * (h * 0.52), vx: dir * Math.cos(climbAngle) * baseSpeed, vy: -Math.sin(climbAngle) * baseSpeed, climbAngle, scale: 0.5 + Math.random() * 0.4, blinkPhase: Math.random() * 10, histBuf: new Float32Array(TRAIL_CAP_PLANE * 3), histHead: 0, histLen: 0, gapTimer: 0 };
     }
-
     _initFogBanks(w, h) {
         for (let i = 0; i < 10; i++) {
             const layer = i / 10;
-            this._fogBanks.push({
-                x: Math.random() * w,
-                y: h - (Math.random() * (h * 0.7)),
-                w: w * (1.2 + Math.random() * 0.8),
-                h: 40 + Math.random() * 50,
-                speed: (Math.random() * 0.15 + 0.03) * (Math.random() > 0.5 ? 1 : -1),
-                opacity: this._isLightBackground
-                    ? (0.35 + layer * 0.2 + Math.random() * 0.1)
-                    : (0.12 + layer * 0.1 + Math.random() * 0.08),
-                layer: layer,
-                phase: Math.random() * TWO_PI
-            });
+            this._fogBanks.push({ x: Math.random() * w, y: h - (Math.random() * (h * 0.7)), w: w * (1.2 + Math.random() * 0.8), h: 40 + Math.random() * 50, speed: (Math.random() * 0.15 + 0.03) * (Math.random() > 0.5 ? 1 : -1), opacity: this._isLightBackground ? (0.35 + layer * 0.2 + Math.random() * 0.1) : (0.12 + layer * 0.1 + Math.random() * 0.08), layer: layer, phase: Math.random() * TWO_PI });
         }
     }
-
     _initPrecipitation(w, h, p) {
         const count = p.count || 0;
         for (let i = 0; i < count; i++) {
@@ -2961,51 +2718,25 @@ class AtmosphericWeatherCard extends HTMLElement {
                 type = Math.random() > 0.55 ? 'hail' : 'rain';
             }
             const z = 0.5 + Math.random();
-            const particle = {
-                type,
-                x: Math.random() * w,
-                y: Math.random() * h,
-                z,
-                turbulence: Math.random() * TWO_PI,
-                _fadeIn: 1
-            };
+            const particle = { type, x: Math.random() * w, y: Math.random() * h, z, turbulence: Math.random() * TWO_PI, _fadeIn: 1 };
             if (type === 'hail') {
-                Object.assign(particle, {
-                    speedY: (12 + Math.random() * 8) * z,
-                    size: (2 + Math.random() * 2) * z,
-                    rotation: Math.random() * TWO_PI,
-                    rotationSpeed: (Math.random() - 0.5) * 0.25,
-                    op: this._isLightBackground ? 0.5 + Math.random() * 0.4 : 0.4 + Math.random() * 0.4
-                });
+                Object.assign(particle, { speedY: (12 + Math.random() * 8) * z, size: (2 + Math.random() * 2) * z, rotation: Math.random() * TWO_PI, rotationSpeed: (Math.random() - 0.5) * 0.25, op: this._isLightBackground ? 0.5 + Math.random() * 0.4 : 0.4 + Math.random() * 0.4 });
             } else if (type === 'rain') {
-                Object.assign(particle, {
-                    speedY: (6 + Math.random() * 4) * z,
-                    len: (14 + Math.random() * 14) * z,
-                    op: this._isLightBackground ? 0.35 + Math.random() * 0.35 : 0.25 + Math.random() * 0.35
-                });
+                Object.assign(particle, { speedY: (6 + Math.random() * 4) * z, len: (14 + Math.random() * 14) * z, op: this._isLightBackground ? 0.35 + Math.random() * 0.35 : 0.25 + Math.random() * 0.35 });
             } else {
                 // Wide size variance: tiny specks to large soft flakes
                 const sizeRoll = Math.random();
                 let flakeSize;
-                if (sizeRoll < 0.25)      flakeSize = (0.5 + Math.random() * 0.7) * z;  // tiny specks
-                else if (sizeRoll < 0.65)  flakeSize = (1.5 + Math.random() * 1.5) * z;  // medium
-                else                        flakeSize = (2.8 + Math.random() * 2.7) * z;  // large soft
-                Object.assign(particle, {
-                    speedY: (0.4 + Math.random() * 0.8) * z * (flakeSize / 3),
-                    size: flakeSize,
-                    wobblePhase: Math.random() * TWO_PI,
-                    wobbleSpeed: 0.02 + Math.random() * 0.02,
-                    rotation: Math.random() * TWO_PI,
-                    rotationSpeed: (Math.random() - 0.5) * 0.03,
-                    op: 0.5 + Math.random() * 0.4
-                });
+                if (sizeRoll < 0.25)      flakeSize = (0.5 + Math.random() * 0.7) * z;
+                else if (sizeRoll < 0.65)  flakeSize = (1.5 + Math.random() * 1.5) * z;
+                else                        flakeSize = (2.8 + Math.random() * 2.7) * z;
+                Object.assign(particle, { speedY: (0.4 + Math.random() * 0.8) * z * (flakeSize / 3), size: flakeSize, wobblePhase: Math.random() * TWO_PI, wobbleSpeed: 0.02 + Math.random() * 0.02, rotation: Math.random() * TWO_PI, rotationSpeed: (Math.random() - 0.5) * 0.03, op: 0.5 + Math.random() * 0.4 });
             }
             if (particle.type === 'rain') this._rain.push(particle);
             else if (particle.type === 'snow') this._snow.push(particle);
             else if (particle.type === 'hail') this._hail.push(particle);
         }
     }
-
     _initClouds(w, h, p) {
         const isStandalone = !this._isImmersive;
         // Immersive dark-day has no sky layer, so clouds must cover more vertical space.
@@ -3028,13 +2759,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         const clusters = [];
         for (let c = 0; c < clusterCount; c++) {
             const baseX = w * ((c + 0.5) / clusterCount);
-            clusters.push({
-                x: baseX + (Math.random() - 0.5) * w * 0.6,
-                y: h * (0.11 + Math.random() * (heightLimit - 0.16)),
-                spreadX: w * (0.12 + Math.random() * 0.18),
-                spreadY: h * (0.06 + Math.random() * 0.10),
-                weight: 0.5 + Math.random()
-            });
+            clusters.push({ x: baseX + (Math.random() - 0.5) * w * 0.6, y: h * (0.11 + Math.random() * (heightLimit - 0.16)), spreadX: w * (0.12 + Math.random() * 0.18), spreadY: h * (0.06 + Math.random() * 0.10), weight: 0.5 + Math.random() });
         }
         const totalWeight = clusters.reduce((sum, c) => sum + c.weight, 0);
         // Weighted cluster picker (closure reused per cloud)
@@ -3053,19 +2778,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         const fillerCount = Math.floor(totalClouds * fillerRatio);
         for (let i = 0; i < fillerCount; i++) {
             const seed = Math.random() * 10000;
-            this._clouds.push({
-                x: Math.random() * w,
-                y: h * (0.08 + Math.random() * (heightLimit * 0.6 - 0.08)),
-                scale: (0.55 + Math.random() * 0.40) * configScale * 1.6,
-                speed: 0.002 + Math.random() * 0.002,
-                puffs: CloudShapeGenerator.generateWispyPuffs(seed, baseUnit),
-                cloudType: 'stratus', layer: 0,
-                opacity: 0.30 + Math.random() * 0.18,
-                seed, breathPhase: Math.random() * TWO_PI,
-                breathSpeed: 0.001,
-                _hStretch: 1.0,
-                _vCompress: baseVCompress
-            });
+            this._clouds.push({ x: Math.random() * w, y: h * (0.08 + Math.random() * (heightLimit * 0.6 - 0.08)), scale: (0.55 + Math.random() * 0.40) * configScale * 1.6, speed: 0.002 + Math.random() * 0.002, puffs: CloudShapeGenerator.generateWispyPuffs(seed, baseUnit), cloudType: 'stratus', layer: 0, opacity: 0.30 + Math.random() * 0.18, seed, breathPhase: Math.random() * TWO_PI, breathSpeed: 0.001, _hStretch: 1.0, _vCompress: baseVCompress });
         }
         // ── Main clouds ──
         const mainCount  = totalClouds - fillerCount;
@@ -3152,18 +2865,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                 yPos = typeY * 0.6 + clamped * 0.4;
             }
             yPos = Math.max(h * 0.08, yPos);
-            this._clouds.push({
-                x: xPos,
-                y: yPos,
-                scale: cloudScale,
-                speed: (0.02 + Math.random() * 0.03) * (layer * 0.4 + 1),
-                puffs, cloudType: type, layer,
-                opacity: 1 - (layer * 0.12),
-                seed, breathPhase: Math.random() * TWO_PI,
-                breathSpeed: 0.002 + Math.random() * 0.004,
-                _hStretch: hStretch,
-                _vCompress: vCompress
-            });
+            this._clouds.push({ x: xPos, y: yPos, scale: cloudScale, speed: (0.02 + Math.random() * 0.03) * (layer * 0.4 + 1), puffs, cloudType: type, layer, opacity: 1 - (layer * 0.12), seed, breathPhase: Math.random() * TWO_PI, breathSpeed: 0.002 + Math.random() * 0.004, _hStretch: hStretch, _vCompress: vCompress });
                     if (!p.dark && (type === 'cumulus' || type === 'organic') &&
                 cloudScale > 0.75 * configScale && Math.random() < 0.15) {
                 const cSeed = Math.random() * 10000;
@@ -3177,24 +2879,10 @@ class AtmosphericWeatherCard extends HTMLElement {
                 }
                 const compOffX = baseUnit * 0.60;
                 const compOffY = baseUnit * 0.20;
-                companions.push({
-                    x: xPos + (Math.random() - 0.5) * compOffX,
-                    y: yPos + (Math.random() - 0.5) * compOffY,
-                    scale: cloudScale * (0.7 + Math.random() * 0.3),
-                    speed: 0.01 + Math.random() * 0.02,
-                    puffs: cPuffs, cloudType: 'stratus',
-                    layer: Math.max(0, layer - 1),
-                    opacity: 0.45 + Math.random() * 0.20,
-                    seed: cSeed, breathPhase: Math.random() * TWO_PI,
-                    breathSpeed: 0.002,
-                    _hStretch: 1.4 + Math.random() * 0.5,
-                    _vCompress: baseVCompress * 0.85
-                });
+                companions.push({ x: xPos + (Math.random() - 0.5) * compOffX, y: yPos + (Math.random() - 0.5) * compOffY, scale: cloudScale * (0.7 + Math.random() * 0.3), speed: 0.01 + Math.random() * 0.02, puffs: cPuffs, cloudType: 'stratus', layer: Math.max(0, layer - 1), opacity: 0.45 + Math.random() * 0.20, seed: cSeed, breathPhase: Math.random() * TWO_PI, breathSpeed: 0.002, _hStretch: 1.4 + Math.random() * 0.5, _vCompress: baseVCompress * 0.85 });
             }
         }
-        for (let c = 0; c < companions.length; c++) {
-            this._clouds.push(companions[c]);
-        }
+        for (let c = 0; c < companions.length; c++) { this._clouds.push(companions[c]); }
         const cirrusAtmos = p.atmosphere === 'fair' || p.atmosphere === 'clear' || p.atmosphere === 'windy';
         if (!p.dark && totalClouds >= 12 && cirrusAtmos) {
             const accentCount = 1 + Math.floor(Math.random() * 2);
@@ -3215,19 +2903,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                     ? cSpec.uncinus[1] + Math.random() * cSpec.uncinus[2]
                     : cSpec.stretch[0] + Math.random() * cSpec.stretch[1];
                 const aVCompress = baseVCompress * (useUncinus ? cSpec.uncinus[3] : cSpec.flattenMul);
-                this._clouds.push({
-                    x: Math.random() * w,
-                    y: h * (0.05 + Math.random() * 0.12),
-                    scale: (1.0 + Math.random() * 0.4) * configScale,
-                    speed: 0.015 + Math.random() * 0.01,
-                    puffs: cPuffs, cloudType: 'cirrus',
-                    layer: Math.floor(Math.random() * 2),
-                    opacity: 0.55 + Math.random() * 0.20,
-                    seed, breathPhase: Math.random() * TWO_PI,
-                    breathSpeed: 0.002,
-                    _hStretch: aHStretch,
-                    _vCompress: aVCompress
-                });
+                this._clouds.push({ x: Math.random() * w, y: h * (0.05 + Math.random() * 0.12), scale: (1.0 + Math.random() * 0.4) * configScale, speed: 0.015 + Math.random() * 0.01, puffs: cPuffs, cloudType: 'cirrus', layer: Math.floor(Math.random() * 2), opacity: 0.55 + Math.random() * 0.20, seed, breathPhase: Math.random() * TWO_PI, breathSpeed: 0.002, _hStretch: aHStretch, _vCompress: aVCompress });
             }
         }
             if (!p.dark && p.atmosphere === 'overcast') {
@@ -3239,18 +2915,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                 puffs[k].offsetX *= scX;
                 puffs[k].offsetY *= scY;
             }
-            this._clouds.push({
-                x: w * (0.20 + Math.random() * 0.60),
-                y: h * (0.18 + Math.random() * 0.22),
-                scale: 2.0 + Math.random() * 0.5,
-                speed: 0.015 + Math.random() * 0.015,
-                puffs, cloudType: 'cumulus', layer: 2,
-                opacity: 0.90,
-                seed, breathPhase: Math.random() * TWO_PI,
-                breathSpeed: 0.002 + Math.random() * 0.002,
-                _hStretch: 1.0,
-                _vCompress: baseVCompress * 1.20
-            });
+            this._clouds.push({ x: w * (0.20 + Math.random() * 0.60), y: h * (0.18 + Math.random() * 0.22), scale: 2.0 + Math.random() * 0.5, speed: 0.015 + Math.random() * 0.015, puffs, cloudType: 'cumulus', layer: 2, opacity: 0.90, seed, breathPhase: Math.random() * TWO_PI, breathSpeed: 0.002 + Math.random() * 0.002, _hStretch: 1.0, _vCompress: baseVCompress * 1.20 });
         }
         this._clouds.sort((a, b) => a.layer - b.layer);
         if (totalClouds > 0) {
@@ -3259,45 +2924,17 @@ class AtmosphericWeatherCard extends HTMLElement {
                 : 2 + Math.floor(Math.random() * 3);
             for (let i = 0; i < scudCount; i++) {
                 const seed = Math.random() * 10000;
-                this._fgClouds.push({
-                    x: Math.random() * w,
-                    y: isDarkDayImmersive
-                        ? h * 0.30 + Math.random() * (h * 0.45)
-                        : Math.random() * (h * heightLimit) - 40,
-                    scale: (0.8 + Math.random() * 0.4) * configScale * 1.8,
-                    speed: 0.1 + Math.random() * 0.06,
-                    puffs: CloudShapeGenerator.generateMixedPuffs(seed, 'cumulus', baseUnit),
-                    cloudType: 'scud', layer: 5,
-                    opacity: isDarkDayImmersive ? 0.45 : 0.65,
-                    seed, breathPhase: Math.random() * TWO_PI,
-                    breathSpeed: 0.004,
-                    _hStretch: 1.0,
-                    _vCompress: baseVCompress
-                });
+                this._fgClouds.push({ x: Math.random() * w, y: isDarkDayImmersive ? h * 0.30 + Math.random() * (h * 0.45) : Math.random() * (h * heightLimit) - 40, scale: (0.8 + Math.random() * 0.4) * configScale * 1.8, speed: 0.1 + Math.random() * 0.06, puffs: CloudShapeGenerator.generateMixedPuffs(seed, 'cumulus', baseUnit), cloudType: 'scud', layer: 5, opacity: isDarkDayImmersive ? 0.45 : 0.65, seed, breathPhase: Math.random() * TWO_PI, breathSpeed: 0.004, _hStretch: 1.0, _vCompress: baseVCompress });
             }
         }
     }
-
     _initNightClouds(w, h) {
         for (let i = 0; i < 4; i++) {
             const seed = Math.random() * 10000;
             const puffs = CloudShapeGenerator.generateMixedPuffs(seed, 'stratus');
-            this._clouds.push({
-                x: Math.random() * w,
-                y: Math.random() * (h * 0.35),
-                scale: 0.85 + Math.random() * 0.3,
-                speed: 0.02 + Math.random() * 0.02,
-                puffs,
-                cloudType: 'stratus',
-                layer: 4,
-                opacity: 0.35,
-                seed,
-                breathPhase: Math.random() * TWO_PI,
-                breathSpeed: 0.002
-            });
+            this._clouds.push({ x: Math.random() * w, y: Math.random() * (h * 0.35), scale: 0.85 + Math.random() * 0.3, speed: 0.02 + Math.random() * 0.02, puffs, cloudType: 'stratus', layer: 4, opacity: 0.35, seed, breathPhase: Math.random() * TWO_PI, breathSpeed: 0.002 });
         }
     }
-
     _initCelestialClouds(w, h, decorStyle = null) {
         const celestial = this._getCelestialPosition(w, h);
         const cx = celestial.x;
@@ -3315,22 +2952,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         const sunUnit = sunBaseR / 31;
         const celestialBaseUnit = sunBaseR * 3.2;
             if (!isNight) {
-            this._celestialClouds.push({
-                x: cx,
-                y: cy,
-                scale: decorStyle ? 2.2 : 1.8,
-                speed: 0.002,
-                puffs: CloudShapeGenerator.generateWispyPuffs(Math.random() * 10000, celestialBaseUnit),
-                opacity: isDarkDayImmersive ? 0.22 : (isDarkDay ? 0.10 : (decorStyle ? 0.20 : 0.15)),
-                seed: Math.random(),
-                breathPhase: 0,
-                breathSpeed: 0.001,
-                baseX: cx,
-                baseY: cy,
-                driftPhase: 0,
-                _vSquash: 1.0,
-                _sunUnit: sunUnit
-            });
+            this._celestialClouds.push({ x: cx, y: cy, scale: decorStyle ? 2.2 : 1.8, speed: 0.002, puffs: CloudShapeGenerator.generateWispyPuffs(Math.random() * 10000, celestialBaseUnit), opacity: isDarkDayImmersive ? 0.22 : (isDarkDay ? 0.10 : (decorStyle ? 0.20 : 0.15)), seed: Math.random(), breathPhase: 0, breathSpeed: 0.001, baseX: cx, baseY: cy, driftPhase: 0, _vSquash: 1.0, _sunUnit: sunUnit });
         }
         const scatterBase = decorStyle ? Math.max(3, decorStyle.count) : 7;
         const scatterCount = isExceptional ? 2 : (isNight ? 5 : (isDarkDay ? 4 : scatterBase));
@@ -3340,22 +2962,7 @@ class AtmosphericWeatherCard extends HTMLElement {
         const topCount = isExceptional ? 1 : Math.max(1, Math.floor(scatterCount * 0.28));
         const sideCount = Math.max(1, scatterCount - heroCount - topCount);
         const pushCelestial = (ox, oy, scale, vSquash, opBase) => {
-            this._celestialClouds.push({
-                x: cx + ox,
-                y: cy + oy,
-                scale,
-                speed: 0.004 + Math.random() * 0.004,
-                puffs: CloudShapeGenerator.generateSunDecorationPuffs(Math.random() * 10000, celestialBaseUnit),
-                opacity: opBase * scatterOpMul,
-                seed: Math.random(),
-                breathPhase: Math.random() * TWO_PI,
-                breathSpeed: 0.002 + Math.random() * 0.002,
-                baseX: cx + ox,
-                baseY: cy + oy,
-                driftPhase: Math.random() * TWO_PI,
-                _vSquash: vSquash,
-                _sunUnit: sunUnit
-            });
+            this._celestialClouds.push({ x: cx + ox, y: cy + oy, scale, speed: 0.004 + Math.random() * 0.004, puffs: CloudShapeGenerator.generateSunDecorationPuffs(Math.random() * 10000, celestialBaseUnit), opacity: opBase * scatterOpMul, seed: Math.random(), breathPhase: Math.random() * TWO_PI, breathSpeed: 0.002 + Math.random() * 0.002, baseX: cx + ox, baseY: cy + oy, driftPhase: Math.random() * TWO_PI, _vSquash: vSquash, _sunUnit: sunUnit });
         };
         for (let i = 0; i < heroCount; i++) {
             const side = heroCount === 1 ? (Math.random() < 0.5 ? -1 : 1) : (i === 0 ? -1 : 1);
@@ -3381,7 +2988,6 @@ class AtmosphericWeatherCard extends HTMLElement {
             pushCelestial(ox, oy, topScale, 0.70 + Math.random() * 0.10, 0.32 + Math.random() * 0.18);
         }
     }
-
     _initStars(w, h, count) {
         const tier1Count = Math.floor(count * 0.70);
         const tier2Count = Math.floor(count * 0.285);
@@ -3404,42 +3010,19 @@ class AtmosphericWeatherCard extends HTMLElement {
             const pc = k < palette[0][0] ? palette[0] : k > palette[1][0] ? palette[2] : palette[1];
                     const rgb = hslToRgb(pc[1], pc[2], pc[3]);
             const fillStr = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
-            const star = {
-                x, y,
-                baseSize: size,
-                phase: Math.random() * TWO_PI,
-                rate: twinkleSpeed,
-                brightness,
-                tier,
-                _fill: fillStr,
-                _stroke: fillStr,
-                _r: rgb[0], _g: rgb[1], _b: rgb[2]
-            };
-                    if (tier === 'hero') {
+            const star = { x, y, baseSize: size, phase: Math.random() * TWO_PI, rate: twinkleSpeed, brightness, tier, _fill: fillStr, _stroke: fillStr, _r: rgb[0], _g: rgb[1], _b: rgb[2] };
+            if (tier === 'hero') {
                 const isFeature = i >= count - 2;
                 if (isGolden) {
-                    star._bodyAlphaRatio = 0.85;
-                    star._haloInnerR = 0.6;
-                    star._haloOuterR = isFeature ? 2.8 : 2.2;
-                    star._bodyR = 0.65;
-                    star._spikeRatio = isFeature ? 0.28 : 0.22;
-                    star._spikeLen = isFeature ? 2.0 : 1.4;
+                    star._bodyAlphaRatio = 0.85; star._haloInnerR = 0.6; star._haloOuterR = isFeature ? 2.8 : 2.2; star._bodyR = 0.65; star._spikeRatio = isFeature ? 0.28 : 0.22; star._spikeLen = isFeature ? 2.0 : 1.4;
                 } else {
-                    star._bodyAlphaRatio = 1.0;
-                    star._haloInnerR = 0.6;
-                    star._haloOuterR = isFeature ? 3.8 : 3.0;
-                    star._bodyR = 0.6;
-                    star._spikeRatio = isFeature ? 0.38 : 0.3;
-                    star._spikeLen = isFeature ? 2.8 : 2.0;
-                    star._crownRatio = isFeature ? 0.34 : 0.28;
-                    star._crownLen = isFeature ? 3.2 : 2.5;
+                    star._bodyAlphaRatio = 1.0; star._haloInnerR = 0.6; star._haloOuterR = isFeature ? 3.8 : 3.0; star._bodyR = 0.6; star._spikeRatio = isFeature ? 0.38 : 0.3; star._spikeLen = isFeature ? 2.8 : 2.0; star._crownRatio = isFeature ? 0.34 : 0.28; star._crownLen = isFeature ? 3.2 : 2.5;
                 }
                 const haloSize = Math.ceil(size * star._haloOuterR * 2 + 2);
                 const hc = document.createElement('canvas');
                 hc.width = haloSize; hc.height = haloSize;
                 const hCtx = hc.getContext('2d', { willReadFrequently: false });
-                const cx = haloSize / 2;
-                const refSize = size;
+                const cx = haloSize / 2; const refSize = size;
                 const haloAlpha = isGolden ? (isFeature ? 0.45 : 0.35) : (isFeature ? 0.35 : 0.25);
                 const hg = hCtx.createRadialGradient(cx, cx, refSize * star._haloInnerR, cx, cx, refSize * star._haloOuterR);
                 hg.addColorStop(0, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${haloAlpha})`);
@@ -3455,13 +3038,11 @@ class AtmosphericWeatherCard extends HTMLElement {
             this._stars.push(star);
         }
     }
-
     _bakeMilkyWay(w, h) {
         const isGolden = this._renderState && this._renderState.starMode === 'golden';
         const palette = isGolden ? STAR_PALETTE_GOLDEN : STAR_PALETTE_GLOW;
         const c = document.createElement('canvas');
-        c.width = w;
-        c.height = h;
+        c.width = w; c.height = h;
         const ctx = c.getContext('2d', { willReadFrequently: false });
         const lat = (this._hass && this._hass.config) ? this._hass.config.latitude : 50;
         const angle = -0.35 - Math.abs(lat) * 0.004 + (Math.random() - 0.5) * 0.45;
@@ -3567,7 +3148,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         this._milkyWay = c;
     }
-
     _initWindVapor(w, h, count = 24, scale = 1.0, flat = false) {
         const isImm = this._isDarkDayImmersive;
         const yTop    = h * (isImm ? 0.18 : 0.25);
@@ -3593,53 +3173,28 @@ class AtmosphericWeatherCard extends HTMLElement {
                 const thickMul = isHero ? 1.5 : (isThin ? 0.7 : 1.0);
                 const isOrganic = flat ? false : Math.random() < 0.20;
                 const vw = w * (0.18 + Math.random() * 0.45) * scale * depthScale * (isHero ? 1.3 : (isOrganic ? 0.75 : 1.0));
-                this._windVapor.push({
-                    x: gX + (Math.random() - 0.5) * w * 0.15,
-                    y: finalY,
-                    w: vw,
-                    speed: (0.8 + Math.random() * 1.4) * depthScale,
-                    tier,
-                    phase: Math.random() * TWO_PI,
-                    phaseSpeed: 0.005 + Math.random() * 0.005,
-                    drift: flat ? 0.5 + Math.random() * 1.0 : 1.5 + Math.random() * 2.5,
-                    gustWeight: 0.5 + Math.random() * 0.5,
-                    squash: (0.038 + Math.random() * 0.025) * thickMul * (isOrganic ? 1.35 : 1.0),
-                    baseRotation: (gRot + (Math.random() - 0.5) * (isOrganic ? 0.06 : 0.02)) * rotLimit,
-                    taperDir: Math.random() < 0.5 ? -1 : 1,
-                    depthNorm: yNorm,
-                    curvature: isOrganic ? (Math.random() - 0.5) * 0.15 : 0
-                });
+                this._windVapor.push({ x: gX + (Math.random() - 0.5) * w * 0.15, y: finalY, w: vw, speed: (0.8 + Math.random() * 1.4) * depthScale, tier, phase: Math.random() * TWO_PI, phaseSpeed: 0.005 + Math.random() * 0.005, drift: flat ? 0.5 + Math.random() * 1.0 : 1.5 + Math.random() * 2.5, gustWeight: 0.5 + Math.random() * 0.5, squash: (0.038 + Math.random() * 0.025) * thickMul * (isOrganic ? 1.35 : 1.0), baseRotation: (gRot + (Math.random() - 0.5) * (isOrganic ? 0.06 : 0.02)) * rotLimit, taperDir: Math.random() < 0.5 ? -1 : 1, depthNorm: yNorm, curvature: isOrganic ? (Math.random() - 0.5) * 0.15 : 0 });
                 placed++;
             }
         }
     }
-
     _createBolt(w, h) {
         const x = Math.random() * (w * 0.7) + (w * 0.15);
         const segments = [];
-        let curX = x;
-        let curY = 0;
-        let iter = 0;
-            const mainBias = (Math.random() - 0.5) * 15;
+        let curX = x, curY = 0, iter = 0;
+        const mainBias = (Math.random() - 0.5) * 15;
         while (curY < h && iter < 80) {
             const nextY = curY + 12 + Math.random() * 20;
             const nextX = curX + mainBias + (Math.random() * 30 - 15);
             segments.push({ x: curX, y: curY, nx: nextX, ny: nextY, branch: false });
             if (Math.random() < 0.18 && curY > 20) {
                 const branchDir = Math.random() > 0.5 ? 1 : -1;
-                segments.push({
-                    x: curX,
-                    y: curY,
-                    nx: curX + branchDir * (15 + Math.random() * 30),
-                    ny: curY + 15 + Math.random() * 25,
-                    branch: true
-                });
+                segments.push({ x: curX, y: curY, nx: curX + branchDir * (15 + Math.random() * 30), ny: curY + 15 + Math.random() * 25, branch: true });
             }
             curX = nextX;
             curY = nextY;
             iter++;
         }
-
         return {
             segments, life: 1.0, alpha: 1.0, glow: 1.0,
             _outerStroke: 'rgb(160, 190, 255)',
@@ -3648,7 +3203,6 @@ class AtmosphericWeatherCard extends HTMLElement {
             _branchStroke: 'rgb(200, 220, 255)'
         };
     }
-
     // CLOUD & MOON BAKING
     _allocCloudAtlas() {
         let canvas;
@@ -3661,15 +3215,12 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         return { canvas, ctx: canvas.getContext('2d', { willReadFrequently: false }) };
     }
-
     _bakeAllClouds() {
         const rs = this._renderState;
         if (!rs) return;
         if (!this._cloudAtlases) this._cloudAtlases = [];
         if (this._cloudAtlases.length === 0) this._cloudAtlases.push(this._allocCloudAtlas());
-        for (let i = 0; i < this._cloudAtlases.length; i++) {
-            this._cloudAtlases[i].ctx.clearRect(0, 0, CLOUD_ATLAS_SIZE, CLOUD_ATLAS_SIZE);
-        }
+        for (let i = 0; i < this._cloudAtlases.length; i++) { this._cloudAtlases[i].ctx.clearRect(0, 0, CLOUD_ATLAS_SIZE, CLOUD_ATLAS_SIZE); }
         const atlases = this._cloudAtlases;
         const alloc = () => this._allocCloudAtlas();
         const packer = {
@@ -3692,11 +3243,8 @@ class AtmosphericWeatherCard extends HTMLElement {
         for (let i = 0; i < this._fgClouds.length; i++) this._bakeCloud(this._fgClouds[i], packer);
         const palette = rs.celestialCloudPalette;
         const cpCelestial = CELESTIAL_CLOUD_PALETTES[palette] || CELESTIAL_CLOUD_PALETTES.cool;
-        for (let i = 0; i < this._celestialClouds.length; i++) {
-            this._bakeCelestialCloud(this._celestialClouds[i], cpCelestial);
-        }
+        for (let i = 0; i < this._celestialClouds.length; i++) { this._bakeCelestialCloud(this._celestialClouds[i], cpCelestial); }
     }
-
     _bakeCloud(cloud, packer) {
         const puffs = cloud.puffs;
         if (!puffs || puffs.length === 0) return;
@@ -3746,9 +3294,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             packer.y += packer.rowHeight + 2;
             packer.rowHeight = 0;
         }
-        if (packer.y + physH > CLOUD_ATLAS_SIZE) {
-            if (!packer.advance()) return;
-        }
+        if (packer.y + physH > CLOUD_ATLAS_SIZE) { if (!packer.advance()) return; }
         const atlasX = packer.x;
         const atlasY = packer.y;
         packer.x += physW + 2;
@@ -3876,7 +3422,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         cloud._bakeLogicalW = bakeW;
         cloud._bakeLogicalH = bakeH;
     }
-
     _bakeCelestialCloud(cloud, cp) {
         const puffs = cloud.puffs;
         if (!puffs || puffs.length === 0) return;
@@ -3971,7 +3516,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         cloud._bakeW = bakeW;
         cloud._bakeH = bakeH;
     }
-
     _buildMoonCache(ctx, moonRadius, moonScale, w, h, useLightColors, styleKey) {
         const mc = {};
             const applyStops = (grad, cfg, peak) => {
@@ -4011,10 +3555,8 @@ class AtmosphericWeatherCard extends HTMLElement {
             g.addColorStop(1, `rgba(0,0,0,${limbAlpha})`);
             mc.limbDark = g;
         }
-
         return mc;
     }
-
     // RENDERING (PER-FRAME)
     _drawCelestialGlow(ctx, w, h) {
         const glow = this._renderState.glow;
@@ -4143,7 +3685,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         ctx.restore();
     }
-
     _drawCelestialClouds(ctx, w, h, effectiveWind) {
         const fadeOpacity = this._layerFadeProgress.clouds;
         if (fadeOpacity <= 0) return;
@@ -4175,7 +3716,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         ctx.globalAlpha = 1;
     }
-
     _drawClouds(ctx, cloudList, w, h, effectiveWind, globalOpacity) {
         if (cloudList.length === 0) return;
         const fadeOpacity = this._layerFadeProgress.clouds;
@@ -4208,7 +3748,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         ctx.globalAlpha = 1;
     }
-
     _drawStars(ctx, w, h, dpr) {
         const starFade = this._layerFadeProgress.stars;
         const starMode = this._renderState.starMode;
@@ -4293,7 +3832,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         ctx.globalAlpha = 1;
     }
-
     _drawShootingStars(ctx, w, h) {
         const fadeOpacity = this._layerFadeProgress.stars;
         const dpr = this._cachedDimensions.dpr;
@@ -4326,21 +3864,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                 headRgb = 'rgb(255,210,160)';
                 tailRgb = 'rgb(255,185,130)';
             }
-            this._shootingStars.push({
-                x: spawnX,
-                y: Math.random() * (h * 0.5),
-                vx: speed * dirX,
-                vy: 2.0 + Math.random() * 2.0,
-                life: 1.0,
-                decay: bolide ? 0.032 : 0.045,
-                size: bolide ? 2.5 + Math.random() * 1.5 : 1.5 + Math.random() * 1.5,
-                _bolide: bolide,
-                _headRgb: headRgb,
-                _tailRgb: tailRgb,
-                tailBuf: new Float32Array(TRAIL_CAP_SHOOTING_STAR * 2),
-                tailHead: 0,
-                tailLen: 0
-            });
+            this._shootingStars.push({ x: spawnX, y: Math.random() * (h * 0.5), vx: speed * dirX, vy: 2.0 + Math.random() * 2.0, life: 1.0, decay: bolide ? 0.032 : 0.045, size: bolide ? 2.5 + Math.random() * 1.5 : 1.5 + Math.random() * 1.5, _bolide: bolide, _headRgb: headRgb, _tailRgb: tailRgb, tailBuf: new Float32Array(TRAIL_CAP_SHOOTING_STAR * 2), tailHead: 0, tailLen: 0 });
         }
         ctx.lineCap = 'round';
         for (let i = this._shootingStars.length - 1; i >= 0; i--) {
@@ -4387,7 +3911,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.globalAlpha = 1;
     }
-
     _drawComets(ctx, w, h) {
         const badWeather = this._renderState.isBadWeatherForComets;
         const dpr = this._cachedDimensions.dpr;
@@ -4415,20 +3938,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                 glowRgb = '230,190,100';
                 tailRgb = 'rgb(240,210,150)';
             }
-            this._comets.push({
-                x: startX,
-                y: Math.random() * (h * 0.4),
-                vx: speed * dir,
-                vy: speed * 0.15,
-                size: 1.5 + Math.random(),
-                life: 1.2,
-                _coreRgb: coreRgb,
-                _glowRgb: glowRgb,
-                _tailRgb: tailRgb,
-                tailBuf: new Float32Array(TRAIL_CAP_COMET * 2),
-                tailHead: 0,
-                tailLen: 0
-            });
+            this._comets.push({ x: startX, y: Math.random() * (h * 0.4), vx: speed * dir, vy: speed * 0.15, size: 1.5 + Math.random(), life: 1.2, _coreRgb: coreRgb, _glowRgb: glowRgb, _tailRgb: tailRgb, tailBuf: new Float32Array(TRAIL_CAP_COMET * 2), tailHead: 0, tailLen: 0 });
         }
         const fadeOpacity = this._layerFadeProgress.stars;
         if (fadeOpacity <= 0) return;
@@ -4491,7 +4001,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         ctx.globalAlpha = 1;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
-
     _drawMoon(ctx, w, h) {
         if (!this._isTimeNight) return;
         if (!this._stateInitialized || !this._renderGate.isRevealed) return;
@@ -4691,7 +4200,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         ctx.restore();
     }
-
     _drawRain(ctx, w, h, effectiveWind) {
         const fadeOpacity = this._layerFadeProgress.precipitation;
         if (fadeOpacity <= 0) return;
@@ -4728,7 +4236,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         ctx.globalAlpha = 1;
     }
-
     _drawSnow(ctx, w, h, effectiveWind) {
         const fadeOpacity = this._layerFadeProgress.precipitation;
         if (fadeOpacity <= 0) return;
@@ -4768,7 +4275,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         ctx.globalAlpha = 1;
     }
-
     _drawHail(ctx, w, h, effectiveWind) {
         const fadeOpacity = this._layerFadeProgress.precipitation;
         if (fadeOpacity <= 0) return;
@@ -4796,7 +4302,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         ctx.globalAlpha = 1;
     }
-
     _drawLightning(ctx, w, h) {
         if (!this._params?.thunder) return;
         const fadeOpacity = this._layerFadeProgress.effects;
@@ -4805,9 +4310,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             this._flashOpacity = 0.92;
             this._flashHold = this._isLightBackground ? 7 : 6;
             this._bolts.push(this._createBolt(w, h));
-            if (Math.random() < 0.25 && this._bolts.length < LIMITS.MAX_BOLTS) {
-                this._bolts.push(this._createBolt(w, h));
-            }
+            if (Math.random() < 0.25 && this._bolts.length < LIMITS.MAX_BOLTS) { this._bolts.push(this._createBolt(w, h)); }
         }
         if (!this._isLightBackground && isStandalone) {
             ctx.save();
@@ -4897,7 +4400,6 @@ class AtmosphericWeatherCard extends HTMLElement {
             ctx.restore();
         }
     }
-
     _drawAurora(ctx, w, h) {
         if (!this._aurora) return;
         const fadeOpacity = this._layerFadeProgress.effects;
@@ -4931,7 +4433,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         ctx.restore();
     }
-
     _drawFog(ctx, w, h) {
         const fadeOpacity = this._layerFadeProgress.effects;
         const len = this._fogBanks.length;
@@ -4944,12 +4445,7 @@ class AtmosphericWeatherCard extends HTMLElement {
             if (f.x < -f.w / 2) f.x = w + f.w / 2;
             const undulation = Math.sin(f.phase) * 5;
             if (!f._g) {
-                let color;
-                if (this._isLightBackground) {
-                    color = '190,200,215';
-                } else {
-                    color = this._isTimeNight ? '85,90,105' : '72,81,95';
-                }
+                const color = this._isLightBackground ? '190,200,215' : (this._isTimeNight ? '85,90,105' : '72,81,95');
                 const g = ctx.createRadialGradient(0, 0, 0, 0, 0, f.w / 2);
                 g.addColorStop(0, `rgba(${color},1)`);
                 g.addColorStop(0.5, `rgba(${color},0.6)`);
@@ -4971,7 +4467,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         ctx.globalAlpha = 1;
     }
-
     _drawWindVapor(ctx, w, h, effectiveWind) {
         const fadeOpacity = this._layerFadeProgress.effects;
         if (fadeOpacity <= 0) return;
@@ -4985,20 +4480,11 @@ class AtmosphericWeatherCard extends HTMLElement {
         const pool = this._windVapor.length;
         let activeCount, vaporOp, baseHStretch, speedMul;
         if (isWindy) {
-            activeCount = pool;
-            vaporOp = 1.0;
-            baseHStretch = 1.2 + 0.8 * windIntensity;
-            speedMul = 0.12 + 0.35 * windIntensity;
+            activeCount = pool; vaporOp = 1.0; baseHStretch = 1.2 + 0.8 * windIntensity; speedMul = 0.12 + 0.35 * windIntensity;
         } else if (windKmh >= 15) {
-            activeCount = Math.round(pool * 0.75);
-            vaporOp = 0.90;
-            baseHStretch = 1.0 + 0.4 * windIntensity;
-            speedMul = 0.06 + 0.18 * windIntensity;
+            activeCount = Math.round(pool * 0.75); vaporOp = 0.90; baseHStretch = 1.0 + 0.4 * windIntensity; speedMul = 0.06 + 0.18 * windIntensity;
         } else {
-            activeCount = Math.round(pool * 0.58);
-            vaporOp = 0.92;
-            baseHStretch = 1.0;
-            speedMul = 0.03;
+            activeCount = Math.round(pool * 0.58); vaporOp = 0.92; baseHStretch = 1.0; speedMul = 0.03;
         }
         if (this._isDarkDayImmersive) {
             activeCount = Math.max(activeCount, Math.round(pool * 0.58));
@@ -5040,7 +4526,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         ctx.globalAlpha = 1;
         ctx.globalCompositeOperation = 'source-over';
     }
-
     _drawBirds(ctx, w, h) {
         for (let i = this._birds.length - 1; i >= 0; i--) {
             const b = this._birds[i];
@@ -5061,17 +4546,8 @@ class AtmosphericWeatherCard extends HTMLElement {
             const finalSpeed = baseSpeed * depthScale * dir;
             const isSingle = Math.random() < 0.3;
             const flockSize = isSingle ? 1 : 5 + Math.floor(Math.random() * 8);
-            const spawnRange = this._isImmersive ? 0.30 : 0.60;
-			const startY = h * 0.20 + Math.random() * (h * spawnRange);
-            this._birds.push({
-                x: startX,
-                y: startY,
-                vx: finalSpeed,
-                vy: (Math.random() - 0.5) * 0.1,
-                flapPhase: 0,
-                flapSpeed: 0.15 + Math.random() * 0.05,
-                size: 2.4 * depthScale
-            });
+            const startY = h * 0.20 + Math.random() * (h * 0.47);
+            this._birds.push({ x: startX, y: startY, vx: finalSpeed, vy: (Math.random() - 0.5) * 0.1, flapPhase: 0, flapSpeed: 0.15 + Math.random() * 0.05, size: 2.4 * depthScale });
             if (!isSingle) {
                 const formation = Math.floor(Math.random() * 3);
                 const ySlope = Math.random() > 0.5 ? 1 : -1;
@@ -5091,15 +4567,7 @@ class AtmosphericWeatherCard extends HTMLElement {
                     }
                     const scaledOffX = offX * depthScale;
                     const scaledOffY = offY * depthScale;
-                    this._birds.push({
-                        x: startX + (scaledOffX * dir),
-                        y: startY + scaledOffY,
-                        vx: finalSpeed,
-                        vy: (Math.random() - 0.5) * 0.05,
-                        flapPhase: i + Math.random(),
-                        flapSpeed: 0.15 + Math.random() * 0.05,
-                        size: (1.8 + Math.random() * 0.6) * depthScale
-                    });
+                    this._birds.push({ x: startX + (scaledOffX * dir), y: startY + scaledOffY, vx: finalSpeed, vy: (Math.random() - 0.5) * 0.05, flapPhase: i + Math.random(), flapSpeed: 0.15 + Math.random() * 0.05, size: (1.8 + Math.random() * 0.6) * depthScale });
                 }
             }
         }
@@ -5139,7 +4607,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         }
         ctx.restore();
     }
-
     _drawPlanes(ctx, w, h) {
         const dpr = this._cachedDimensions.dpr;
         if (this._planes.length === 0 && Math.random() < 0.0025) this._planes.push(this._createPlane(w, h));
@@ -5238,13 +4705,8 @@ class AtmosphericWeatherCard extends HTMLElement {
             plane.blinkPhase += 0.12;
             if (Math.sin(plane.blinkPhase) > 0.75) {
                 ctx.globalAlpha = 1.0;
-                if (this._isThemeDark) {
-                    ctx.fillStyle = plane.vx > 0 ? 'rgb(90, 255, 130)' : 'rgb(255, 100, 100)';
-                    fillCircle(ctx, 0, 1, 1.5);
-                } else {
-                    ctx.fillStyle = plane.vx > 0 ? 'rgb(50, 255, 80)' : 'rgb(255, 50, 50)';
-                    fillCircle(ctx, 0, 1, 1.8);
-                }
+                ctx.fillStyle = plane.vx > 0 ? (this._isThemeDark ? 'rgb(90, 255, 130)' : 'rgb(50, 255, 80)') : (this._isThemeDark ? 'rgb(255, 100, 100)' : 'rgb(255, 50, 50)');
+                fillCircle(ctx, 0, 1, this._isThemeDark ? 1.5 : 1.8);
                 ctx.globalAlpha = 1;
             }
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -5254,7 +4716,6 @@ class AtmosphericWeatherCard extends HTMLElement {
         ctx.lineCap = 'butt';
         ctx.lineJoin = 'miter';
     }
-
     // ANIMATION LOOP
     _animate(timestamp) {
         if (!this.isConnected || this._animID === null || !this._isVisible) {
@@ -5281,18 +4742,14 @@ class AtmosphericWeatherCard extends HTMLElement {
             this._animID = requestAnimationFrame(this._boundAnimate);
             return;
         }
-        bg.clearRect(0, 0, w, h);
-        mid.clearRect(0, 0, w, h);
-        fg.clearRect(0, 0, w, h);
+        bg.clearRect(0, 0, w, h); mid.clearRect(0, 0, w, h); fg.clearRect(0, 0, w, h);
         if (!this._stateInitialized || !this._renderGate.isRevealed) {
             this._animID = requestAnimationFrame(this._boundAnimate);
             return;
         }
         this._gustPhase += 0.012;
         this._microGustPhase += 0.03;
-        this._windGust = Math.sin(this._gustPhase) * 0.35 +
-                         Math.sin(this._gustPhase * 2.1) * 0.15 +
-                         Math.sin(this._microGustPhase) * 0.08;
+        this._windGust = Math.sin(this._gustPhase) * 0.35 + Math.sin(this._gustPhase * 2.1) * 0.15 + Math.sin(this._microGustPhase) * 0.08;
         const effectiveWind = ((p.wind || 0.1) + this._windGust) * (1 + this._windSpeed);
         this._sunPulsePhase += 0.008;
         const cloudGlobalOp = this._renderState.cloudGlobalOp;
@@ -5319,33 +4776,24 @@ class AtmosphericWeatherCard extends HTMLElement {
         this._drawSnow(fg, w, h, effectiveWind);
         this._animID = requestAnimationFrame(this._boundAnimate);
     }
-
     _startAnimation() {
         if (this._animID === null && this._isVisible) {
             this._lastFrameTime = performance.now();
             this._animID = requestAnimationFrame(this._boundAnimate);
         }
     }
-
     _stopAnimation() {
         if (this._animID !== null) {
             cancelAnimationFrame(this._animID);
             this._animID = null;
         }
     }
-
 }
-
 const CARD_NAME = 'atmospheric-weather-card';
-
 if (!customElements.get(CARD_NAME)) {
     customElements.define(CARD_NAME, AtmosphericWeatherCard);
     window.customCards = window.customCards || [];
-    window.customCards.push({
-        type: CARD_NAME,
-        name: 'Atmospheric Weather Card',
-        description: 'Animated weather effects with rain, snow, clouds, stars and more'
-    });
+    window.customCards.push({ type: CARD_NAME, name: 'Atmospheric Weather Card', description: 'Animated weather effects with rain, snow, clouds, stars and more' });
 } else {
     console.info(`%c ${CARD_NAME} already defined - skipping registration`, 'color: orange; font-weight: bold;');
 }
