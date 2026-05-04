@@ -1,13 +1,13 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=flat-square)](https://github.com/hacs/integration)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/shpongledsummer/atmospheric-weather-card?style=flat-square)<br>
-![Contains](https://img.shields.io/badge/contains-★_shooting_stars-333?style=flat-square)
+![Contains](https://img.shields.io/badge/Contains-★_Shooting_Stars-333?style=flat-square)
 
 ## Atmospheric Weather Card
 
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/4b939791-70d3-42af-b267-606b18dede8e" />
 
 
-A flexible, detail-oriented weather card.
+A flexible, detail-oriented weather and forecast card.
 
 <br>
 
@@ -17,7 +17,7 @@ A flexible, detail-oriented weather card.
 
 **Customization** · [Appearance](#appearance) · [Color Mode](#color-mode) · [CSS](#css-reference)
 
-**Guides** · [Fonts & Icons](#fonts--icons) · [House Image](#custom-house-image)
+**Guides** · [Chips](#chips) · [Fonts & Icons](#fonts--icons) · [House Image](#custom-house-image) 
 
 **Reference** · [Performance](#performance)
 
@@ -207,64 +207,6 @@ chips:
 </details>
 
 
-<details>
-<summary><b>Example 3 — Forecast Card</b></summary>
-
-<br>
-
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/d32a8b84-76b7-4baa-9dce-0b5826f7f441" />
-
-This example uses the `custom_cards` feature to embed a [scrollable forecast](https://github.com/shpongledsummer/minimal-forecast-card).
-
-```yaml
-type: custom:atmospheric-weather-card
-weather_entity: weather.your_weather_entity
-sun_entity: sun.sun
-moon_phase_entity: sensor.moon_phase
-card_style: standalone
-card_height: 150px
-card_padding: 20px
-sun_moon_size: 50
-sun_moon_x_position: "80"
-sun_moon_y_position: center
-top_position: top-left
-chips_position: bottom-left
-top_font_size: 36px
-top_text_padding: 4px 8px
-chips_font_size: 14px
-chips_layout: scroll
-chips_width: 30%
-chips_padding: 4px 8px
-chip_gap: 8px
-chips_background: false
-chips:
-  - entity: weather.your_weather_entity
-    icon: weather
-    width: 100px
-    icon_path: /local/your-icon-path/
-custom_cards_position: center-right
-custom_cards:
-  - custom_width: 190px
-    type: custom:minimal-forecast-card
-    entity: weather.your_weather_entity
-    forecast_type: daily
-    items_to_show: 7
-    visible: 3
-    hide_min_temp: true
-    item_spacing: 8px
-    inner_spacing: 6px
-    item_height: 110px
-    card_shadow: inset 0 2px 4px 0 var(--card-shadow-color)
-    card_padding: 0px
-    embedded: true
-    style: glass
-    font_size: 15px
-    icon_size: 34px
-    icon_filter: brightness(0.95) drop-shadow(0px 3px 6px rgba(0, 0, 0, 0.1))
-    custom_icon_path: /local/your-icon-path/
-```
-
-</details>
 
 <br>
 
@@ -430,6 +372,7 @@ The top text is the large primary line (temperature by default).
 | `top_text_sensor` | `string` | — | The entity to display as the large top text. Defaults to the temperature from your weather entity. Standard entities will automatically translate to your HA language. |
 | `top_position` | `string` | `top-left` | Where the top text anchors inside the card. 9-cell grid: `top-left`, `top-center`, `top-right`, `left`, `center`, `right`, `bottom-left`, `bottom-center`, `bottom-right`. |
 | `top_font_size` | `string` | — | Sets the font size of the top text directly without needing a custom theme or `card_mod`. Accepts any CSS size value (e.g., `3em`, `48px`). |
+| `top_unit_format` | `string` | — | Replaces the unit shown after the value. For example, set to `°` to display `21°` instead of `21 °C`. Only shown when `top_text_sensor` points at a non-weather entity. |
 | `top_text_padding` | `string` | `8px 14px` | Inner padding around the top text (e.g., `8px 14px`). |
 | `top_text_background` | `boolean` | `false` | Adds a styled background behind the top text to improve readability against the weather visuals. |
 | `top_text_behind_weather` | `boolean` | `false` | Places the top text behind the weather canvases so clouds, rain and particles pass over it. Text backgrounds are disabled while behind. |
@@ -442,7 +385,9 @@ The top text is the large primary line (temperature by default).
 <details>
 <summary><strong>Chips</strong></summary>
 
-Chips are the small detail sensors below (or next to) the top text. You can define as many as you want — each one is its own entity reading, with optional icon, label, width, overflow behavior, and tap action. The row layout controls whether they wrap, scroll horizontally, or sit in a fixed grid.
+Chips are the small detail elements below (or next to) the top text. Each chip can display either live entity data or forecast data, and you can define as many as you want. Every chip has its own entity, optional icon, label, width, overflow behavior, and tap action. The row layout controls whether they wrap, scroll horizontally, or sit in a fixed grid.
+
+For a more detailed walkthrough — including how to set up forecast chips, per-chip styling, and free positioning — see the [Chips guide](#chips).
 
 **Row options**
 
@@ -454,21 +399,20 @@ Chips are the small detail sensors below (or next to) the top text. You can defi
 | `chips_columns` | `number` | `3` | Number of equal-width columns when `chips_layout: grid` is active. |
 | `chips_align` | `string` | `start` | How each chip aligns inside its grid cell. Options: `start`, `center`, `end`. Grid layout only. |
 | `chips_width` | `string` | — | Limits the full row width (e.g., `60%` or `200px`). Useful to place the chips row next to the top text instead of spanning the card. |
+| `chips_height` | `string` | — | Sets the height of the chips row (e.g., `120px`). |
 | `chips_padding` | `string` | `5px 10px` | Inner padding of each chip (e.g., `5px 10px`). |
+| `chips_container_padding` | `string` | — | Padding of the outer chips container (the wrapper around all chips). |
 | `chip_gap` | `string` | `8px` | Space between chips. |
 | `chip_inner_gap` | `string` | `6px` | Space between the icon and text inside each chip. |
 | `chip_format` | `string` | `inline` | Controls the chip layout style. `inline` is the default horizontal layout with icon and text side by side. `stacked` arranges the icon, name, and value in a compact two-column grid. `vertical` stacks icon, name, and value in a centered column. |
 | `chips_visible` | `number` | — | Number of chips visible at once when using a scroll layout. Enables snap-scrolling through pages of chips. |
 | `chips_grouped` | `boolean` | `false` | Wraps all chips into a single shared background container instead of styling each chip individually. Requires `chips_background: true`. |
 | `chips_full_width` | `boolean` | `false` | Stretches each chip to fill the available row width. Useful in combination with `chips_visible` or grid layouts. |
-| `chips_height` | `string` | — | Sets the height of the chips row (e.g., `120px`). |
-| `chips_scroll_dots` | `boolean` | `false` | Shows pagination dots below the chips when using a scroll layout with `chips_visible`. |
-| `chips_scroll_dots_position` | `string` | — | Set to `custom` for free placement of the dots using the anchor and offset options below. |
-| `chips_scroll_dots_anchor` | `string` | `bottom-center` | Anchor position of the scroll dots when using custom placement. Same 9-cell grid as `top_position`. |
-| `chips_scroll_dots_spacing` | `string` | — | Spacing between the dots and the chips row (e.g., `12px`). |
-| `chips_scroll_dots_x` | `string` | — | Horizontal offset for the scroll dots when using custom placement. |
-| `chips_scroll_dots_y` | `string` | — | Vertical offset for the scroll dots when using custom placement. |
-| `chips_font_size` | `string` | — | Font size of the chip text. Accepts any CSS size value (e.g., `16px`, `1.2em`). |
+| `chips_font_size` | `string` | — | Font size of the chip value text. Accepts any CSS size value (e.g., `16px`, `1.2em`). |
+| `chips_name_font_size` | `string` | — | Font size of the chip name label. |
+| `chip_icon_width` | `string` | — | Global icon size for all chips. |
+| `chip_icon_padding` | `string` | — | Global padding around the icon for all chips. |
+| `chip_icon_bg` | `boolean` | `false` | Adds a background behind the icon area of each chip. |
 | `chips_background` | `boolean` | `false` | Adds a styled background behind each chip (the style is controlled by `background_style`). |
 | `disable_chips` | `boolean` | `false` | Hides the chips row entirely. |
 
@@ -479,9 +423,14 @@ Each entry inside the `chips` list accepts the following keys.
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `entity` | `string` | — | **Required.** Any sensor, binary_sensor, or weather entity. Pointing it at the weather entity shows the current state (e.g., `Sunny`). |
-| `attribute` | `string` | — | Optional. Read a specific attribute of the entity instead of its state (e.g., `humidity` on a weather entity). |
-| `name` | `string` | — | Optional label shown before the value (e.g., `Wind`). |
-| `icon` | `string` | *auto* | An `mdi:` icon (e.g., `mdi:water-percent`), the keyword `weather` to automatically show the icon matching the current weather state, or empty to inherit the sensor's own icon. |
+| `attribute` | `string` | — | Read a specific attribute of the entity instead of its state (e.g., `humidity` on a weather entity). |
+| `forecast` | `string` | — | Set to `daily` or `hourly` to show forecast data instead of live entity data. The chip's name is generated automatically (day names for daily, time for hourly). Requires the entity to be a weather entity. |
+| `forecast_offset` | `number` | `0` | Which forecast entry to display. `0` = today/now, `1` = tomorrow/next hour, and so on. Daily goes up to 6, hourly up to 23. |
+| `forecast_precision` | `number` | — | Number of decimal places for forecast values (0–2). |
+| `forecast_show_min` | `boolean` | `false` | Shows the low/high temperature range (e.g., `8 – 18`) instead of only the high. Only works with `attribute: temperature` on daily forecasts. |
+| `unit_format` | `string` | — | Replaces the unit shown after the value. Placed directly after the value with no space, e.g. `°` turns `12 °C` into `12°`. |
+| `name` | `string` | — | Optional label shown before the value (e.g., `Wind`). For forecast chips, this overrides the auto-generated day/time name. |
+| `icon` | `string` | *auto* | An `mdi:` icon (e.g., `mdi:water-percent`), the keyword `weather` to automatically show the icon matching the current weather state (or the forecasted condition when using `forecast`), or empty to inherit the sensor's own icon. |
 | `icon_path` | `string` | — | Folder for custom SVG icons (e.g., `/local/weather-icons/`). When set, the value of `icon` resolves to an image file instead of an MDI icon. For example, `icon: weather` combined with `icon_path: /local/weather-icons/` loads `/local/weather-icons/rainy.svg` for rainy weather. You can find the animated SVG icons from the examples [here](https://github.com/basmilius/weather-icons). |
 | `disable_icon` | `boolean` | `false` | Hides the icon for this chip. |
 | `width` | `string` | — | Limits the chip's width (e.g., `60%` or `200px`). Required for marquee overflow. |
@@ -489,13 +438,30 @@ Each entry inside the `chips` list accepts the following keys.
 | `marquee_speed` | `number` | `30` | Scroll speed in pixels per second when `overflow: marquee` is active. Minimum `5`. |
 | `marquee_rtl` | `boolean` | `false` | Reverses the marquee direction (scrolls right-to-left). |
 | `tap_action` | `object` | `more-info` | A standard Home Assistant [tap action](https://www.home-assistant.io/dashboards/actions/) scoped to this chip. |
-| `format` | `string` | — | Overrides the global `chip_format` for this chip only. Accepts `inline`, `stacked`, or `vertical`. |
 | `name_sensor` | `string` | — | An entity whose state (or attribute) is used as the chip's dynamic name label. Updates in real time. |
 | `name_attribute` | `string` | — | Reads a specific attribute from the `name_sensor` entity instead of its state. |
 | `position` | `string` | — | Set to `custom` to detach this chip from the row and place it freely on the card using `position_anchor`, `position_x`, and `position_y`. |
 | `position_anchor` | `string` | `top-left` | Anchor point for a free-positioned chip. Same 9-cell grid as `top_position`. |
 | `position_x` | `string` | `0` | Horizontal offset for a free-positioned chip (e.g., `20px`, `10%`). |
 | `position_y` | `string` | `0` | Vertical offset for a free-positioned chip (e.g., `20px`, `10%`). |
+
+**Per-chip style overrides**
+
+Every chip can override the global row styles individually. This is what makes it possible to mix completely different-looking chips in a single card — for example, a large stacked forecast chip next to a small inline live sensor.
+
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `chip_format` | `string` | — | Overrides the global `chip_format` for this chip. Accepts `inline`, `stacked`, or `vertical`. |
+| `chip_background` | `boolean` | — | Overrides the global `chips_background` for this chip. Set to `false` to hide the background on a specific chip even when backgrounds are globally enabled (or the other way around). |
+| `chip_bg_color` | `string` | — | Custom background color for this chip. Accepts any CSS color value, including `rgba()` for transparency. |
+| `chip_padding` | `string` | — | Overrides the chip padding for this chip only. |
+| `font_size` | `string` | — | Overrides the value text size for this chip. |
+| `name_font_size` | `string` | — | Overrides the name label text size for this chip. |
+| `inner_gap` | `string` | — | Overrides the icon/text gap for this chip. |
+| `icon_size` | `string` | — | Overrides the icon size for this chip. |
+| `icon_padding` | `string` | — | Overrides the icon padding for this chip. |
+| `icon_bg` | `boolean` | — | Overrides the global `chip_icon_bg` for this chip. |
+| `chip_align` | `string` | — | Content alignment within this chip. Options: `start`, `center`, `end`. |
 
 **Basic example**
 
@@ -715,20 +681,6 @@ These variables only apply when `chip_format` is set to `stacked` or `vertical`.
 </details>
 
 <details>
-<summary><b>Scroll Dots Variables</b></summary>
-
-These variables only apply when `chips_scroll_dots` is enabled.
-
-| Variable | Default | Description |
-| :--- | :--- | :--- |
-| `--awc-dot-size` | `6px` | Diameter of each scroll dot. |
-| `--awc-dots-gap` | `6px` | Gap between scroll dots. |
-| `--awc-dots-spacing` | *auto* | Spacing between the dots and the chips row. |
-| `--awc-dot-inactive-opacity` | `0.3` | Opacity of inactive scroll dots. |
-
-</details>
-
-<details>
   <summary><b>Card Mod Example</b></summary>
 
   This example shows how you can apply styles to the card using `card_mod`.
@@ -751,6 +703,109 @@ These variables only apply when `chips_scroll_dots` is enabled.
 <br>
 
 ## Guides
+
+### Chips
+
+Chips are the core building blocks of this card. Each chip is its own independent display unit — it picks an entity, reads a value (live or forecasted), and shows it with an optional icon and label. You can style each chip individually and even pull it out of the row to place it anywhere on the card.
+
+<details>
+<summary><strong>Forecast chips</strong></summary>
+
+<br>
+
+By default, a chip reads the current state of its entity. Setting `forecast` to `daily` or `hourly` switches it to forecast mode instead. In this mode, the chip subscribes to the weather entity's forecast data and displays a specific future entry.
+
+Use `forecast_offset` to pick which entry: `0` is today (or now), `1` is tomorrow (or the next hour), and so on. The chip automatically generates a name label — day names like "Mon", "Tue" for daily, or times like "14:00" for hourly. You can still override this with `name` if you want a custom label.
+
+When using `icon: weather` on a forecast chip, the icon matches the **forecasted** condition for that entry, not the current weather.
+
+```yaml
+chips:
+  - entity: weather.your_weather_entity
+    forecast: daily
+    attribute: temperature
+    forecast_offset: 1
+    forecast_show_min: true
+    icon: weather
+    icon_path: /local/weather-icons/
+  - entity: weather.your_weather_entity
+    forecast: hourly
+    attribute: temperature
+    forecast_offset: 3
+    unit_format: "°"
+```
+
+The first chip shows tomorrow's temperature range (low – high) with a weather icon matching tomorrow's condition. The second chip shows the temperature 3 hours from now, with `°` directly after the value instead of the full unit.
+
+**Forecast-specific options at a glance:**
+
+| Option | What it does |
+| :--- | :--- |
+| `forecast` | `daily` or `hourly` — switches the chip to forecast mode. |
+| `forecast_offset` | Which entry to show (0 = today/now, 1 = tomorrow/+1h, etc.). |
+| `forecast_precision` | Decimal places for the value (0–2). |
+| `forecast_show_min` | Shows the low/high range. Daily temperature only. |
+| `unit_format` | Replaces the unit string (e.g., `°`). Works on both live and forecast chips. |
+
+</details>
+
+<details>
+<summary><strong>Per-chip styling</strong></summary>
+
+<br>
+
+Every chip can override the global row styles. This means you can mix different chip formats, backgrounds, sizes, and spacing in one card without needing separate rows or CSS hacks.
+
+For example, you might want most chips to be small inline elements but make one specific forecast chip larger with a stacked layout and its own background color:
+
+```yaml
+chip_format: inline
+chips_background: true
+chips:
+  - entity: sensor.outside_temperature
+  - entity: sensor.humidity
+  - entity: weather.your_weather_entity
+    forecast: daily
+    attribute: temperature
+    forecast_offset: 1
+    chip_format: stacked
+    chip_bg_color: "rgba(0, 0, 0, 0.3)"
+    chip_padding: 12px 16px
+    font_size: 18px
+    icon: weather
+    icon_path: /local/weather-icons/
+```
+
+The first two chips follow the global `inline` format and default background. The third chip overrides everything it needs to look different.
+
+All per-chip style overrides are listed in the [Chips reference table](#chips) under "Per-chip style overrides".
+
+</details>
+
+<details>
+<summary><strong>Free positioning</strong></summary>
+
+<br>
+
+Any chip can be pulled out of the row and placed freely on the card. Set `position: custom` and use the anchor/offset system to put it exactly where you want.
+
+```yaml
+chips:
+  - entity: sensor.outside_temperature
+    position: custom
+    position_anchor: top-right
+    position_x: 20px
+    position_y: 10px
+    chip_background: true
+```
+
+This places the temperature chip 20px from the right and 10px from the top, independent of where the chips row sits. The `position_anchor` uses the same 9-cell grid as the other position options (`top-left`, `center`, `bottom-right`, etc.).
+
+Free-positioned chips can still use all the same styling and forecast options as regular chips.
+
+</details>
+
+<br>
 
 ### Fonts & Icons
 
