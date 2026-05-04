@@ -70,7 +70,7 @@ A detail-oriented weather and forecast card.
 <img width="500" alt="Image" src="https://github.com/user-attachments/assets/e6ebd6f5-8eec-4f47-9247-60ee5dbcddf2" /> 
 
 <details>
-<summary><b>Standalone Mode — Basic Forecast Slider</b></summary>
+<summary><b>Standalone — Basic Forecast Slider</b></summary>
 
 <br>
 
@@ -109,7 +109,6 @@ chips:
   - icon: weather
     entity: weather.your_weather_entity
     icon_path: /local/Icons/weather/variant-1/ # Change to your local icon path
-    icon_bg: false
     forecast: daily
     attribute: temperature
     forecast_show_min: true
@@ -137,7 +136,7 @@ grid_options:
 </details>
 
 <details>
-<summary><b>Standalone Mode — Chip Cards</b></summary>
+<summary><b>Standalone — Chip Cards</b></summary>
 
 <br>
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/f5b0afbb-8f88-4a28-8cbc-34007c3d29c6" />
@@ -234,7 +233,7 @@ chips:
 </details>
 
 <details>
-<summary><b>Immersive Mode — Header Card</b></summary>
+<summary><b>Immersive — Header Card</b></summary>
 
 <br>
 
@@ -263,7 +262,7 @@ chips:
 </details>
 
 <details>
-<summary><b>Immersive Mode — Custom Image</b></summary>
+<summary><b>Immersive — Custom Image</b></summary>
 
 <br>
 
