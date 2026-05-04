@@ -7,7 +7,7 @@
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/4b939791-70d3-42af-b267-606b18dede8e" />
 
 
-A flexible, detail-oriented weather and forecast card.
+A detail-oriented weather and forecast card.
 
 <br>
 
