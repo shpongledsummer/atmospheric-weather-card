@@ -4,7 +4,7 @@
 
 ## Atmospheric Weather Card
 
-<img width="500" alt="Image" src="https://github.com/user-attachments/assets/99b9a3cc-3512-42fa-9fda-4e8e4c758f13" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/99b9a3cc-3512-42fa-9fda-4e8e4c758f13" />
 
 
 A detail-oriented weather and forecast card.
@@ -66,13 +66,13 @@ A detail-oriented weather and forecast card.
 
 ## Examples
 
-<img width="500" alt="Image" src="https://github.com/user-attachments/assets/ebc74f71-1e6e-4f31-aedb-0bb25105efe6" /><br>
-<img width="500" alt="Image" src="https://github.com/user-attachments/assets/e6ebd6f5-8eec-4f47-9247-60ee5dbcddf2" /> 
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/ebc74f71-1e6e-4f31-aedb-0bb25105efe6" /><br>
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/e6ebd6f5-8eec-4f47-9247-60ee5dbcddf2" /> 
 
 <details>
 <summary><b>Standalone — Basic Forecast Slider</b></summary>
 
-<img width="500" alt="Image" src="https://github.com/user-attachments/assets/e54fe71a-1349-4bd2-ba40-24958a27ffa4" />
+<img width="400" alt="Image" src="https://github.com/user-attachments/assets/e54fe71a-1349-4bd2-ba40-24958a27ffa4" />
 
 <br>
 
@@ -141,7 +141,7 @@ grid_options:
 <summary><b>Standalone — Hourly Forecast Slider</b></summary>
 
 <br>
-<img width="500" alt="image" src="https://github.com/user-attachments/assets/7118284c-bf43-43f2-b910-219dd9fb767b" />
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/7118284c-bf43-43f2-b910-219dd9fb767b" />
 
 
 <br>
@@ -236,27 +236,31 @@ grid_options:
 </details>
 
 <details>
-<summary><b>Immersive — Header Card</b></summary>
+<summary><b>Immersive — Simple Header</b></summary>
 
 <br>
 
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/ddc2788b-f0f0-4c19-90f6-f0151a8fc06a" /><br>
-<img width="400" alt="Image" src="https://github.com/user-attachments/assets/73427776-89f1-4831-9a71-fea18e8a2aff" />
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/7993b6cf-f339-4024-9399-8d985781e86a" />
+
 
 ```yaml
 type: custom:atmospheric-weather-card
 weather_entity: weather.your_weather_entity
 sun_entity: sun.sun
-sun_moon_x_position: -60
-sun_moon_y_position: center
-card_style: immersive
 moon_phase_entity: sensor.moon_phase
-card_height: 120px
+card_height: 130px
 card_padding: 16px
-sun_moon_size: 40
-top_position: top-left
+sun_moon_size: 45px
+sun_moon_x_position: "-65"
+sun_moon_y_position: center
 top_text_sensor: sensor.time
+top_position: top-left
 chips_position: bottom-left
+top_font_size: 42px
+top_text_padding: 8px 0px 0px 4px
+chips_background: true
+css_mask_vertical: true
+css_mask_horizontal: true
 chips:
   - entity: weather.your_weather_entity
     icon: weather
