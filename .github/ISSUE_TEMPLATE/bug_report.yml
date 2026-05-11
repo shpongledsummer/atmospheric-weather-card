@@ -4,10 +4,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please complete the troubleshooting steps below before submitting. This helps filter out conflicts with complex layouts or custom themes.
-
-        > [!WARNING]
-        > **Please make it easy for me to help you.** I develop this card in my free time. Please provide your exact YAML and fill out this form directly—do not submit AI-generated reports with long analyses.
+        > [!IMPORTANT]
+        > **Please make it easy for me to help you.** I develop this card in my free time. Please provide your exact YAML and fill out this form directly. Do not submit AI-generated reports with long analyses.
   - type: checkboxes
     id: troubleshooting
     attributes:
