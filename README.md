@@ -80,6 +80,8 @@ A detail-oriented weather and forecast card.
 
 All examples use scrollable chips and you can change and mix the elements as needed.
 
+<br>
+
 <img width="400" alt="Image" src="https://github.com/user-attachments/assets/7081d651-29ef-4a83-a53f-5b40870a6002" />
 
 <details>
@@ -871,7 +873,7 @@ The card's look is controlled by two things: your **`sun_entity`**, which handle
 
 <a name="chips"></a>
 <details>
-<summary><b>Chips</b></summary>
+<summary><b>Chips & Forecasts</b></summary>
 
 Chips are basically buttons you can optionally add to the card. You can add as many as you like and show live info, like current weather conditions or data from any Home Assistant entity, but also weather forecasts. You can leave them grouped in a row and make them all look the same (useful for building a daily forecast), or you can style and position each one individually.
 
