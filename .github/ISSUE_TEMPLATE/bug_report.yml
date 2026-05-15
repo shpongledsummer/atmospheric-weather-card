@@ -4,9 +4,6 @@ body:
   - type: markdown
     attributes:
       value: |
-        > [!IMPORTANT]
-        > **Please make it easy for me to help you.** Provide your exact card YAML and fill out this form directly. Do not submit AI-generated "Bug Analysis" reports here.
-
         <details>
         <summary><strong>⚠️ Is this a Feature Request?</strong></summary>
         <br>
@@ -38,9 +35,9 @@ body:
     id: bug-description
     attributes:
       label: Bug Description
-      description: Clearly describe the issue in your own words. Do NOT paste AI-generated content.
+      description: Clearly describe the issue in your own words.
       value: |
-        What did you expect to happen, and what actually happened?
+        What did you expect to happen, and what actually happened? Please do NOT paste AI-generated "Bug Analysis" reports here.
     validations:
       required: true
   - type: input
