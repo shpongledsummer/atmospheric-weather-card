@@ -1,11 +1,21 @@
 name: Bug Report
 description: Report an issue or visual bug
 body:
-  - type: markdown
+- type: markdown
     attributes:
       value: |
         > [!IMPORTANT]
-        > **Please make it easy for me to help you.** I develop this card in my free time. Please provide your exact YAML and fill out this form directly. Do not submit AI-generated reports with long analyses.
+        > **Please make it easy for me to help you.** Provide your exact YAML and fill out this form directly. Do not submit AI-generated reports with long analyses.
+
+        <details>
+        <summary><strong>⚠️ Is this a Feature Request? Please read before submitting</strong></summary>
+        <br>
+        I disabled the feature request form because keeping this massive codebase maintainable is my top priority. 
+        
+        I am open to small, logical additions (like a new chip type). However, requests requiring big architectural changes (like adding a second sun for another time zone) will be closed. 
+        
+        If your idea is solid and realistic, feel free to describe it below. Otherwise, please close this tab.
+        </details>
   - type: checkboxes
     id: troubleshooting
     attributes:
